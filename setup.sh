@@ -230,14 +230,6 @@ module_shell() {
     warn "Oh My Posh already installed, skipping."
   fi
 
-  # ── Powerlevel10k
-  if [ ! -d "$HOME/powerlevel10k" ]; then
-    log "Installing Powerlevel10k..."
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$HOME/powerlevel10k"
-  else
-    warn "Powerlevel10k already installed, skipping."
-  fi
-
   # ── Lazygit
   if ! command -v lazygit &>/dev/null; then
     log "Installing Lazygit..."

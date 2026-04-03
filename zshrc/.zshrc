@@ -21,9 +21,10 @@ bindkey '^j' down-line-or-search
 
 ZLE_RPROMPT_INDENT=0
 
-# Powerlevel10k theme
-[[ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]] && source ~/powerlevel10k/powerlevel10k.zsh-theme
-[[ -f ~/.config/zshrc/.p10k.zsh ]] && source ~/.config/zshrc/.p10k.zsh
+# Oh My Posh prompt (shared theme with PowerShell)
+if command -v oh-my-posh &>/dev/null; then
+  eval "$(oh-my-posh init zsh --config ~/.config/powershell/oh-my-posh-tokyo-night-storm.toml)"
+fi
 
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
