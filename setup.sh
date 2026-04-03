@@ -439,25 +439,17 @@ module_dotfiles() {
     mkdir -p "$HOME/.config"
     cd "$DOTFILES_DIR"
     stow .
-    mkdir -p "$HOME/.claude"
-    ln -sf "$DOTFILES_DIR/dot-claude/settings.json" "$HOME/.claude/settings.json"
-    if [ ! -e "$HOME/.claude/skills" ] || [ -L "$HOME/.claude/skills" ]; then
-      ln -sf "$DOTFILES_DIR/dot-claude/skills" "$HOME/.claude/skills"
-    else
-      warn "~/.claude/skills is a real directory; skipping symlink. To fix manually:"
-      warn "  rm -rf ~/.claude/skills && ln -sf $DOTFILES_DIR/dot-claude/skills ~/.claude/skills"
-    fi
     log "Dotfiles applied."
   else
     warn "Dotfiles directory $DOTFILES_DIR not found. Clone your dotfiles there and run: cd $DOTFILES_DIR && stow ."
   fi
 
   # ── Install Neovim plugins
-  if command -v nvim &>/dev/null && [ -f "$HOME/.config/nvim/init.lua" ]; then
-    log "Installing Neovim plugins (headless)..."
-    nvim --headless -c "lua require('lazy').sync({wait=true, show=false})" -c "qa" 2>/dev/null ||
-      warn "Neovim plugin install failed — open nvim and run :Lazy sync."
-  fi
+  # if command -v nvim &>/dev/null && [ -f "$HOME/.config/nvim/init.lua" ]; then
+  #   log "Installing Neovim plugins (headless)..."
+  #   nvim --headless -c "lua require('lazy').sync({wait=true, show=false})" -c "qa" 2>/dev/null ||
+  #     warn "Neovim plugin install failed — open nvim and run :Lazy sync."
+  # fi
 
   # ── Nerd Font (JetBrains Mono)
   log "Installing JetBrainsMono Nerd Font..."
