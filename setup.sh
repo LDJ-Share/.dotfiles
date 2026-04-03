@@ -101,6 +101,7 @@ module_system() {
     wget \
     zip \
     ffmpeg \
+    gitk \
     zsh \
     zsh-autosuggestions \
     zsh-syntax-highlighting
