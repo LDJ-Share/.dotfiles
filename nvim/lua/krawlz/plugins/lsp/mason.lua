@@ -33,6 +33,7 @@ return {
           "gopls",
           "bashls",
           "jsonls",
+          "omnisharp",
         },
         handlers = {
           -- Default handler: start every installed server with cmp capabilities
@@ -52,6 +53,25 @@ return {
                   diagnostics = { globals = { "vim" } },
                   completion = { callSnippet = "Replace" },
                 },
+              },
+            })
+          end,
+          -- omnisharp: enable Roslyn analyzers and import completion
+          omnisharp = function()
+            local capabilities = require("cmp_nvim_lsp").default_capabilities()
+            require("lspconfig").omnisharp.setup({
+              capabilities = capabilities,
+              settings = {
+                FormattingOptions = {
+                  EnableEditorConfigSupport = true,
+                  OrganizeImports = true,
+                },
+                RoslynExtensionsOptions = {
+                  EnableAnalyzersSupport = true,
+                  EnableImportCompletion = true,
+                  AnalyzeOpenDocumentsOnly = false,
+                },
+                Sdk = { IncludePrereleases = false },
               },
             })
           end,
@@ -87,6 +107,8 @@ return {
         "shfmt",       -- Shell formatter
         "shellcheck",  -- Shell linter
         "goimports",   -- Go import organiser + formatter
+        "csharpier",   -- C# opinionated formatter
+        "netcoredbg",  -- C# / .NET debugger
       },
     },
     dependencies = {

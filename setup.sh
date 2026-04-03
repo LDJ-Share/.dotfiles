@@ -333,6 +333,17 @@ module_languages() {
   else
     warn "bun already installed ($(bun --version)), skipping."
   fi
+
+  # ── .NET SDK (LTS)
+  if ! command -v dotnet &>/dev/null; then
+    log "Installing .NET SDK (LTS)..."
+    curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel LTS
+    export DOTNET_ROOT="$HOME/.dotnet"
+    export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+    log ".NET SDK $(dotnet --version) installed."
+  else
+    warn ".NET SDK already installed ($(dotnet --version)), skipping."
+  fi
 }
 
 # ═════════════════════════════════════════════════════════════════════════════

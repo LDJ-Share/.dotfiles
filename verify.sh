@@ -57,6 +57,7 @@ check "go"       "go version"
 check "cargo"    "cargo --version"
 check "node"     "node --version"
 check "bun"      "bun --version"
+check "dotnet"   "dotnet --version"
 
 # ── Dev tools ────────────────────────────────────────────────────────────────
 check "devcontainer" "devcontainer --version"

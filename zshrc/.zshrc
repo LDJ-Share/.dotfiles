@@ -75,7 +75,8 @@ alias vim="nvim"
 # Nmap
 alias nm="nmap -sC -sV -oN nmap"
 
-export PATH=$HOME/.local/bin:/usr/local/bin:/usr/local/go/bin:/usr/bin:/bin:/usr/sbin:/sbin:${GOPATH}/bin:$HOME/.cargo/bin:$PATH
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH=$HOME/.local/bin:/usr/local/bin:/usr/local/go/bin:/usr/bin:/bin:/usr/sbin:/sbin:${GOPATH}/bin:$HOME/.cargo/bin:$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 alias cl='clear'
 
 # K8S
