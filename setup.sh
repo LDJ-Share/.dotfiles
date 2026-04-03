@@ -393,6 +393,14 @@ module_dev_tools() {
   else
     warn "devcontainer CLI already installed, skipping."
   fi
+
+  # ── Ollama
+  if ! command -v ollama &>/dev/null; then
+    log "Installing Ollama..."
+    curl -fsSL https://ollama.com/install.sh | sh
+  else
+    warn "Ollama already installed, skipping."
+  fi
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
