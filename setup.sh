@@ -106,6 +106,9 @@ module_system() {
     zsh-autosuggestions \
     zsh-syntax-highlighting
 
+  # Install python tools needed by neovim mason
+  pip3 install pylint isort black
+
   # fd-find ships as 'fdfind' on Ubuntu; add symlink
   if ! command -v fd &>/dev/null; then
     sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
