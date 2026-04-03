@@ -37,6 +37,9 @@ check "wget"     "wget --version | head -1"
 # ── Docker ────────────────────────────────────────────────────────────────────
 check "docker"   "docker --version"
 
+# ── Podman Desktop ────────────────────────────────────────────────────────────
+check "podman-desktop" "flatpak list --app | grep -c io.podman_desktop.PodmanDesktop"
+
 # ── Neovim ───────────────────────────────────────────────────────────────────
 check "nvim"     "nvim --version | head -1"
 

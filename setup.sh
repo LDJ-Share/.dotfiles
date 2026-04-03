@@ -162,6 +162,33 @@ module_docker() {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+# MODULE: podman-desktop
+# ═════════════════════════════════════════════════════════════════════════════
+module_podman_desktop() {
+  log "━━ Running module: podman-desktop ━━"
+
+  # ── Ensure flatpak is installed
+  if ! command -v flatpak &>/dev/null; then
+    log "Installing Flatpak..."
+    sudo apt-get install -y flatpak
+  fi
+
+  # ── Add Flathub remote (idempotent)
+  if ! flatpak remotes | grep -q flathub; then
+    log "Adding Flathub remote..."
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  fi
+
+  # ── Install Podman Desktop
+  if ! flatpak list --app | grep -q "io.podman_desktop.PodmanDesktop"; then
+    log "Installing Podman Desktop..."
+    flatpak install --noninteractive flathub io.podman_desktop.PodmanDesktop
+  else
+    warn "Podman Desktop already installed, skipping."
+  fi
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 # MODULE: neovim
 # ═════════════════════════════════════════════════════════════════════════════
 module_neovim() {
@@ -550,7 +577,7 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-MODULE_ORDER=(system docker neovim shell kubernetes languages dev-tools claude opencode pi dotfiles)
+MODULE_ORDER=(system docker podman-desktop neovim shell kubernetes languages dev-tools claude opencode pi dotfiles)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi
