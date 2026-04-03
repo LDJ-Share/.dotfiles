@@ -43,7 +43,7 @@ check "nvim"     "nvim --version | head -1"
 # ── Shell tools ───────────────────────────────────────────────────────────────
 check "zoxide"   "zoxide --version"
 check "eza"      "eza --version | sed -n '2p'"
-check "nu"       "nu --version"
+check "wezterm"  "wezterm --version"
 check "tv"       "tv --version"
 
 # ── Kubernetes ────────────────────────────────────────────────────────────────

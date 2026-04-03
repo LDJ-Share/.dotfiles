@@ -20,8 +20,10 @@ bindkey '^k' up-line-or-search
 bindkey '^j' down-line-or-search
 
 ZLE_RPROMPT_INDENT=0
-eval "$(starship init zsh)"
-export STARSHIP_CONFIG=~/.config/starship/starship.toml
+
+# Powerlevel10k theme
+[[ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]] && source ~/powerlevel10k/powerlevel10k.zsh-theme
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
@@ -147,8 +149,4 @@ f() { find . -type f -not -path '*/.*' | fzf; }
 fv() { nvim "$(find . -type f -not -path '*/.*' | fzf)"; }
 
 eval "$(zoxide init zsh)"
-eval "$(atuin init zsh --disable-up-arrow)"
 eval "$(direnv hook zsh)"
-
-# bindkey "^[[A" history-beginning-search-backward # after the atuin init
-# bindkey "^[[A" history-substring-search-up

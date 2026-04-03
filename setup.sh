@@ -210,17 +210,24 @@ module_shell() {
     warn "Eza already installed, skipping."
   fi
 
-  # ── Nushell
-  if ! command -v nu &>/dev/null; then
-    log "Installing Nushell..."
-    NU_VER=$(curl -s https://api.github.com/repos/nushell/nushell/releases/latest | jq -r '.tag_name')
-    curl -Lo /tmp/nu.tar.gz \
-      "https://github.com/nushell/nushell/releases/download/${NU_VER}/nu-${NU_VER}-x86_64-unknown-linux-musl.tar.gz"
-    tar -xzf /tmp/nu.tar.gz -C /tmp
-    sudo mv "/tmp/nu-${NU_VER}-x86_64-unknown-linux-musl/nu" /usr/local/bin/nu
-    rm -rf /tmp/nu.tar.gz "/tmp/nu-${NU_VER}-x86_64-unknown-linux-musl"
+  # ── WezTerm
+  if ! command -v wezterm &>/dev/null; then
+    log "Installing WezTerm..."
+    WEZTERM_ASSET=$(curl -s https://api.github.com/repos/wez/wezterm/releases/latest |
+      jq -r '.assets[] | select(.name | test("Ubuntu24\\.04\\.deb$")) | .browser_download_url' | head -1)
+    curl -Lo /tmp/wezterm.deb "$WEZTERM_ASSET"
+    sudo apt-get install -y /tmp/wezterm.deb
+    rm /tmp/wezterm.deb
   else
-    warn "Nushell already installed, skipping."
+    warn "WezTerm already installed, skipping."
+  fi
+
+  # ── Powerlevel10k
+  if [ ! -d "$HOME/powerlevel10k" ]; then
+    log "Installing Powerlevel10k..."
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$HOME/powerlevel10k"
+  else
+    warn "Powerlevel10k already installed, skipping."
   fi
 
   # ── Television (fuzzy launcher)
@@ -484,7 +491,6 @@ echo "Next steps:"
 echo "  1. Log out and back in (or open a new shell) for group/path changes to take effect."
 echo "  2. Start tmux and press Ctrl-A + I to install plugins (if not auto-installed)."
 echo "  3. Open nvim and run :Lazy sync if plugins weren't installed headlessly."
-echo "  4. Run 'atuin login' or 'atuin register' to set up history sync."
 echo "  5. Configure git: git config --global user.name 'krawlz' && git config --global user.email 'your@email.com'"
 echo "  6. Authenticate opencode: opencode auth login"
 echo "  7. Authenticate pi: pi login"
