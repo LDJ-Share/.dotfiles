@@ -97,13 +97,10 @@ return {
   {
     "WhoIsSethDaniel/mason-tool-installer.nvim",
     opts = {
-      run_on_start = true,
+      run_on_start = false,
       ensure_installed = {
         "prettier",    -- JS/TS/CSS/HTML/JSON/YAML formatter
         "stylua",      -- Lua formatter
-        "isort",       -- Python import sorter
-        "black",       -- Python formatter
-        "pylint",      -- Python linter
         "eslint_d",    -- JS/TS linter (fast daemon)
         "shfmt",       -- Shell formatter
         "shellcheck",  -- Shell linter
