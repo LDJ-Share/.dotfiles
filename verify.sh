@@ -44,7 +44,9 @@ check "nvim"     "nvim --version | head -1"
 check "zoxide"   "zoxide --version"
 check "eza"      "eza --version | sed -n '2p'"
 check "wezterm"  "wezterm --version"
-check "lazygit"  "lazygit --version"
+check "lazygit"     "lazygit --version"
+check "oh-my-posh"  "oh-my-posh --version"
+check "pwsh"        "pwsh --version"
 check "tv"       "tv --version"
 
 # ── Kubernetes ────────────────────────────────────────────────────────────────

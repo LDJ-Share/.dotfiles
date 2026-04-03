@@ -222,6 +222,14 @@ module_shell() {
     warn "WezTerm already installed, skipping."
   fi
 
+  # ── Oh My Posh (cross-shell prompt used by PowerShell profile)
+  if ! command -v oh-my-posh &>/dev/null; then
+    log "Installing Oh My Posh..."
+    curl -fsSL https://ohmyposh.dev/install.sh | bash -s -- -d "$HOME/.local/bin"
+  else
+    warn "Oh My Posh already installed, skipping."
+  fi
+
   # ── Powerlevel10k
   if [ ! -d "$HOME/powerlevel10k" ]; then
     log "Installing Powerlevel10k..."
@@ -495,6 +503,19 @@ module_dotfiles() {
   #   nvim --headless -c "lua require('lazy').sync({wait=true, show=false})" -c "qa" 2>/dev/null ||
   #     warn "Neovim plugin install failed — open nvim and run :Lazy sync."
   # fi
+
+  # ── PowerShell modules (Terminal-Icons, PSWriteColor)
+  if command -v pwsh &>/dev/null; then
+    log "Installing PowerShell modules..."
+    pwsh -NoProfile -Command "
+      \$modules = @('Terminal-Icons', 'PSWriteColor')
+      foreach (\$m in \$modules) {
+        if (-not (Get-Module -ListAvailable -Name \$m)) {
+          Install-Module -Name \$m -Force -Scope CurrentUser -Repository PSGallery
+        }
+      }
+    " || warn "PowerShell module install failed — run manually: Install-Module Terminal-Icons, PSWriteColor"
+  fi
 
   # ── Nerd Font (JetBrains Mono)
   log "Installing JetBrainsMono Nerd Font..."
