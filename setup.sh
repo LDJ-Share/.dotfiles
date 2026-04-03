@@ -212,15 +212,15 @@ module_shell() {
   fi
 
   # ── WezTerm
-  if ! command -v wezterm &>/dev/null; then
-    log "Installing WezTerm..."
-    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-    echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
-    sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
-    sudo apt install wezterm
-  else 
-    warn "WezTerm already installed, skipping."
-  fi
+  # if ! command -v wezterm &>/dev/null; then
+  #   log "Installing WezTerm..."
+  #   curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+  #   echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
+  #   sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
+  #   sudo apt install wezterm
+  # else 
+  #   warn "WezTerm already installed, skipping."
+  # fi
 
   # ── Oh My Posh (cross-shell prompt used by PowerShell profile)
   if ! command -v oh-my-posh &>/dev/null; then
@@ -434,7 +434,7 @@ module_opencode() {
   OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
   if command -v opencode &>/dev/null && ! grep -q "oh-my-opencode" "$OPENCODE_CONFIG" 2>/dev/null; then
     log "Installing oh-my-opencode..."
-    bunx oh-my-opencode install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no
+    bunx oh-my-opencode install --no-tui --claude=no --openai=no --gemini=no --copilot=no
   else
     warn "oh-my-opencode already installed or opencode not found, skipping."
   fi
