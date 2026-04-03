@@ -406,16 +406,17 @@ module_dev_tools() {
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: claude
 # ═════════════════════════════════════════════════════════════════════════════
-# module_claude() {
-#   log "━━ Running module: claude ━━"
-# 
-#   if ! command -v claude &>/dev/null; then
-#     log "Installing Claude Code..."
-#     curl -fsSL https://claude.ai/install.sh | bash
-#   else
-#     warn "Claude Code already installed, skipping."
-#   fi
-# }
+module_claude() {
+  log "━━ Running module: claude ━━"
+
+  log "━━ claude module currently deactivated ━━"
+  # if ! command -v claude &>/dev/null; then
+  #   log "Installing Claude Code..."
+  #   curl -fsSL https://claude.ai/install.sh | bash
+  # else
+  #   warn "Claude Code already installed, skipping."
+  # fi
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: opencode
