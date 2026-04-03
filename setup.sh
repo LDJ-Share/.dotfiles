@@ -214,12 +214,11 @@ module_shell() {
   # ── WezTerm
   if ! command -v wezterm &>/dev/null; then
     log "Installing WezTerm..."
-    WEZTERM_ASSET=$(curl -s https://api.github.com/repos/wez/wezterm/releases/latest |
-      jq -r '.assets[] | select(.name | test("Ubuntu24\\.04\\.deb$")) | .browser_download_url' | head -1)
-    curl -Lo /tmp/wezterm.deb "$WEZTERM_ASSET"
-    sudo apt-get install -y /tmp/wezterm.deb
-    rm /tmp/wezterm.deb
-  else
+    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+    echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
+    sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
+    sudo apt install wezterm
+  else 
     warn "WezTerm already installed, skipping."
   fi
 
@@ -360,16 +359,16 @@ module_dev_tools() {
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: claude
 # ═════════════════════════════════════════════════════════════════════════════
-module_claude() {
-  log "━━ Running module: claude ━━"
-
-  if ! command -v claude &>/dev/null; then
-    log "Installing Claude Code..."
-    curl -fsSL https://claude.ai/install.sh | bash
-  else
-    warn "Claude Code already installed, skipping."
-  fi
-}
+# module_claude() {
+#   log "━━ Running module: claude ━━"
+# 
+#   if ! command -v claude &>/dev/null; then
+#     log "Installing Claude Code..."
+#     curl -fsSL https://claude.ai/install.sh | bash
+#   else
+#     warn "Claude Code already installed, skipping."
+#   fi
+# }
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: opencode
@@ -443,6 +442,12 @@ module_dotfiles() {
     log "Dotfiles applied."
   else
     warn "Dotfiles directory $DOTFILES_DIR not found. Clone your dotfiles there and run: cd $DOTFILES_DIR && stow ."
+  fi
+
+  # ── Ensure ~/.zshrc sources the stowed config
+  if [ ! -f "$HOME/.zshrc" ] || ! grep -q "source ~/.config/zshrc/.zshrc" "$HOME/.zshrc" 2>/dev/null; then
+    log "Setting up ~/.zshrc wrapper..."
+    printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "$HOME/.zshrc"
   fi
 
   # ── Install Neovim plugins

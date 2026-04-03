@@ -1,3 +1,8 @@
 --target=~/.config
---ignore=.stowrc
 --ignore=DS_Store
+--ignore=setup.sh
+--ignore=unstow.sh
+--ignore=.gitattributes
+--ignore=additional-setup.sh
+--ignore=verify.sh
+--ignore=vscextensions.txt

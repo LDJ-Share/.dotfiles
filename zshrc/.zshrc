@@ -23,7 +23,7 @@ ZLE_RPROMPT_INDENT=0
 
 # Powerlevel10k theme
 [[ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]] && source ~/powerlevel10k/powerlevel10k.zsh-theme
-[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+[[ -f ~/.config/zshrc/.p10k.zsh ]] && source ~/.config/zshrc/.p10k.zsh
 
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
