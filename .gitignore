@@ -1,0 +1,10 @@
+tmux/plugins/
+fzf
+history.txt
+.claude/settings.local.json
+.claude/worktrees/
+.vs/
+.idea/
+desktop.ini
+bin/
+obj/
