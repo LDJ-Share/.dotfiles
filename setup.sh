@@ -564,9 +564,9 @@ echo ""
 echo -e "${GREEN}Setup complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Log out and back in (or open a new shell) for group/path changes to take effect."
+echo "  1. launch wezterm and enjoy your new terminal setup (select JetBrains Mono Nerd Font if not auto-selected)."
 echo "  2. Start tmux and press Ctrl-A + I to install plugins (if not auto-installed)."
 echo "  3. Open nvim and run :Lazy sync if plugins weren't installed headlessly."
-echo "  5. Configure git: git config --global user.name 'krawlz' && git config --global user.email 'your@email.com'"
-echo "  6. Authenticate opencode: opencode auth login"
-echo "  7. Authenticate pi: pi login"
+echo "  6. Load opencode once to download plugins: `opencode`
+echo "  7. Load pi once to download `plugins`
+echo "  8. clone  <https://github.com/LDJ-Share/pi-agent-orchestrator-extension> and follow README to set up Pi Agent Orchestrator extension for VS Code"
