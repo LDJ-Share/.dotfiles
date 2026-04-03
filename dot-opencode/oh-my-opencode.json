@@ -1,0 +1,61 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "hephaestus": {
+      "model": "ollama/qwen3:4b"
+    },
+    "oracle": {
+      "model": "ollama/qwen3:4b"
+    },
+    "librarian": {
+      "model": "ollama/qwen3:4b"
+    },
+    "explore": {
+      "model": "ollama/qwen3:4b"
+    },
+    "multimodal-looker": {
+      "model": "ollama/qwen3:4b"
+    },
+    "prometheus": {
+      "model": "ollama/qwen3:4b"
+    },
+    "metis": {
+      "model": "ollama/qwen3:4b"
+    },
+    "momus": {
+      "model": "ollama/qwen3:4b"
+    },
+    "atlas": {
+      "model": "ollama/qwen3:4b"
+    },
+    "sisyphus-junior": {
+      "model": "ollama/qwen3:4b"
+    }
+  },
+  "categories": {
+    "visual-engineering": {
+      "model": "ollama/qwen3:4b"
+    },
+    "ultrabrain": {
+      "model": "ollama/qwen3:4b"
+    },
+    "deep": {
+      "model": "ollama/qwen3:4b"
+    },
+    "artistry": {
+      "model": "ollama/qwen3:4b"
+    },
+    "quick": {
+      "model": "ollama/tinyllama:1.1b"
+    },
+    "unspecified-low": {
+      "model": "ollama/tinyllama:1.1b"
+    },
+    "unspecified-high": {
+      "model": "ollama/qwen3:4b"
+    },
+    "writing": {
+      "model": "ollama/qwen3:4b"
+    }
+  }
+}

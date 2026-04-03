@@ -442,6 +442,11 @@ module_opencode() {
   else
     warn "oh-my-opencode already installed or opencode not found, skipping."
   fi
+
+  # ── opencode config (symlinked to ~/.config/opencode — outside stow target)
+  mkdir -p "$HOME/.config/opencode"
+  ln -sf "$DOTFILES_DIR/dot-opencode/config.json" "$HOME/.config/opencode/config.json"
+  ln -sf "$DOTFILES_DIR/dot-opencode/oh-my-opencode.json" "$HOME/.config/opencode/oh-my-opencode.json"
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
