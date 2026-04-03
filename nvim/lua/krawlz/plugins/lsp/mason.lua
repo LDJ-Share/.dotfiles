@@ -34,6 +34,7 @@ return {
           "bashls",
           "jsonls",
           "omnisharp",
+          "powershell_es",
         },
         handlers = {
           -- Default handler: start every installed server with cmp capabilities

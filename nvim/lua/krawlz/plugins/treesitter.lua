@@ -21,6 +21,7 @@ return {
           "markdown",
           "markdown_inline",
           "prisma",
+          "powershell",
           "python",
           "query",
           "svelte",

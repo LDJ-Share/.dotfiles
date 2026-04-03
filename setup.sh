@@ -334,6 +334,21 @@ module_languages() {
     warn "bun already installed ($(bun --version)), skipping."
   fi
 
+  # ── PowerShell Core
+  if ! command -v pwsh &>/dev/null; then
+    log "Installing PowerShell Core..."
+    if ! dpkg -l packages-microsoft-prod &>/dev/null 2>&1; then
+      curl -fsSL "https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb" \
+        -o /tmp/packages-microsoft-prod.deb
+      sudo dpkg -i /tmp/packages-microsoft-prod.deb
+      rm /tmp/packages-microsoft-prod.deb
+      sudo apt-get update -qq
+    fi
+    sudo apt-get install -y powershell
+  else
+    warn "PowerShell Core already installed, skipping."
+  fi
+
   # ── .NET SDK (LTS)
   if ! command -v dotnet &>/dev/null; then
     log "Installing .NET SDK (LTS)..."
