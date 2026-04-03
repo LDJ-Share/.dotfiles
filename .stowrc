@@ -6,3 +6,7 @@
 --ignore=additional-setup.sh
 --ignore=verify.sh
 --ignore=vscextensions.txt
+--ignore=dot-pi
+--ignore=dot-claude
+--ignore=justfile
+--ignore=README.md

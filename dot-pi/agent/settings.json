@@ -1,0 +1,11 @@
+{
+  "defaultModel": "qwen3.5:9b",
+  "defaultProvider": "ollama",
+  "defaultThinkingLevel": "medium",
+  "lastChangelogVersion": "0.64.0",
+  "packages": [
+    "npm:@ollama/pi-web-search",
+    "npm:@cmcconomy/pi-qwen-tool-parser@1.0.0"
+  ],
+  "theme": "midnight-ocean"
+}

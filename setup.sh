@@ -492,6 +492,23 @@ module_dotfiles() {
     warn "Dotfiles directory $DOTFILES_DIR not found. Clone your dotfiles there and run: cd $DOTFILES_DIR && stow ."
   fi
 
+  # ── Pi agent config (symlinked to ~/.pi — outside ~/.config stow target)
+  mkdir -p "$HOME/.pi/agent"
+  ln -sf "$DOTFILES_DIR/dot-pi/agent/models.json"  "$HOME/.pi/agent/models.json"
+  ln -sf "$DOTFILES_DIR/dot-pi/agent/settings.json" "$HOME/.pi/agent/settings.json"
+  log "Pi agent config symlinked."
+
+  # ── Pull Ollama models defined in Pi agent models.json
+  if command -v ollama &>/dev/null && command -v jq &>/dev/null; then
+    log "Pulling Ollama models from Pi agent config..."
+    jq -r '.providers.ollama.models[].id' "$HOME/.pi/agent/models.json" | while IFS= read -r model; do
+      log "  ollama pull $model"
+      ollama pull "$model" || warn "Failed to pull model: $model (skipping)"
+    done
+  else
+    warn "ollama or jq not found — skipping model pull. Run manually after install."
+  fi
+
   # ── Ensure ~/.zshrc sources the stowed config
   if [ ! -f "$HOME/.zshrc" ] || ! grep -q "source ~/.config/zshrc/.zshrc" "$HOME/.zshrc" 2>/dev/null; then
     log "Setting up ~/.zshrc wrapper..."
