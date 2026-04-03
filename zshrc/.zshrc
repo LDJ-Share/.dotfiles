@@ -21,11 +21,6 @@ bindkey '^j' down-line-or-search
 
 ZLE_RPROMPT_INDENT=0
 
-# Oh My Posh prompt (shared theme with PowerShell)
-if command -v oh-my-posh &>/dev/null; then
-  eval "$(oh-my-posh init zsh --config ~/.config/powershell/oh-my-posh-tokyo-night-storm.toml)"
-fi
-
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
 
@@ -154,3 +149,8 @@ fv() { nvim "$(find . -type f -not -path '*/.*' | fzf)"; }
 
 eval "$(zoxide init zsh)"
 eval "$(direnv hook zsh)"
+
+# Oh My Posh prompt (shared theme with PowerShell)
+if command -v oh-my-posh &>/dev/null; then
+  eval "$(oh-my-posh init zsh --config ~/.config/powershell/oh-my-posh-tokyo-night-storm.toml)"
+fi
