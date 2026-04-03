@@ -230,6 +230,19 @@ module_shell() {
     warn "Powerlevel10k already installed, skipping."
   fi
 
+  # ── Lazygit
+  if ! command -v lazygit &>/dev/null; then
+    log "Installing Lazygit..."
+    LAZYGIT_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | jq -r '.tag_name' | tr -d 'v')
+    curl -Lo /tmp/lazygit.tar.gz \
+      "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VER}/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz"
+    tar -xzf /tmp/lazygit.tar.gz -C /tmp lazygit
+    sudo mv /tmp/lazygit /usr/local/bin/lazygit
+    rm /tmp/lazygit.tar.gz
+  else
+    warn "Lazygit already installed, skipping."
+  fi
+
   # ── Television (fuzzy launcher)
   if ! command -v tv &>/dev/null; then
     log "Installing Television..."

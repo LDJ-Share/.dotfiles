@@ -4,37 +4,34 @@ return {
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").setup({
-        install_dir = vim.fn.stdpath("data") .. "/site",
-      })
-
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = {
-          "json",
-          "javascript",
-          "typescript",
-          "tsx",
-          "yaml",
-          "html",
-          "css",
-          "prisma",
-          "markdown",
-          "markdown_inline",
-          "svelte",
-          "graphql",
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = {
           "bash",
-          "lua",
-          "vim",
+          "c",
+          "css",
           "dockerfile",
           "gitignore",
+          "go",
+          "graphql",
+          "html",
+          "javascript",
+          "json",
+          "lua",
+          "markdown",
+          "markdown_inline",
+          "prisma",
+          "python",
           "query",
+          "svelte",
+          "tsx",
+          "typescript",
+          "vim",
           "vimdoc",
-          "c",
-          "zsh",
+          "yaml",
         },
-        callback = function()
-          vim.treesitter.start()
-        end,
+        auto_install = true,
+        highlight = { enable = true },
+        indent = { enable = true },
       })
 
       vim.treesitter.language.register("bash", "zsh")
