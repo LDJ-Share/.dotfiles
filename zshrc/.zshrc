@@ -69,6 +69,8 @@ export GOPATH="$HOME/go"
 
 # VIM
 alias v="nvim"
+alias vi="nvim"
+alias vim="nvim"
 
 # Nmap
 alias nm="nmap -sC -sV -oN nmap"
@@ -114,15 +116,15 @@ alias fuzz='ffuf -w ~/hacking/SecLists/content_discovery_all.txt -mc all -u'
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# Nix
-export NIX_CONF_DIR=$HOME/.config/nix
-export PATH=/run/current-system/sw/bin:$PATH
+# # Nix
+# export NIX_CONF_DIR=$HOME/.config/nix
+# export PATH=/run/current-system/sw/bin:$PATH
 
-# Nix daemon
-if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-fi
-
+# # Nix daemon
+# if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+#   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+# fi
+# 
 export XDG_CONFIG_HOME="$HOME/.config"
 
 function ranger {
