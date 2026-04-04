@@ -563,8 +563,11 @@ module_dotfiles() {
     mkdir -p "$HOME/.config"
     cd "$DOTFILES_DIR"
     stow .
+
+    mkdir -p "$HOME/.pi/agent"
     cd "$DOTFILES_DIR/dot-pi"
     stow .
+
     cd "$DOTFILES_DIR/dot-opencode"
     stow .
     log "Dotfiles applied."
