@@ -20,6 +20,16 @@ contains() {
   for e in "$@"; do [[ "$e" == "$needle" ]] && return 0; done
   return 1
 }
+# Quiet apt install — suppresses download progress and dpkg staircase output
+apt_install() {
+  sudo apt-get install -y -qq \
+    -o Dpkg::Progress-Fancy=0 \
+    -o APT::Color=0 \
+    "$@" 2>&1 | grep -v "^$" || true
+}
+apt_update() {
+  sudo apt-get update -qq 2>&1 | grep -v "^$" || true
+}
 
 # ── Parse positional args (must come before any flags) ────────────────────────
 USERNAME="krawlz"
@@ -94,8 +104,8 @@ module_system() {
   log "━━ Running module: system ━━"
 
   log "Updating apt and installing base packages..."
-  sudo apt-get update -qq
-  sudo apt-get install -y \
+  apt_update
+  apt_install \
     apt-transport-https \
     build-essential \
     ca-certificates \
@@ -153,7 +163,7 @@ module_system() {
   # ── Bat (better cat)
   if ! command -v bat &>/dev/null; then
     log "Installing Bat..."
-    sudo apt-get install -y bat
+    apt_install bat
     # Ubuntu ships as 'batcat'
     if ! command -v bat &>/dev/null && command -v batcat &>/dev/null; then
       sudo ln -sf "$(which batcat)" /usr/local/bin/bat
@@ -176,8 +186,8 @@ module_docker() {
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
 		https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" |
       sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-    sudo apt-get update -qq
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    apt_update
+    apt_install docker-ce docker-ce-cli containerd.io docker-compose-plugin
     sudo usermod -aG docker "$USER"
     log "Docker installed. Log out and back in for group membership to take effect."
   else
@@ -194,7 +204,7 @@ module_podman() {
   # ── Ensure flatpak is installed
   if ! command -v flatpak &>/dev/null; then
     log "Installing Flatpak..."
-    sudo apt-get install -y flatpak
+    apt_install flatpak
   fi
 
   # ── Add Flathub remote (idempotent)
@@ -206,7 +216,7 @@ module_podman() {
   # ── Install Podman
   if ! command -v podman &>/dev/null; then
     log "Installing Podman..."
-    sudo apt-get install -y podman
+    apt_install podman
   fi
 
   # ── Install Podman Desktop
@@ -262,8 +272,8 @@ module_shell() {
     echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" |
       sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
     sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-    sudo apt-get update -qq
-    sudo apt-get install -y eza
+    apt_update
+    apt_install eza
   else
     warn "Eza already installed, skipping."
   fi
@@ -274,7 +284,7 @@ module_shell() {
     curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
     echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
     sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
-    sudo apt update && sudo apt install wezterm
+    apt_update && apt_install wezterm
   else
     warn "WezTerm already installed, skipping."
   fi
@@ -327,8 +337,8 @@ module_kubernetes() {
       sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' |
       sudo tee /etc/apt/sources.list.d/kubernetes.list >/dev/null
-    sudo apt-get update -qq
-    sudo apt-get install -y kubectl
+    apt_update
+    apt_install kubectl
   else
     warn "kubectl already installed, skipping."
   fi
@@ -385,7 +395,7 @@ module_languages() {
   if ! command -v node &>/dev/null; then
     log "Installing Node.js LTS..."
     curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    apt_install nodejs
   else
     warn "Node.js already installed ($(node --version)), skipping."
   fi
@@ -407,9 +417,9 @@ module_languages() {
         -o /tmp/packages-microsoft-prod.deb
       sudo dpkg -i /tmp/packages-microsoft-prod.deb
       rm /tmp/packages-microsoft-prod.deb
-      sudo apt-get update -qq
+      apt_update
     fi
-    sudo apt-get install -y powershell
+    apt_install powershell
   else
     warn "PowerShell Core already installed, skipping."
   fi
@@ -440,8 +450,8 @@ module_dev_tools() {
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
 		https://cli.github.com/packages stable main" |
       sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
-    sudo apt-get update -qq
-    sudo apt-get install -y gh
+    apt_update
+    apt_install gh
   else
     warn "GitHub CLI already installed, skipping."
   fi
