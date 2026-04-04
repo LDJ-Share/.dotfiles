@@ -26,5 +26,10 @@ return {
 	    mods = 'CTRL',
 	    action = wezterm.action.OpenLinkAtMouseCursor,
 	  },
+	  {
+	    event = { Down = { streak = 1, button = 'Right' } },
+	    mods = 'NONE',
+	    action = wezterm.action.PasteFrom 'Clipboard',
+	  },
 	},
 }
