@@ -7,7 +7,6 @@ return {
 	font = wezterm.font('JetBrains Mono'),
 	window_background_opacity = 0.95,
 	window_decorations = 'RESIZE',
-	copy_to_clipboard = "Clipboard",
 	keys = {
 		{
 			key = 'q',
