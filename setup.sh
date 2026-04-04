@@ -69,6 +69,10 @@ fi
 export USERNAME
 export DOTFILES_DIR
 
+# ── Suppress apt/dpkg interactive prompts and fancy progress output ───────────
+export DEBIAN_FRONTEND=noninteractive
+export DEBCONF_NONINTERACTIVE_SEEN=true
+
 # ── Root check ───────────────────────────────────────────────────────────────
 if [ "$EUID" -eq 0 ]; then
   echo "Run as a regular user with sudo access, not root."
@@ -202,7 +206,7 @@ module_podman() {
   # ── Install Podman
   if ! command -v podman &>/dev/null; then
     log "Installing Podman..."
-    apt-get install -y podman
+    sudo apt-get install -y podman
   fi
 
   # ── Install Podman Desktop
