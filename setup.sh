@@ -379,7 +379,6 @@ module_languages() {
     log "Installing Rust..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
     source "$HOME/.cargo/env"
-    export PATH="$HOME/.cargo/bin:$PATH"
   else
     warn "Rust already installed, skipping."
   fi
