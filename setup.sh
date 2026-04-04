@@ -190,7 +190,7 @@ module_podman() {
   # ── Ensure flatpak is installed
   if ! command -v flatpak &>/dev/null; then
     log "Installing Flatpak..."
-    apt-get install -y flatpak
+    sudo apt-get install -y flatpak
   fi
 
   # ── Add Flathub remote (idempotent)
