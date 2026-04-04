@@ -480,6 +480,35 @@ module_dev_tools() {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+# MODULE: vscode
+# ═════════════════════════════════════════════════════════════════════════════
+module_vscode() {
+  log "━━ Running module: vscode ━━"
+
+  if ! command -v code &>/dev/null; then
+    log "Installing VS Code..."
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc |
+      sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/microsoft.gpg] \
+https://packages.microsoft.com/repos/code stable main" |
+      sudo tee /etc/apt/sources.list.d/vscode.list >/dev/null
+    apt_update
+    apt_install code
+  else
+    warn "VS Code already installed, skipping."
+  fi
+
+  # ── Install extensions from vsc-extensions.txt (skip header line)
+  if command -v code &>/dev/null && [ -f "$DOTFILES_DIR/vsc-extensions.txt" ]; then
+    log "Installing VS Code extensions..."
+    tail -n +2 "$DOTFILES_DIR/vsc-extensions.txt" | while IFS= read -r ext; do
+      [[ -z "$ext" ]] && continue
+      code --install-extension "$ext" --force 2>/dev/null || warn "Failed to install extension: $ext"
+    done
+  fi
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 # MODULE: claude
 # ═════════════════════════════════════════════════════════════════════════════
 module_claude() {
@@ -633,7 +662,7 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools claude opencode pi dotfiles)
+MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi

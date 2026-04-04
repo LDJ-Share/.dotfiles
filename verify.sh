@@ -68,6 +68,7 @@ check "pwsh"     "pwsh --version"
 # ── Dev tools ────────────────────────────────────────────────────────────────
 check "devcontainer" "devcontainer --version"
 check "ollama"       "ollama --version"
+check "code"         "code --version | head -1"
 
 # ── AI tools ─────────────────────────────────────────────────────────────────
 check "pi"            "pi --version"
