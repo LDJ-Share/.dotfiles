@@ -4,8 +4,6 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 # ── Color codes ──────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -13,19 +11,27 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # ── Utility functions ────────────────────────────────────────────────────────
-log()  { echo -e "${GREEN}==>${NC} $1"; }
+log() { echo -e "${GREEN}==>${NC} $1"; }
 warn() { echo -e "${YELLOW}WARN:${NC} $1"; }
-contains() { local needle="$1"; shift; local e; for e in "$@"; do [[ "$e" == "$needle" ]] && return 0; done; return 1; }
+contains() {
+  local needle="$1"
+  shift
+  local e
+  for e in "$@"; do [[ "$e" == "$needle" ]] && return 0; done
+  return 1
+}
 
 # ── Parse positional args (must come before any flags) ────────────────────────
 USERNAME="krawlz"
 DOTFILES_DIR="$HOME/.dotfiles"
 
 if [[ "${1:-}" != --* && -n "${1:-}" ]]; then
-  USERNAME="$1"; shift
+  USERNAME="$1"
+  shift
 fi
 if [[ "${1:-}" != --* && -n "${1:-}" ]]; then
-  DOTFILES_DIR="$1"; shift
+  DOTFILES_DIR="$1"
+  shift
 fi
 
 # ── Parse --only / --skip ────────────────────────────────────────────────────
@@ -33,17 +39,24 @@ ONLY=()
 SKIP=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --only)
+  --only)
+    shift
+    while [[ $# -gt 0 && "$1" != --* ]]; do
+      ONLY+=("$1")
       shift
-      while [[ $# -gt 0 && "$1" != --* ]]; do ONLY+=("$1"); shift; done
-      ;;
-    --skip)
+    done
+    ;;
+  --skip)
+    shift
+    while [[ $# -gt 0 && "$1" != --* ]]; do
+      SKIP+=("$1")
       shift
-      while [[ $# -gt 0 && "$1" != --* ]]; do SKIP+=("$1"); shift; done
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2; exit 1
-      ;;
+    done
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -64,7 +77,11 @@ fi
 
 # ── Sudo keepalive ───────────────────────────────────────────────────────────
 sudo -v 2>/dev/null || true
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+while true; do
+  sudo -n true
+  sleep 60
+  kill -0 "$$" || exit
+done 2>/dev/null &
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: system
@@ -165,21 +182,27 @@ module_docker() {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-# MODULE: podman-desktop
+# MODULE: podman
 # ═════════════════════════════════════════════════════════════════════════════
-module_podman_desktop() {
-  log "━━ Running module: podman-desktop ━━"
+module_podman() {
+  log "━━ Running module: podman ━━"
 
   # ── Ensure flatpak is installed
   if ! command -v flatpak &>/dev/null; then
     log "Installing Flatpak..."
-    sudo apt-get install -y flatpak
+    apt-get install -y flatpak
   fi
 
   # ── Add Flathub remote (idempotent)
   if ! flatpak remotes | grep -q flathub; then
     log "Adding Flathub remote..."
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  fi
+
+  # ── Install Podman
+  if ! command -v podman &>/dev/null; then
+    log "Installing Podman..."
+    apt-get install -y podman
   fi
 
   # ── Install Podman Desktop
@@ -248,7 +271,7 @@ module_shell() {
     echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
     sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
     sudo apt update && sudo apt install wezterm
-  else 
+  else
     warn "WezTerm already installed, skipping."
   fi
 
@@ -344,6 +367,14 @@ module_languages() {
     source "$HOME/.cargo/env"
   else
     warn "Rust already installed, skipping."
+  fi
+
+  # ── Just
+  if ! command -v just &>/dev/null; then
+    log "Installing just..."
+    cargo install just
+  else
+    warn "Just already installed ($(node --version)), skipping."
   fi
 
   # ── Node.js (LTS via NodeSource)
@@ -469,11 +500,6 @@ module_opencode() {
   else
     warn "oh-my-opencode already installed or opencode not found, skipping."
   fi
-
-  # ── opencode config (symlinked to ~/.config/opencode — outside stow target)
-  mkdir -p "$HOME/.config/opencode"
-  ln -sf "$DOTFILES_DIR/dot-opencode/config.json" "$HOME/.config/opencode/config.json"
-  ln -sf "$DOTFILES_DIR/dot-opencode/oh-my-opencode.json" "$HOME/.config/opencode/oh-my-opencode.json"
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -522,16 +548,20 @@ module_dotfiles() {
     mkdir -p "$HOME/.config"
     cd "$DOTFILES_DIR"
     stow .
+    cd "$DOTFILES_DIR/dot-pi"
+    stow .
+    cd "$DOTFILES_DIR/dot-opencode"
+    stow .
     log "Dotfiles applied."
   else
     warn "Dotfiles directory $DOTFILES_DIR not found. Clone your dotfiles there and run: cd $DOTFILES_DIR && stow ."
   fi
 
   # ── Pi agent config (symlinked to ~/.pi — outside ~/.config stow target)
-  mkdir -p "$HOME/.pi/agent"
-  ln -sf "$DOTFILES_DIR/dot-pi/agent/models.json"  "$HOME/.pi/agent/models.json"
-  ln -sf "$DOTFILES_DIR/dot-pi/agent/settings.json" "$HOME/.pi/agent/settings.json"
-  log "Pi agent config symlinked."
+  # mkdir -p "$HOME/.pi/agent"
+  # ln -sf "$DOTFILES_DIR/dot-pi/agent/models.json"  "$HOME/.pi/agent/models.json"
+  # ln -sf "$DOTFILES_DIR/dot-pi/agent/settings.json" "$HOME/.pi/agent/settings.json"
+  # log "Pi agent config symlinked."
 
   # ── Pull Ollama models defined in Pi agent models.json
   if command -v ollama &>/dev/null && command -v jq &>/dev/null; then
@@ -547,7 +577,7 @@ module_dotfiles() {
   # ── Ensure ~/.zshrc sources the stowed config
   if [ ! -f "$HOME/.zshrc" ] || ! grep -q "source ~/.config/zshrc/.zshrc" "$HOME/.zshrc" 2>/dev/null; then
     log "Setting up ~/.zshrc wrapper..."
-    printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "$HOME/.zshrc"
+    printf '%s\n' 'source ~/.config/zshrc/.zshrc' >"$HOME/.zshrc"
   fi
 
   # ── Install Neovim plugins
@@ -585,7 +615,7 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-MODULE_ORDER=(system docker podman-desktop neovim shell kubernetes languages dev-tools claude opencode pi dotfiles)
+MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools claude opencode pi dotfiles)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi
@@ -602,6 +632,6 @@ echo "Next steps:"
 echo "  1. launch wezterm and enjoy your new terminal setup (select JetBrains Mono Nerd Font if not auto-selected)."
 echo "  2. Start tmux and press Ctrl-A + I to install plugins (if not auto-installed)."
 echo "  3. Open nvim and run :Lazy sync if plugins weren't installed headlessly."
-echo "  6. Load opencode once to download plugins: `opencode`
-echo "  7. Load pi once to download `plugins`
+echo "  6. Load opencode once to download plugins: opencode"
+echo "  7. Load pi once to download plugins"
 echo "  8. clone  <https://github.com/LDJ-Share/pi-agent-orchestrator-extension> and follow README to set up Pi Agent Orchestrator extension for VS Code"
