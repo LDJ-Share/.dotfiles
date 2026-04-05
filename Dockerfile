@@ -71,7 +71,9 @@ RUN apt-get update -qq && apt-get install -y -qq \
 # ─────────────────────────────────────────────────────────────────────────────
 # LAYER 2 — Non-root user
 # ─────────────────────────────────────────────────────────────────────────────
-RUN groupadd --gid "${USER_GID}" "${USERNAME}" \
+RUN userdel -r ubuntu 2>/dev/null || true \
+    && groupdel ubuntu 2>/dev/null || true \
+    && groupadd --gid "${USER_GID}" "${USERNAME}" \
     && useradd --uid "${USER_UID}" --gid "${USER_GID}" -m -s /bin/zsh "${USERNAME}" \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
