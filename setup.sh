@@ -231,12 +231,22 @@ module_podman() {
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: nvidia
 # Installs NVIDIA drivers, CUDA toolkit, and Container Toolkit so that Ollama
-# (and Docker/Podman containers) can use the host GPU at runtime.
+# can use the host GPU when running INSIDE the VM.
+#
+# ┌─ IMPORTANT — deployment architecture note ─────────────────────────────┐
+# │ This module is NOT included in the default MODULE_ORDER.               │
+# │                                                                         │
+# │ In the standard deployment, Ollama runs on the Windows HOST (with GPU  │
+# │ access) and the VM communicates with it over the OllamaNet switch at   │
+# │ 10.10.10.10:11434. GPU drivers inside the VM are therefore not needed. │
+# │                                                                         │
+# │ Only include this module if you are running Ollama inside the VM       │
+# │ directly (e.g., on a Linux bare-metal host with GPU passthrough):      │
+# │   bash setup.sh --only nvidia                                          │
+# └─────────────────────────────────────────────────────────────────────────┘
 #
 # Safe to run on a build machine that has NO NVIDIA GPU: the packages install
 # normally; the kernel modules simply won't load until a GPU is present.
-# When the VM is exported and reimported on a machine with an RTX GPU, the
-# drivers are already in place and Ollama will find the GPU on first launch.
 # ═════════════════════════════════════════════════════════════════════════════
 module_nvidia() {
   log "━━ Running module: nvidia ━━"
@@ -693,6 +703,10 @@ module_dotfiles() {
   # log "Pi agent config symlinked."
 
   # ── Pull Ollama models defined in Pi agent models.json
+  # NOTE: In the standard Hyper-V deployment, Ollama runs on the Windows HOST,
+  # not inside this VM. Models must be pulled on the host machine before the VM
+  # is exported for air-gapped deployment. See README.md § "Pre-Export Checklist".
+  # This step only runs if ollama is installed locally (non-standard deployment).
   if command -v ollama &>/dev/null && command -v jq &>/dev/null; then
     log "Pulling Ollama models from Pi agent config..."
     jq -r '.providers.ollama.models[].id' "$HOME/.pi/agent/models.json" | while IFS= read -r model; do
@@ -700,7 +714,7 @@ module_dotfiles() {
       ollama pull "$model" || warn "Failed to pull model: $model (skipping)"
     done
   else
-    warn "ollama or jq not found — skipping model pull. Run manually after install."
+    warn "Ollama not installed in VM (expected for Hyper-V deployment — models are pulled on the Windows host)."
   fi
 
   # ── Ensure ~/.zshrc sources the stowed config
@@ -744,7 +758,14 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-MODULE_ORDER=(system docker podman nvidia neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
+# nvidia is excluded from the default run order — Ollama runs on the Windows
+# host in the standard Hyper-V deployment, so GPU drivers in the VM are not
+# needed. See the nvidia module header for when to include it.
+#
+# Firewall lockdown and account hardening are handled separately by:
+#   sudo bash firewall-enable.sh   (run as root, final step before VM export)
+#   sudo bash firewall-disable.sh  (run as root, opens a maintenance window)
+MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi
@@ -758,9 +779,15 @@ echo ""
 echo -e "${GREEN}Setup complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. launch wezterm and enjoy your new terminal setup (select JetBrains Mono Nerd Font if not auto-selected)."
-echo "  2. Start tmux and press Ctrl-A + I to install plugins (if not auto-installed)."
+echo "  1. Launch wezterm (select JetBrains Mono Nerd Font if not auto-selected)."
+echo "  2. Start tmux and press Ctrl-A + I to install plugins."
 echo "  3. Open nvim and run :Lazy sync if plugins weren't installed headlessly."
-echo "  6. Load opencode once to download plugins: opencode"
-echo "  7. Load pi once to download plugins"
-echo "  8. clone  <https://github.com/LDJ-Share/pi-agent-orchestrator-extension> and follow README to set up Pi Agent Orchestrator extension for VS Code"
+echo "  4. Load opencode once to download plugins: opencode"
+echo "  5. Load pi once to download plugins."
+echo "  6. Clone https://github.com/LDJ-Share/pi-agent-orchestrator-extension and follow README."
+echo ""
+echo "  Before exporting the VM for air-gapped deployment:"
+echo "  7. Verify Pi can reach Ollama: curl http://10.10.10.10:11434"
+echo "  8. Remove the Default Switch network adapter in Hyper-V Manager."
+echo "  9. Run the firewall and account hardening script (as root):"
+echo "       sudo bash ~/.dotfiles/firewall-enable.sh"

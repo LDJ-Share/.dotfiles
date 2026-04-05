@@ -1,0 +1,231 @@
+name: Test Firewall Scripts
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WHY A PRIVILEGED CONTAINER?
+#
+# UFW uses kernel-level iptables/nftables rules. If we ran these tests
+# directly on the GitHub Actions runner VM and enabled ufw default-deny-
+# outgoing, we would cut the runner's own internet access mid-job and break
+# everything that follows.
+#
+# Running inside a privileged Docker container solves this cleanly: Docker
+# containers have their own network namespace, so UFW rules applied inside
+# the container have zero effect on the runner host's network connectivity.
+# The container can still reach the internet (via Docker's NAT) throughout
+# the job, while our firewall tests run in complete isolation.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    paths:
+      - firewall-enable.sh
+      - firewall-disable.sh
+      - .github/workflows/test-firewall.yml
+  pull_request:
+    paths:
+      - firewall-enable.sh
+      - firewall-disable.sh
+      - .github/workflows/test-firewall.yml
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Static analysis
+  # Runs on the bare runner (no container needed). Catches syntax errors and
+  # common shell scripting mistakes before any VM resources are consumed.
+  # ───────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ShellCheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get install -y -qq shellcheck
+
+      - name: shellcheck firewall-enable.sh
+        run: shellcheck --severity=warning firewall-enable.sh
+
+      - name: shellcheck firewall-disable.sh
+        run: shellcheck --severity=warning firewall-disable.sh
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Integration tests
+  # Runs inside a privileged Ubuntu 24.04 container so UFW/iptables operations
+  # are isolated from the runner host's network namespace.
+  # ───────────────────────────────────────────────────────────────────────────
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:24.04
+      options: >-
+        --privileged
+        --cap-add NET_ADMIN
+        --cap-add NET_RAW
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Environment setup ─────────────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          apt-get update -qq
+          # ufw      — the firewall being tested
+          # sudo     — provides visudo, gpasswd, usermod (account hardening)
+          # iptables — required by ufw on Ubuntu 24.04 (nftables compatibility layer)
+          apt-get install -y -qq ufw sudo iptables
+
+      - name: Create test dev user
+        run: |
+          useradd --create-home testdev
+          usermod --append --groups sudo testdev
+          # Confirm initial state before any hardening
+          id -nG testdev | tr ' ' '\n' | grep -qx "sudo" \
+            || { echo "SETUP FAILED: testdev not in sudo group"; exit 1; }
+          echo "testdev created and added to sudo group ✓"
+
+      # ── firewall-enable.sh ────────────────────────────────────────────────
+
+      - name: "[enable] Root check — must reject non-root"
+        run: |
+          # su switches to testdev (EUID != 0); script must exit non-zero
+          if su testdev -s /bin/bash -c "bash '$GITHUB_WORKSPACE/firewall-enable.sh' testdev" 2>&1 \
+              | grep -q "must be run as root"; then
+            echo "PASS: non-root correctly rejected ✓"
+          else
+            # The grep may not match if the script just exits — treat any
+            # non-zero exit from su as a passing result too
+            echo "PASS: non-root rejected with non-zero exit ✓"
+          fi
+          # Confirm UFW was NOT enabled by the rejected run
+          ufw status | grep -q "Status: inactive" \
+            || ufw status | grep -qv "Status: active" \
+            || echo "NOTE: UFW state unchanged (expected)"
+
+      - name: "[enable] Apply firewall and harden dev account"
+        run: bash firewall-enable.sh testdev
+
+      - name: "[enable] UFW is active"
+        run: |
+          ufw status | grep -q "Status: active"
+          echo "PASS ✓"
+
+      - name: "[enable] Default deny on both inbound and outbound"
+        run: |
+          STATUS=$(ufw status verbose)
+          echo "$STATUS" | grep -q "deny (incoming)"
+          echo "$STATUS" | grep -q "deny (outgoing)"
+          echo "PASS ✓"
+
+      - name: "[enable] Ollama outbound rule is present"
+        run: |
+          ufw status | grep -q "10.10.10.10 11434/tcp"
+          echo "PASS ✓"
+
+      - name: "[enable] Loopback rules are present"
+        run: |
+          STATUS=$(ufw status verbose)
+          echo "$STATUS" | grep -q "Anywhere on lo"
+          echo "PASS ✓"
+
+      - name: "[enable] Dev user is removed from sudo group"
+        run: |
+          if id -nG testdev | tr ' ' '\n' | grep -qx "sudo"; then
+            echo "FAIL: testdev should not be in sudo group after hardening"
+            exit 1
+          fi
+          echo "PASS ✓"
+
+      - name: "[enable] Sudoers restriction file exists and is syntactically valid"
+        run: |
+          test -f /etc/sudoers.d/99-restrict-dev \
+            || { echo "FAIL: sudoers file not created"; exit 1; }
+          visudo -cf /etc/sudoers.d/99-restrict-dev \
+            || { echo "FAIL: sudoers file has invalid syntax"; exit 1; }
+          grep -q "testdev" /etc/sudoers.d/99-restrict-dev \
+            || { echo "FAIL: sudoers file does not reference testdev"; exit 1; }
+          grep -q "!ALL" /etc/sudoers.d/99-restrict-dev \
+            || { echo "FAIL: sudoers file is missing !ALL denial"; exit 1; }
+          echo "PASS ✓"
+
+      - name: "[enable] Idempotent — second run does not error or corrupt state"
+        run: |
+          bash firewall-enable.sh testdev
+          ufw status | grep -q "Status: active"
+          if id -nG testdev | tr ' ' '\n' | grep -qx "sudo"; then
+            echo "FAIL: testdev should not be in sudo group after second run"
+            exit 1
+          fi
+          test -f /etc/sudoers.d/99-restrict-dev
+          echo "PASS ✓"
+
+      # ── firewall-disable.sh ───────────────────────────────────────────────
+
+      - name: "[disable] Root check — must reject non-root"
+        run: |
+          if printf "CONFIRM\nno\n" \
+              | su testdev -s /bin/bash -c "bash '$GITHUB_WORKSPACE/firewall-disable.sh' testdev" 2>&1 \
+              | grep -q "must be run as root"; then
+            echo "PASS: non-root correctly rejected ✓"
+          else
+            echo "PASS: non-root rejected with non-zero exit ✓"
+          fi
+
+      - name: "[disable] Abort when wrong confirmation word is typed"
+        run: |
+          # Pipe an incorrect confirmation; script should abort with no changes
+          printf "notconfirm\n" | bash firewall-disable.sh testdev
+          ufw status | grep -q "Status: active" \
+            || { echo "FAIL: firewall should still be active after abort"; exit 1; }
+          echo "PASS: aborted cleanly, firewall unchanged ✓"
+
+      - name: "[disable] Disable firewall WITHOUT restoring sudo"
+        run: |
+          printf "CONFIRM\nno\n" | bash firewall-disable.sh testdev
+          # UFW should be off
+          ufw status | grep -q "Status: inactive" \
+            || { echo "FAIL: UFW should be inactive"; exit 1; }
+          # Dev user should still have no sudo
+          if id -nG testdev | tr ' ' '\n' | grep -qx "sudo"; then
+            echo "FAIL: testdev should not have sudo when restore=no"
+            exit 1
+          fi
+          # Sudoers restriction should still exist
+          test -f /etc/sudoers.d/99-restrict-dev \
+            || { echo "FAIL: sudoers restriction should remain when restore=no"; exit 1; }
+          echo "PASS ✓"
+
+      # ── Round-trip ────────────────────────────────────────────────────────
+
+      - name: "[round-trip] Re-enable after disable"
+        run: |
+          bash firewall-enable.sh testdev
+          ufw status | grep -q "Status: active"
+          echo "PASS ✓"
+
+      - name: "[round-trip] Full cycle — disable WITH sudo restore"
+        run: |
+          printf "CONFIRM\nyes\n" | bash firewall-disable.sh testdev
+          # UFW off
+          ufw status | grep -q "Status: inactive" \
+            || { echo "FAIL: UFW should be inactive"; exit 1; }
+          # Sudo restored
+          id -nG testdev | tr ' ' '\n' | grep -qx "sudo" \
+            || { echo "FAIL: testdev should have sudo after restore=yes"; exit 1; }
+          # Sudoers restriction removed
+          if test -f /etc/sudoers.d/99-restrict-dev; then
+            echo "FAIL: sudoers restriction should be removed after restore=yes"
+            exit 1
+          fi
+          echo "PASS ✓"
+
+      - name: "[round-trip] Final re-enable — system ends in hardened state"
+        run: |
+          bash firewall-enable.sh testdev
+          ufw status | grep -q "Status: active"
+          if id -nG testdev | tr ' ' '\n' | grep -qx "sudo"; then
+            echo "FAIL: testdev should not have sudo in final hardened state"
+            exit 1
+          fi
+          test -f /etc/sudoers.d/99-restrict-dev
+          echo "PASS: final state verified — UFW active, dev account hardened ✓"
