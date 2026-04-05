@@ -242,7 +242,7 @@ RUN nvim --headless \
 #    ensure_installed does not auto-trigger in headless mode)
 RUN nvim --headless \
     -c "MasonInstall typescript-language-server html-lsp css-lsp tailwindcss-language-server svelte-language-server lua-language-server graphql-language-service-cli emmet-ls prisma-language-server pyright eslint-lsp gopls bash-language-server json-lsp omnisharp powershell-editor-services" \
-    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 600000)" \
+    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 900000)" \
     2>/dev/null || true
 
 # ── Neovim: install Mason tools (mason-tool-installer, run_on_start=false by default)
