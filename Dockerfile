@@ -83,7 +83,7 @@ WORKDIR /home/${USERNAME}
 ENV HOME=/home/${USERNAME}
 ENV USER=${USERNAME}
 ENV LANG=en_US.UTF-8
-ENV PATH="/home/dev/.local/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/home/dev/.cargo/bin:/home/dev/.dotnet:/home/dev/.dotnet/tools:/home/dev/.bun/bin"
+ENV PATH="/home/dev/.opencode/bin:/home/dev/.local/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/home/dev/.cargo/bin:/home/dev/.dotnet:/home/dev/.dotnet/tools:/home/dev/.bun/bin"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LAYER 3 — Neovim (tarball, >= 0.11 required for fzf-lua)
@@ -238,16 +238,17 @@ RUN nvim --headless \
     -c "lua require('lazy').sync({wait=true, show=false})" \
     -c "qa" 2>/dev/null || true
 
-# ── Neovim: install Mason LSP servers (mason-lspconfig ensure_installed)
-# Triggered by loading the full config; defer exit to allow Mason to complete.
+# ── Neovim: install Mason LSP servers (explicit install; mason-lspconfig
+#    ensure_installed does not auto-trigger in headless mode)
 RUN nvim --headless \
-    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 180000)" \
+    -c "MasonInstall typescript-language-server html-lsp css-lsp tailwindcss-language-server svelte-language-server lua-language-server graphql-language-service-cli emmet-ls prisma-language-server pyright eslint-lsp gopls bash-language-server json-lsp omnisharp powershell-editor-services" \
+    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 600000)" \
     2>/dev/null || true
 
 # ── Neovim: install Mason tools (mason-tool-installer, run_on_start=false by default)
 RUN nvim --headless \
     -c "MasonToolsInstall" \
-    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 180000)" \
+    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 600000)" \
     2>/dev/null || true
 
 # ── tmux: clone TPM and install all plugins from tmux.conf headlessly

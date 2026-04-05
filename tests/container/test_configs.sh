@@ -39,12 +39,12 @@ echo "=== Configs: default model set ==="
 check_contains "Pi default model set" \
   "${HOME}/.pi/agent/settings.json" "defaultModel"
 check_contains "OpenCode model set" \
-  "${HOME}/.config/opencode/config.json" "\"model\""
+  "${HOME}/.opencode/config.json" "\"model\""
 
 echo ""
 echo "=== Configs: shell ==="
 # zsh should be the default shell for the container user
 check "default shell is zsh" \
-  bash -c 'grep -q "$(which zsh)" /etc/passwd'
+  bash -c 'getent passwd dev | grep -q "zsh"'
 
 summary
