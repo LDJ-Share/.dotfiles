@@ -4,7 +4,6 @@
   "defaultThinkingLevel": "medium",
   "lastChangelogVersion": "0.65.0",
   "packages": [
-    "npm:@ollama/pi-web-search",
     "npm:@cmcconomy/pi-qwen-tool-parser@1.0.0"
   ],
   "theme": "midnight-ocean"
