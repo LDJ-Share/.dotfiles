@@ -4,8 +4,8 @@ set -uo pipefail
 # shellcheck source=helpers.sh
 source "$(dirname "$0")/helpers.sh"
 
-OPENCODE_CONFIG="${HOME}/.config/opencode/config.json"
-OMO_CONFIG="${HOME}/.config/opencode/oh-my-opencode.json"
+OPENCODE_CONFIG="${HOME}/.opencode/config.json"
+OMO_CONFIG="${HOME}/.opencode/oh-my-opencode.json"
 
 echo "=== OpenCode: binary ==="
 check_cmd opencode

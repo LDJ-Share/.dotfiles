@@ -50,7 +50,6 @@ check_cmd kubens
 check_cmd devcontainer
 check_cmd just
 check_cmd oh-my-posh
-check_cmd wezterm
 
 echo ""
 echo "=== Binaries: AI tools ==="
