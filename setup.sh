@@ -258,8 +258,11 @@ module_nvidia() {
   # ── NVIDIA drivers (proprietary; supports all RTX generations)
   # cuda-drivers meta-package always pulls the version paired with the installed
   # CUDA release, keeping driver and toolkit in sync.
+  # Resolve any held/broken packages first — the CUDA repo's driver version can
+  # conflict with Ubuntu's distro-packaged nvidia drivers if any were pre-installed.
   if ! dpkg -l cuda-drivers &>/dev/null 2>&1; then
     log "Installing NVIDIA CUDA drivers..."
+    sudo apt-get -f install -y -q 2>&1 | grep -v "^$" || true
     apt_install cuda-drivers
   else
     warn "NVIDIA CUDA drivers already installed, skipping."
