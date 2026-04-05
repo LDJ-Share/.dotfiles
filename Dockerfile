@@ -83,14 +83,15 @@ WORKDIR /home/${USERNAME}
 ENV HOME=/home/${USERNAME}
 ENV USER=${USERNAME}
 ENV LANG=en_US.UTF-8
+ENV PATH="/home/dev/.local/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/home/dev/.cargo/bin:/home/dev/.dotnet:/home/dev/.dotnet/tools:/home/dev/.bun/bin"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LAYER 3 — Neovim (AppImage, >= 0.11 required for fzf-lua)
+# LAYER 3 — Neovim (tarball, >= 0.11 required for fzf-lua)
 # ─────────────────────────────────────────────────────────────────────────────
-RUN curl -Lo /tmp/nvim.appimage \
-    "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage" \
-    && chmod +x /tmp/nvim.appimage \
-    && sudo mv /tmp/nvim.appimage /usr/local/bin/nvim
+RUN curl -Lo /tmp/nvim.tar.gz \
+    "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz" \
+    && sudo tar -C /usr/local -xzf /tmp/nvim.tar.gz --strip-components=1 \
+    && rm /tmp/nvim.tar.gz
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LAYER 4 — Shell tools
@@ -231,9 +232,6 @@ RUN printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "${HOME}/.zshrc"
 # All applications are fully initialized here so nothing is lazy-loaded at
 # runtime on the corporate machine (no internet required after docker pull).
 # ─────────────────────────────────────────────────────────────────────────────
-
-# ── PATH for all pre-init commands
-ENV PATH="${HOME}/.local/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:${HOME}/.cargo/bin:${HOME}/.dotnet:${HOME}/.dotnet/tools:${HOME}/.bun/bin:${PATH}"
 
 # ── Neovim: bootstrap lazy.nvim and sync all plugins
 RUN nvim --headless \
