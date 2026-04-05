@@ -1,0 +1,134 @@
+name: Build and Test Container Image
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Builds the dev environment container image, runs the full test suite against
+# it, and — on a passing master push — publishes to GHCR.
+#
+# Corporate machines only need ghcr.io whitelisted; all apt/npm/cargo installs
+# happen here on GitHub's network, not on the corporate machine.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - setup.sh
+      - dot-pi/**
+      - dot-opencode/**
+      - nvim/**
+      - tmux/**
+      - zshrc/**
+      - vsc-extensions.txt
+      - tests/container/**
+      - .github/workflows/build-container.yml
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - setup.sh
+      - dot-pi/**
+      - dot-opencode/**
+      - nvim/**
+      - tmux/**
+      - zshrc/**
+      - vsc-extensions.txt
+      - tests/container/**
+      - .github/workflows/build-container.yml
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Lint test scripts with ShellCheck
+  # ───────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ShellCheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get install -y -qq shellcheck
+
+      - name: shellcheck test scripts
+        run: |
+          shellcheck --severity=warning tests/container/helpers.sh
+          shellcheck --severity=warning tests/container/run_all.sh
+          shellcheck --severity=warning tests/container/test_binaries.sh
+          shellcheck --severity=warning tests/container/test_neovim.sh
+          shellcheck --severity=warning tests/container/test_opencode.sh
+          shellcheck --severity=warning tests/container/test_pi.sh
+          shellcheck --severity=warning tests/container/test_tmux.sh
+          shellcheck --severity=warning tests/container/test_configs.sh
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Build image and run test suite
+  # ───────────────────────────────────────────────────────────────────────────
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: dev-env:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Copy tests into container and run test suite
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/tests/container:/tests/container:ro" \
+            dev-env:ci \
+            bash /tests/container/run_all.sh
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 3 — Publish to GHCR (master only, after tests pass)
+  # ───────────────────────────────────────────────────────────────────────────
+  publish:
+    name: Publish to GHCR
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/.dotfiles/dev-env:latest
+            ghcr.io/${{ github.repository_owner }}/.dotfiles/dev-env:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
