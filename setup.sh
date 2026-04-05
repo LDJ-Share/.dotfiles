@@ -229,6 +229,85 @@ module_podman() {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+# MODULE: nvidia
+# Installs NVIDIA drivers, CUDA toolkit, and Container Toolkit so that Ollama
+# (and Docker/Podman containers) can use the host GPU at runtime.
+#
+# Safe to run on a build machine that has NO NVIDIA GPU: the packages install
+# normally; the kernel modules simply won't load until a GPU is present.
+# When the VM is exported and reimported on a machine with an RTX GPU, the
+# drivers are already in place and Ollama will find the GPU on first launch.
+# ═════════════════════════════════════════════════════════════════════════════
+module_nvidia() {
+  log "━━ Running module: nvidia ━━"
+
+  # ── NVIDIA CUDA apt repository keyring
+  if ! dpkg -l cuda-keyring &>/dev/null 2>&1; then
+    log "Adding NVIDIA CUDA apt repository..."
+    local CUDA_KEYRING_DEB="cuda-keyring_1.1-1_all.deb"
+    curl -fsSL \
+      "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/${CUDA_KEYRING_DEB}" \
+      -o "/tmp/${CUDA_KEYRING_DEB}"
+    sudo dpkg -i "/tmp/${CUDA_KEYRING_DEB}"
+    rm "/tmp/${CUDA_KEYRING_DEB}"
+    apt_update
+  else
+    warn "NVIDIA CUDA keyring already present, skipping."
+  fi
+
+  # ── NVIDIA drivers (proprietary; supports all RTX generations)
+  # cuda-drivers meta-package always pulls the version paired with the installed
+  # CUDA release, keeping driver and toolkit in sync.
+  if ! dpkg -l cuda-drivers &>/dev/null 2>&1; then
+    log "Installing NVIDIA CUDA drivers..."
+    apt_install cuda-drivers
+  else
+    warn "NVIDIA CUDA drivers already installed, skipping."
+  fi
+
+  # ── CUDA toolkit (provides libcuda.so.1 + dev tools; required by Ollama GPU)
+  if ! command -v nvcc &>/dev/null; then
+    log "Installing CUDA toolkit..."
+    apt_install cuda-toolkit
+  else
+    warn "CUDA toolkit already installed ($(nvcc --version | grep release | awk '{print $6}')), skipping."
+  fi
+
+  # ── NVIDIA Container Toolkit (GPU access inside Docker / Podman containers)
+  if ! dpkg -l nvidia-container-toolkit &>/dev/null 2>&1; then
+    log "Installing NVIDIA Container Toolkit..."
+    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey |
+      sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+    curl -fsSL \
+      "https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list" |
+      sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' |
+      sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list >/dev/null
+    apt_update
+    apt_install nvidia-container-toolkit
+
+    # Configure runtimes — only if the container engine is already installed.
+    # If docker/podman are installed later (shouldn't happen given module order)
+    # re-run: sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker
+    if command -v docker &>/dev/null; then
+      log "Configuring Docker to use NVIDIA runtime..."
+      sudo nvidia-ctk runtime configure --runtime=docker
+      sudo systemctl restart docker || warn "Docker restart failed — restart manually."
+    fi
+    if command -v podman &>/dev/null; then
+      log "Generating NVIDIA CDI spec for Podman..."
+      sudo mkdir -p /etc/cdi
+      sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml || \
+        warn "CDI generation failed — GPU may not be present yet; re-run after attaching GPU."
+    fi
+  else
+    warn "NVIDIA Container Toolkit already installed, skipping."
+  fi
+
+  log "NVIDIA module complete. GPU drivers are installed but will only activate"
+  log "once the VM is running on hardware with an NVIDIA RTX GPU attached."
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 # MODULE: neovim
 # ═════════════════════════════════════════════════════════════════════════════
 module_neovim() {
@@ -662,7 +741,7 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
+MODULE_ORDER=(system docker podman nvidia neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi
