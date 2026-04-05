@@ -13,12 +13,13 @@ dependencies once deployed.
 2. [Architecture Overview](#architecture-overview)
 3. [Security Design](#security-design)
 4. [Windows Host Setup](#windows-host-setup)
-5. [VM Setup](#vm-setup)
-6. [Firewall and Account Hardening](#firewall-and-account-hardening)
-7. [Pre-Export Checklist](#pre-export-checklist)
-8. [Deploying to an Air-Gapped Machine](#deploying-to-an-air-gapped-machine)
-9. [Maintenance](#maintenance)
-10. [VM Operations Reference](#vm-operations-reference)
+5. [Corporate Environment Setup](#corporate-environment-setup)
+6. [VM Setup](#vm-setup)
+7. [Firewall and Account Hardening](#firewall-and-account-hardening)
+8. [Pre-Export Checklist](#pre-export-checklist)
+9. [Deploying to an Air-Gapped Machine](#deploying-to-an-air-gapped-machine)
+10. [Maintenance](#maintenance)
+11. [VM Operations Reference](#vm-operations-reference)
 
 ---
 
@@ -78,9 +79,15 @@ service, which is also local.
 │        │ Windows Firewall:                        │  Ubuntu 24.04 VM  │ │
 │        │ port 11434 on                            │  10.10.10.20      │ │
 │        │ 10.10.10.10 only                         │                   │ │
-│        │                                          │  Pi Coding Agent  │ │
-│        │                                          │                   │ │
-│        └──────────────────────────────────────────│  ufw: DENY ALL    │ │
+│        │                                          │  ┌─────────────┐  │ │
+│        │                                          │  │   Docker    │  │ │
+│        │                                          │  │  Container  │  │ │
+│        │                                          │  │  dev-env    │  │ │
+│        │                                          │  │             │  │ │
+│        │                                          │  │  Pi / nvim  │  │ │
+│        │                                          │  │  opencode   │  │ │
+│        └──────────────────────────────────────────│  └─────────────┘  │ │
+│                                                   │  ufw: DENY ALL    │ │
 │                                                   │  except →         │ │
 │                                                   │  10.10.10.10:11434│ │
 │                                                   └───────────────────┘ │
@@ -96,9 +103,10 @@ service, which is also local.
 |---|---|---|
 | **Ollama** | Windows host | Serves AI model inference via HTTP. Bound exclusively to `10.10.10.10:11434`. Uses the NVIDIA GPU for fast responses. |
 | **OllamaNet** | Hyper-V Internal Switch | A virtual network that exists only inside the host machine. Provides a communication channel between the VM and Ollama. Has no connection to physical network adapters. |
-| **Ubuntu VM** | Hyper-V guest | The developer workspace. Runs Pi, Neovim, Docker, and all development tooling. Has no internet access once deployed. |
-| **Pi** | Ubuntu VM | AI coding agent. Sends prompts to Ollama over the OllamaNet switch and returns responses to the developer. |
-| **ufw** | Ubuntu VM | Linux firewall. Enforces the VM's network isolation policy at the OS level. |
+| **Ubuntu VM** | Hyper-V guest | The developer workspace OS layer. Runs Docker and enforces network policy via UFW. Has no internet access once deployed. |
+| **dev-env container** | Docker inside the VM | Pre-built image (`ghcr.io/ldj-share/.dotfiles/dev-env:latest`) containing all dev tools fully initialized. Pulled once from GHCR; runs without any internet access thereafter. |
+| **Pi / OpenCode / Neovim** | dev-env container | AI coding agents and editor. Send prompts to Ollama over the OllamaNet switch and return responses to the developer. |
+| **ufw** | Ubuntu VM | Linux firewall. Enforces the VM's network isolation policy at the OS level. The container inherits the VM's network namespace, so UFW rules apply to all container traffic. |
 
 ---
 
@@ -258,6 +266,73 @@ Invoke-WebRequest -Uri http://10.10.10.10:11434 -UseBasicParsing
 
 ---
 
+## Corporate Environment Setup
+
+### Why a Container?
+
+Installing development tools from source requires contact with many different
+package registries (apt, npm, cargo, GitHub releases, etc.). On a corporate
+network, each of those sources needs its own firewall approval — a slow,
+error-prone process.
+
+The solution: **build the entire environment once in GitHub Actions** and
+publish it as a single pre-built container image. The corporate machine only
+ever talks to one address.
+
+| Approach | URLs to whitelist |
+|---|---|
+| Running `setup.sh` directly | apt repos, npm, crates.io, github.com, golang.org, … (20+) |
+| **Container pull (this approach)** | **`ghcr.io` only** |
+
+### For IT: What Gets Whitelisted
+
+```
+ghcr.io          — GitHub Container Registry (HTTPS/443)
+```
+
+Docker Engine must already be installed on the VM. If it isn't, install it
+once (requires `download.docker.com`) before the environment is moved to the
+corporate network.
+
+### For Developers: Using the Container
+
+After the VM is set up, all development work happens inside the container:
+
+```bash
+# Pull the latest image (only needs ghcr.io)
+docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
+
+# Start a session with your workspace mounted
+docker run -it --rm \
+  -v ~/workspace:/workspace \
+  ghcr.io/ldj-share/.dotfiles/dev-env:latest
+
+# Or pin to a specific version for reproducibility
+docker run -it --rm \
+  -v ~/workspace:/workspace \
+  ghcr.io/ldj-share/.dotfiles/dev-env:<git-sha>
+```
+
+Everything inside the container is pre-initialized at build time:
+- Neovim plugins (lazy.nvim) and all Mason LSP servers are already installed
+- tmux plugins (TPM) are already installed
+- Pi and OpenCode are ready to use without any first-run downloads
+- All configs already point to `10.10.10.10:11434`
+
+### How Images Are Built
+
+Every push to `master` that touches a dotfile or the `Dockerfile` triggers
+`.github/workflows/build-container.yml`:
+
+1. **Lint** — ShellCheck runs against all test scripts
+2. **Build and Test** — Image is built, then the full test suite in
+   `tests/container/` runs against it to verify every tool is installed and
+   pre-initialized correctly
+3. **Publish** — If tests pass, the image is pushed to GHCR as both
+   `:latest` and `:<git-sha>`
+
+---
+
 ## VM Setup
 
 ### Initial Build (with Internet Access)
@@ -291,6 +366,10 @@ git clone <repo-url> ~/.dotfiles
 cd ~/.dotfiles
 bash setup.sh
 ```
+
+`setup.sh` installs Docker Engine and pulls the pre-built dev container image
+from GHCR. All development tooling (Neovim, Pi, OpenCode, tmux, etc.) lives
+inside the container — `setup.sh` no longer installs them directly on the VM.
 
 The setup script does not apply the firewall or account hardening — those
 are handled separately by `firewall-enable.sh` as the final step before
