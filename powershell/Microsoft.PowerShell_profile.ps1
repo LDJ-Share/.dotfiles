@@ -34,6 +34,7 @@ Set-Alias vi    nvim
 Set-Alias v     nvim
 Set-Alias cl    Clear-Host
 Set-Alias j     just    -ErrorAction SilentlyContinue
+Set-Alias pbpaste Get-Clipboard
 
 if (Get-Command xh -ErrorAction SilentlyContinue)  { Set-Alias http xh }
 if (Get-Command bat -ErrorAction SilentlyContinue) { Set-Alias cat bat }

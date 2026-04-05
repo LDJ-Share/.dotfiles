@@ -38,17 +38,27 @@ It is quick and easy to use Hyper-V Quick Create to get an Ubuntu virtual machin
 
 These steps fix the problem:
 
-Turn off the VM.
-Use Hyper-V Manager to select the Settings of the Virtual Machine, select the Hard Drive option and Edit under Virtual hard disk. (If this option is disabled, you need to go back and delete any checkpoints for the VM in the Hyper-V Manager; just select the VM and right click the checkpoint in the checkpoint field below.)
-Use the GUI to expand the drive to something reasonable, like 128 GB. Ubuntu now has space to expand into.
-Start the VM again. Install Guest Utils:
-sudo apt install cloud-guest-utils
-If not using English, override locale settings to avoid issues with non-English locales:
+1. Turn off the VM.
+1. Use Hyper-V Manager to select the Settings of the Virtual Machine, select the Hard Drive option and Edit under Virtual hard disk. (If this option is disabled, you need to go back and delete any checkpoints for the VM in the Hyper-V Manager; just select the VM and right click the checkpoint in the checkpoint field below.)
+1. Use the GUI to expand the drive to something reasonable, like 128 GB. Ubuntu now has space to expand into.
+1. Start the VM again. Install Guest Utils:
+1. sudo apt install cloud-guest-utils
+1. If not using English, override locale settings to avoid issues with non-English locales:
+
+```bash
 LC_ALL=C
-Expand the sda1 partition into the free space:
-sudo growpart /dev/sda 1
-(Note the space between sda and 1!)
-Finally run resize2fs:
-sudo resize2fs /dev/sda1
-(No space between sda and 1 here!)
+```
+
+1. Expand the sda1 partition into the free space:
+1. sudo growpart /dev/sda 1
+    > (Note the space between sda and 1!)
+
+1. Finally run resize2fs:
+
+    ```bash
+    sudo resize2fs /dev/sda1
+    ```
+
+> (No space between sda and 1 here!)
+
 Now your Ubuntu drive is 128 GB.
