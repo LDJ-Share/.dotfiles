@@ -90,11 +90,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Debug - mason/bin contents
-        run: |
-          docker run --rm dev-env:ci \
-            bash -c 'echo "=== mason/bin ===" && ls -1 /home/dev/.local/share/nvim/mason/bin/ 2>/dev/null | sort || echo "(empty or missing)"'
-
       - name: Copy tests into container and run test suite
         run: |
           docker run --rm \
