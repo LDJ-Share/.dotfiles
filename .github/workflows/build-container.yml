@@ -90,11 +90,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Debug - opencode config contents
-        run: |
-          docker run --rm dev-env:ci \
-            bash -c 'echo "=== ~/.config/opencode/opencode.json ===" && cat /home/dev/.config/opencode/opencode.json 2>/dev/null || echo "(not found)"'
-
       - name: Copy tests into container and run test suite
         run: |
           docker run --rm \

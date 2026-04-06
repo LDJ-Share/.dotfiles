@@ -18,9 +18,9 @@ check_file "${OMO_CONFIG}"
 
 echo ""
 echo "=== OpenCode: oh-my-opencode installed ==="
-# oh-my-opencode install writes its plugin config to the XDG dir
-check_contains "config references oh-my-opencode" \
-  "${HOME}/.config/opencode/opencode.json" "oh-my-opencode"
+# oh-my-opencode installs as "oh-my-openagent" plugin in the XDG config
+check_contains "config references oh-my-openagent plugin" \
+  "${HOME}/.config/opencode/opencode.json" "oh-my-openagent"
 
 echo ""
 echo "=== OpenCode: oh-my-opencode agents configured ==="
