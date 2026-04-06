@@ -11,12 +11,7 @@
 
 ## In Progress
 
-- [ ] **PR #2 CI** — `LDJ-Share/.dotfiles#2` (`feature/containerize-dev-env`)
-  - Verify lint job passes (ShellCheck on test scripts)
-  - Verify build-and-test job passes (all 6 test scripts green against built image)
-  - **Watch for:** Mason pre-init timeout (180s defer) — if Mason binaries missing,
-    increase timeout or switch to explicit `MasonInstall --sync` in Dockerfile
-  - Publish job should be skipped (PR branch, not master)
+- [x] **PR #2 CI** — all 6 test scripts green, lint passes, ready to merge
 
 ## Containerization Remaining
 
