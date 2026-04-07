@@ -102,6 +102,11 @@ ufw default deny outgoing
 ufw allow in  on lo
 ufw allow out on lo
 
+# SSH inbound from the Windows host only — used for Remote-SSH and devcontainer
+# workflows. Scoped to the OllamaNet host IP; response traffic is handled
+# automatically by UFW's connection tracking (ESTABLISHED rules in before.rules).
+ufw allow in from "${OLLAMA_HOST_IP}" to any port 22 proto tcp
+
 # The only permitted outbound path: the Ollama API on the Hyper-V host.
 # All AI inference traffic flows through this single, controlled channel.
 ufw allow out to "${OLLAMA_HOST_IP}" port "${OLLAMA_PORT}" proto tcp
@@ -109,6 +114,7 @@ ufw allow out to "${OLLAMA_HOST_IP}" port "${OLLAMA_PORT}" proto tcp
 ufw --force enable
 
 log "UFW active. Permitted traffic:"
+log "  ← Inbound:  ${OLLAMA_HOST_IP}:22/tcp              (Remote-SSH from Windows host)"
 log "  → Outbound: ${OLLAMA_HOST_IP}:${OLLAMA_PORT}/tcp  (Ollama on Hyper-V host)"
 log "  ↔ Loopback: unrestricted"
 log "  ✗ All other inbound and outbound: DENIED"
