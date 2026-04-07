@@ -99,6 +99,9 @@ done 2>/dev/null &
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: system
+# Installs the minimal base packages the VM host needs to bootstrap Docker
+# and stow dotfiles. All dev tools (neovim, shell utilities, languages, etc.)
+# live in the container image — nothing extra is needed here.
 # ═════════════════════════════════════════════════════════════════════════════
 module_system() {
   log "━━ Running module: system ━━"
@@ -107,70 +110,19 @@ module_system() {
   apt_update
   apt_install \
     apt-transport-https \
-    build-essential \
     ca-certificates \
     curl \
-    direnv \
-    fd-find \
-    fzf \
     git \
     gnupg \
-    jq \
     lsb-release \
-    nmap \
-    neovim \
-    python3 \
-    python3-pip \
-    ranger \
-    ripgrep \
+    openssh-server \
     software-properties-common \
-    stow \
-    tar \
-    tmux \
-    tree \
-    unzip \
-    wget \
-    zip \
-    ffmpeg \
-    gitk \
-    zsh \
-    zsh-autosuggestions \
-    zsh-syntax-highlighting
+    stow
 
-  # Install python tools needed by neovim mason
-  pip3 install pylint isort black
-
-  # fd-find ships as 'fdfind' on Ubuntu; add symlink
-  if ! command -v fd &>/dev/null; then
-    sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
-  fi
-
-  # ── fzf (upgrade if apt version is too old for fzf-lua)
-  # apt ships 0.44 which lacks the transform() action required by fzf-lua >= 0.53
-  FZF_MIN="0.53"
-  FZF_CUR=$(fzf --version 2>/dev/null | awk '{print $1}')
-  if ! printf '%s\n%s' "$FZF_MIN" "$FZF_CUR" | sort -V -C 2>/dev/null; then
-    log "Upgrading fzf (apt has $FZF_CUR, need >= $FZF_MIN)..."
-    FZF_ASSET=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest |
-      jq -r '.assets[] | select(.name | test("linux_amd64\\.tar\\.gz")) | .browser_download_url' | head -1)
-    curl -sSfL "$FZF_ASSET" | tar -xz -C /tmp
-    sudo mv /tmp/fzf /usr/local/bin/fzf
-    log "fzf $(fzf --version) installed."
-  else
-    warn "fzf $FZF_CUR is sufficient, skipping upgrade."
-  fi
-
-  # ── Bat (better cat)
-  if ! command -v bat &>/dev/null; then
-    log "Installing Bat..."
-    apt_install bat
-    # Ubuntu ships as 'batcat'
-    if ! command -v bat &>/dev/null && command -v batcat &>/dev/null; then
-      sudo ln -sf "$(which batcat)" /usr/local/bin/bat
-    fi
-  else
-    warn "Bat already installed, skipping."
-  fi
+  # Enable and start the SSH server so Remote-SSH and devcontainer workflows
+  # work from the Windows host over the OllamaNet switch (10.10.10.10 → VM).
+  sudo systemctl enable --now ssh
+  log "SSH server enabled."
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
