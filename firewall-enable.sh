@@ -195,7 +195,7 @@ echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━
 log "Firewall enabled and dev account hardened."
 echo ""
 echo "  Security controls applied:"
-echo "    [UFW]     Active — only ${OLLAMA_HOST_IP}:${OLLAMA_PORT}/tcp permitted outbound"
+echo "    [UFW]     Active — SSH inbound from ${OLLAMA_HOST_IP}:22/tcp; Ollama outbound to ${OLLAMA_HOST_IP}:${OLLAMA_PORT}/tcp"
 echo "    [sudo]    Removed $DEV_USER from sudo group"
 echo "    [sudoers] $SUDOERS_FILE — denies all sudo for $DEV_USER"
 echo ""
