@@ -15,7 +15,7 @@ stow:
 install:
 	bash setup.sh
 
-# Bootstrap full dev environment — all modules, for non-containerized use
+# Full install for non-containerized use — installs all dev tools locally (skips container pull)
 install-full:
 	bash setup.sh --only system docker podman neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles
 

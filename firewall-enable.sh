@@ -9,9 +9,11 @@
 #
 # WHAT IT DOES
 #   1. Installs and configures UFW with a default-deny policy.
-#      The only permitted outbound connection is to the Ollama service on the
-#      Hyper-V host (10.10.10.10:11434). All other inbound and outbound traffic
-#      is blocked.
+#      Permitted traffic:
+#        - Inbound SSH (port 22/tcp) from the OllamaNet host (10.10.10.10) only,
+#          to support Remote-SSH and devcontainer workflows from the Windows host.
+#        - Outbound to the Ollama service on the Hyper-V host (10.10.10.10:11434).
+#      All other inbound and outbound traffic is blocked.
 #
 #   2. Removes the dev account from the 'sudo' group so that unprivileged
 #      processes (including AI agents like Pi) cannot use 'sudo' to modify

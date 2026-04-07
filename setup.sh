@@ -150,8 +150,11 @@ module_docker() {
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: container
 # Pulls the pre-built dev environment image from GHCR. Requires Docker to be
-# installed first (module_docker). After this, the full dev environment is
-# available via: docker run -it --rm -v ~/workspace:/workspace dev-env:latest
+# installed first (module_docker). Uses sudo because module_docker adds the
+# user to the docker group, but group membership is not active until the next
+# login — so a plain `docker pull` would fail in the same script run.
+# After this, the full dev environment is available via:
+#   docker run -it --rm -v ~/workspace:/workspace dev-env:latest
 # ═════════════════════════════════════════════════════════════════════════════
 module_container() {
   log "━━ Running module: container ━━"
