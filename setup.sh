@@ -312,9 +312,62 @@ module_neovim() {
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: shell
+# Installs base apt packages for a full non-containerized dev environment,
+# then third-party shell tools not available in apt.
 # ═════════════════════════════════════════════════════════════════════════════
 module_shell() {
   log "━━ Running module: shell ━━"
+
+  # ── Base apt packages (not needed on the containerized VM host, but required
+  #    for a full non-containerized dev environment)
+  log "Installing base dev packages..."
+  apt_update
+  apt_install \
+    bat \
+    build-essential \
+    direnv \
+    fd-find \
+    ffmpeg \
+    fzf \
+    gitk \
+    jq \
+    nmap \
+    python3 \
+    python3-pip \
+    ranger \
+    ripgrep \
+    tmux \
+    tree \
+    unzip \
+    wget \
+    zip \
+    zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting
+
+  pip3 install --break-system-packages pylint isort black
+
+  # fd-find ships as 'fdfind' on Ubuntu; add symlink
+  if ! command -v fd &>/dev/null; then
+    sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
+  fi
+
+  # Ubuntu ships bat as 'batcat'; add symlink
+  if ! command -v bat &>/dev/null && command -v batcat &>/dev/null; then
+    sudo ln -sf "$(which batcat)" /usr/local/bin/bat
+  fi
+
+  # Upgrade fzf if apt version is too old for fzf-lua >= 0.53
+  FZF_MIN="0.53"
+  FZF_CUR=$(fzf --version 2>/dev/null | awk '{print $1}')
+  if ! printf '%s\n%s' "$FZF_MIN" "$FZF_CUR" | sort -V -C 2>/dev/null; then
+    log "Upgrading fzf (apt has $FZF_CUR, need >= $FZF_MIN)..."
+    FZF_ASSET=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest |
+      jq -r '.assets[] | select(.name | test("linux_amd64\\.tar\\.gz")) | .browser_download_url' | head -1)
+    curl -sSfL "$FZF_ASSET" | tar -xz -C /tmp
+    sudo mv /tmp/fzf /usr/local/bin/fzf
+    log "fzf $(fzf --version) installed."
+  fi
 
   # ── Zoxide (smart cd)
   if ! command -v zoxide &>/dev/null; then
