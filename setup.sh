@@ -148,6 +148,18 @@ module_docker() {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+# MODULE: container
+# Pulls the pre-built dev environment image from GHCR. Requires Docker to be
+# installed first (module_docker). After this, the full dev environment is
+# available via: docker run -it --rm -v ~/workspace:/workspace dev-env:latest
+# ═════════════════════════════════════════════════════════════════════════════
+module_container() {
+  log "━━ Running module: container ━━"
+  docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
+  log "Container image pulled. Run with: docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 # MODULE: podman
 # ═════════════════════════════════════════════════════════════════════════════
 module_podman() {
@@ -710,14 +722,28 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-# nvidia is excluded from the default run order — Ollama runs on the Windows
-# host in the standard Hyper-V deployment, so GPU drivers in the VM are not
-# needed. See the nvidia module header for when to include it.
+# Default run order — VM host bootstrap only.
+# Installs the base system packages, Docker, and pulls the dev container image.
+# All dev tools (neovim, shell, languages, AI agents, etc.) live in the image.
+#
+# Optional modules (not in default order — invoke with --only):
+#   podman      Podman Desktop via Flatpak
+#   neovim      Neovim + plugins (non-containerized use)
+#   shell       Shell tools: zoxide, eza, lazygit, oh-my-posh, tv (non-containerized)
+#   kubernetes  kubectl, kubectx, kubens (non-containerized)
+#   languages   Go, Rust, Node.js, Bun, PowerShell, .NET (non-containerized)
+#   dev-tools   gh CLI, devcontainer CLI, just (non-containerized)
+#   vscode      VS Code extensions — VS Code runs on the Windows host, not the VM
+#   claude      Claude Code CLI — for non-air-gapped environments only
+#   nvidia      NVIDIA drivers + CUDA — only if running Ollama inside the VM
+#   opencode    OpenCode + oh-my-opencode (non-containerized)
+#   pi          Pi coding agent (non-containerized)
+#   dotfiles    Stow all dotfiles to home directory
 #
 # Firewall lockdown and account hardening are handled separately by:
 #   sudo bash firewall-enable.sh   (run as root, final step before VM export)
 #   sudo bash firewall-disable.sh  (run as root, opens a maintenance window)
-MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
+MODULE_ORDER=(system docker container)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi
@@ -731,15 +757,14 @@ echo ""
 echo -e "${GREEN}Setup complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Launch wezterm (select JetBrains Mono Nerd Font if not auto-selected)."
-echo "  2. Start tmux and press Ctrl-A + I to install plugins."
-echo "  3. Open nvim and run :Lazy sync if plugins weren't installed headlessly."
-echo "  4. Load opencode once to download plugins: opencode"
-echo "  5. Load pi once to download plugins."
-echo "  6. Clone https://github.com/LDJ-Share/pi-agent-orchestrator-extension and follow README."
+echo "  1. Start the dev container:"
+echo "       docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
+echo "  2. From VS Code on the Windows host, use Remote-SSH to connect to this VM,"
+echo "     then reopen the workspace in the dev container (Dev Containers extension)."
 echo ""
 echo "  Before exporting the VM for air-gapped deployment:"
-echo "  7. Verify Pi can reach Ollama: curl http://10.10.10.10:11434"
-echo "  8. Remove the Default Switch network adapter in Hyper-V Manager."
-echo "  9. Run the firewall and account hardening script (as root):"
+echo "  3. Verify the container can reach Ollama:"
+echo "       docker run --rm ghcr.io/ldj-share/.dotfiles/dev-env:latest curl -s http://10.10.10.10:11434"
+echo "  4. Remove the Default Switch network adapter in Hyper-V Manager."
+echo "  5. Run the firewall and account hardening script (as root):"
 echo "       sudo bash ~/.dotfiles/firewall-enable.sh"
