@@ -155,7 +155,9 @@ module_docker() {
 # ═════════════════════════════════════════════════════════════════════════════
 module_container() {
   log "━━ Running module: container ━━"
-  docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
+  # Use sudo so the pull works even before the user logs out to activate the
+  # docker group membership that module_docker just added.
+  sudo docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
   log "Container image pulled. Run with: docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
 }
 
