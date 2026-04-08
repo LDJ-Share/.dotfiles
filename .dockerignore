@@ -1,0 +1,19 @@
+# Version control and IDE state
+.git
+.gitattributes
+.vs
+
+# Windows-only VS Code user settings
+Code
+
+# Project planning / tracking (not needed at runtime)
+README.md
+TODO.md
+PLAN-container.md
+
+# Test suite runs outside the container, not inside it
+tests
+
+# Neovim build artifacts
+nvim/luac
+nvim/tmp

@@ -13,8 +13,8 @@ check_file "${HOME}/.config/tmux/tmux.conf"
 check_file "${HOME}/.zshrc"
 check_file "${HOME}/.pi/agent/models.json"
 check_file "${HOME}/.pi/agent/settings.json"
-check_file "${HOME}/.config/opencode/config.json"
-check_file "${HOME}/.config/opencode/oh-my-opencode.json"
+check_file "${HOME}/.opencode/config.json"
+check_file "${HOME}/.opencode/oh-my-opencode.json"
 
 echo ""
 echo "=== Configs: Ollama URL in Pi models.json ==="
@@ -28,10 +28,10 @@ done
 echo ""
 echo "=== Configs: Ollama URL in OpenCode config.json ==="
 check_contains "opencode config.json → OllamaNet host" \
-  "${HOME}/.config/opencode/config.json" "${OLLAMA_HOST}"
+  "${HOME}/.opencode/config.json" "${OLLAMA_HOST}"
 for pat in "${BAD_PATTERNS[@]}"; do
   check_not_contains "opencode config.json → no ${pat}" \
-    "${HOME}/.config/opencode/config.json" "${pat}"
+    "${HOME}/.opencode/config.json" "${pat}"
 done
 
 echo ""
@@ -39,12 +39,12 @@ echo "=== Configs: default model set ==="
 check_contains "Pi default model set" \
   "${HOME}/.pi/agent/settings.json" "defaultModel"
 check_contains "OpenCode model set" \
-  "${HOME}/.config/opencode/config.json" "\"model\""
+  "${HOME}/.opencode/config.json" "\"model\""
 
 echo ""
 echo "=== Configs: shell ==="
 # zsh should be the default shell for the container user
 check "default shell is zsh" \
-  bash -c 'grep -q "$(which zsh)" /etc/passwd'
+  bash -c 'getent passwd dev | grep -q "zsh"'
 
 summary

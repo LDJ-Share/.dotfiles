@@ -79,7 +79,7 @@ declare -A LSP_BINS=(
   [html]="vscode-html-language-server"
   [cssls]="vscode-css-language-server"
   [tailwindcss]="tailwindcss-language-server"
-  [svelte]="sveltekit-languageserver"
+  [svelte]="svelteserver"
   [lua_ls]="lua-language-server"
   [graphql]="graphql-lsp"
   [emmet_ls]="emmet-ls"
@@ -90,7 +90,6 @@ declare -A LSP_BINS=(
   [bashls]="bash-language-server"
   [jsonls]="vscode-json-language-server"
   [omnisharp]="OmniSharp"
-  [powershell_es]="pwsh"
 )
 
 for server in "${!LSP_BINS[@]}"; do

@@ -99,6 +99,9 @@ done 2>/dev/null &
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: system
+# Installs the minimal base packages the VM host needs to bootstrap Docker
+# and stow dotfiles. All dev tools (neovim, shell utilities, languages, etc.)
+# live in the container image — nothing extra is needed here.
 # ═════════════════════════════════════════════════════════════════════════════
 module_system() {
   log "━━ Running module: system ━━"
@@ -107,70 +110,19 @@ module_system() {
   apt_update
   apt_install \
     apt-transport-https \
-    build-essential \
     ca-certificates \
     curl \
-    direnv \
-    fd-find \
-    fzf \
     git \
     gnupg \
-    jq \
     lsb-release \
-    nmap \
-    neovim \
-    python3 \
-    python3-pip \
-    ranger \
-    ripgrep \
+    openssh-server \
     software-properties-common \
-    stow \
-    tar \
-    tmux \
-    tree \
-    unzip \
-    wget \
-    zip \
-    ffmpeg \
-    gitk \
-    zsh \
-    zsh-autosuggestions \
-    zsh-syntax-highlighting
+    stow
 
-  # Install python tools needed by neovim mason
-  pip3 install pylint isort black
-
-  # fd-find ships as 'fdfind' on Ubuntu; add symlink
-  if ! command -v fd &>/dev/null; then
-    sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
-  fi
-
-  # ── fzf (upgrade if apt version is too old for fzf-lua)
-  # apt ships 0.44 which lacks the transform() action required by fzf-lua >= 0.53
-  FZF_MIN="0.53"
-  FZF_CUR=$(fzf --version 2>/dev/null | awk '{print $1}')
-  if ! printf '%s\n%s' "$FZF_MIN" "$FZF_CUR" | sort -V -C 2>/dev/null; then
-    log "Upgrading fzf (apt has $FZF_CUR, need >= $FZF_MIN)..."
-    FZF_ASSET=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest |
-      jq -r '.assets[] | select(.name | test("linux_amd64\\.tar\\.gz")) | .browser_download_url' | head -1)
-    curl -sSfL "$FZF_ASSET" | tar -xz -C /tmp
-    sudo mv /tmp/fzf /usr/local/bin/fzf
-    log "fzf $(fzf --version) installed."
-  else
-    warn "fzf $FZF_CUR is sufficient, skipping upgrade."
-  fi
-
-  # ── Bat (better cat)
-  if ! command -v bat &>/dev/null; then
-    log "Installing Bat..."
-    apt_install bat
-    # Ubuntu ships as 'batcat'
-    if ! command -v bat &>/dev/null && command -v batcat &>/dev/null; then
-      sudo ln -sf "$(which batcat)" /usr/local/bin/bat
-    fi
-  else
-    warn "Bat already installed, skipping."
-  fi
+  # Enable and start the SSH server so Remote-SSH and devcontainer workflows
+  # work from the Windows host over the OllamaNet switch (10.10.10.10 → VM).
+  sudo systemctl enable --now ssh
+  log "SSH server enabled."
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -193,6 +145,23 @@ module_docker() {
   else
     warn "Docker already installed, skipping."
   fi
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MODULE: container
+# Pulls the pre-built dev environment image from GHCR. Requires Docker to be
+# installed first (module_docker). Uses sudo because module_docker adds the
+# user to the docker group, but group membership is not active until the next
+# login — so a plain `docker pull` would fail in the same script run.
+# After this, the full dev environment is available via:
+#   docker run -it --rm -v ~/workspace:/workspace dev-env:latest
+# ═════════════════════════════════════════════════════════════════════════════
+module_container() {
+  log "━━ Running module: container ━━"
+  # Use sudo so the pull works even before the user logs out to activate the
+  # docker group membership that module_docker just added.
+  sudo docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
+  log "Container image pulled. Run with: docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -343,9 +312,62 @@ module_neovim() {
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MODULE: shell
+# Installs base apt packages for a full non-containerized dev environment,
+# then third-party shell tools not available in apt.
 # ═════════════════════════════════════════════════════════════════════════════
 module_shell() {
   log "━━ Running module: shell ━━"
+
+  # ── Base apt packages (not needed on the containerized VM host, but required
+  #    for a full non-containerized dev environment)
+  log "Installing base dev packages..."
+  apt_update
+  apt_install \
+    bat \
+    build-essential \
+    direnv \
+    fd-find \
+    ffmpeg \
+    fzf \
+    gitk \
+    jq \
+    nmap \
+    python3 \
+    python3-pip \
+    ranger \
+    ripgrep \
+    tmux \
+    tree \
+    unzip \
+    wget \
+    zip \
+    zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting
+
+  pip3 install --break-system-packages pylint isort black
+
+  # fd-find ships as 'fdfind' on Ubuntu; add symlink
+  if ! command -v fd &>/dev/null; then
+    sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
+  fi
+
+  # Ubuntu ships bat as 'batcat'; add symlink
+  if ! command -v bat &>/dev/null && command -v batcat &>/dev/null; then
+    sudo ln -sf "$(which batcat)" /usr/local/bin/bat
+  fi
+
+  # Upgrade fzf if apt version is too old for fzf-lua >= 0.53
+  FZF_MIN="0.53"
+  FZF_CUR=$(fzf --version 2>/dev/null | awk '{print $1}')
+  if ! printf '%s\n%s' "$FZF_MIN" "$FZF_CUR" | sort -V -C 2>/dev/null; then
+    log "Upgrading fzf (apt has $FZF_CUR, need >= $FZF_MIN)..."
+    FZF_ASSET=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest |
+      jq -r '.assets[] | select(.name | test("linux_amd64\\.tar\\.gz")) | .browser_download_url' | head -1)
+    curl -sSfL "$FZF_ASSET" | tar -xz -C /tmp
+    sudo mv /tmp/fzf /usr/local/bin/fzf
+    log "fzf $(fzf --version) installed."
+  fi
 
   # ── Zoxide (smart cd)
   if ! command -v zoxide &>/dev/null; then
@@ -758,14 +780,28 @@ module_dotfiles() {
 # Main dispatcher
 # ═════════════════════════════════════════════════════════════════════════════
 
-# nvidia is excluded from the default run order — Ollama runs on the Windows
-# host in the standard Hyper-V deployment, so GPU drivers in the VM are not
-# needed. See the nvidia module header for when to include it.
+# Default run order — VM host bootstrap only.
+# Installs the base system packages, Docker, and pulls the dev container image.
+# All dev tools (neovim, shell, languages, AI agents, etc.) live in the image.
+#
+# Optional modules (not in default order — invoke with --only):
+#   podman      Podman Desktop via Flatpak
+#   neovim      Neovim + plugins (non-containerized use)
+#   shell       Shell tools: zoxide, eza, lazygit, oh-my-posh, tv (non-containerized)
+#   kubernetes  kubectl, kubectx, kubens (non-containerized)
+#   languages   Go, Rust, Node.js, Bun, PowerShell, .NET (non-containerized)
+#   dev-tools   gh CLI, devcontainer CLI, just (non-containerized)
+#   vscode      VS Code extensions — VS Code runs on the Windows host, not the VM
+#   claude      Claude Code CLI — for non-air-gapped environments only
+#   nvidia      NVIDIA drivers + CUDA — only if running Ollama inside the VM
+#   opencode    OpenCode + oh-my-opencode (non-containerized)
+#   pi          Pi coding agent (non-containerized)
+#   dotfiles    Stow all dotfiles to home directory
 #
 # Firewall lockdown and account hardening are handled separately by:
 #   sudo bash firewall-enable.sh   (run as root, final step before VM export)
 #   sudo bash firewall-disable.sh  (run as root, opens a maintenance window)
-MODULE_ORDER=(system docker podman neovim shell kubernetes languages dev-tools vscode claude opencode pi dotfiles)
+MODULE_ORDER=(system docker container)
 
 for name in "${MODULE_ORDER[@]}"; do
   if [[ ${#ONLY[@]} -gt 0 ]] && ! contains "$name" "${ONLY[@]}"; then continue; fi
@@ -779,15 +815,14 @@ echo ""
 echo -e "${GREEN}Setup complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Launch wezterm (select JetBrains Mono Nerd Font if not auto-selected)."
-echo "  2. Start tmux and press Ctrl-A + I to install plugins."
-echo "  3. Open nvim and run :Lazy sync if plugins weren't installed headlessly."
-echo "  4. Load opencode once to download plugins: opencode"
-echo "  5. Load pi once to download plugins."
-echo "  6. Clone https://github.com/LDJ-Share/pi-agent-orchestrator-extension and follow README."
+echo "  1. Start the dev container:"
+echo "       docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
+echo "  2. From VS Code on the Windows host, use Remote-SSH to connect to this VM,"
+echo "     then reopen the workspace in the dev container (Dev Containers extension)."
 echo ""
 echo "  Before exporting the VM for air-gapped deployment:"
-echo "  7. Verify Pi can reach Ollama: curl http://10.10.10.10:11434"
-echo "  8. Remove the Default Switch network adapter in Hyper-V Manager."
-echo "  9. Run the firewall and account hardening script (as root):"
+echo "  3. Verify the container can reach Ollama:"
+echo "       docker run --rm ghcr.io/ldj-share/.dotfiles/dev-env:latest curl -s http://10.10.10.10:11434"
+echo "  4. Remove the Default Switch network adapter in Hyper-V Manager."
+echo "  5. Run the firewall and account hardening script (as root):"
 echo "       sudo bash ~/.dotfiles/firewall-enable.sh"

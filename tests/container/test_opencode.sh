@@ -4,8 +4,8 @@ set -uo pipefail
 # shellcheck source=helpers.sh
 source "$(dirname "$0")/helpers.sh"
 
-OPENCODE_CONFIG="${HOME}/.config/opencode/config.json"
-OMO_CONFIG="${HOME}/.config/opencode/oh-my-opencode.json"
+OPENCODE_CONFIG="${HOME}/.opencode/config.json"
+OMO_CONFIG="${HOME}/.opencode/oh-my-opencode.json"
 
 echo "=== OpenCode: binary ==="
 check_cmd opencode
@@ -18,9 +18,9 @@ check_file "${OMO_CONFIG}"
 
 echo ""
 echo "=== OpenCode: oh-my-opencode installed ==="
-# oh-my-opencode install writes itself into the opencode config
-check_contains "config references oh-my-opencode" \
-  "${OPENCODE_CONFIG}" "oh-my-opencode"
+# oh-my-opencode installs as "oh-my-openagent" plugin in the XDG config
+check_contains "config references oh-my-openagent plugin" \
+  "${HOME}/.config/opencode/opencode.json" "oh-my-openagent"
 
 echo ""
 echo "=== OpenCode: oh-my-opencode agents configured ==="

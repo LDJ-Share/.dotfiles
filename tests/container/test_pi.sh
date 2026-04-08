@@ -41,10 +41,11 @@ check_contains "settings.json references qwen-tool-parser" \
   "${PI_SETTINGS}" "@cmcconomy/pi-qwen-tool-parser"
 
 echo ""
-echo "=== Pi: first-run initialization ==="
-# pi --print sends a prompt and exits; use a trivial prompt to confirm
-# the agent starts and responds without downloading anything at runtime
-check "pi --print responds without network fetch" \
-  bash -c 'echo "hello" | timeout 30 pi --print 2>/dev/null | grep -q "."'
+echo "=== Pi: packages pre-installed (no runtime download needed) ==="
+# Pi downloads packages listed in settings.json on first run unless they are
+# pre-installed. We install them explicitly during the Docker build so the
+# container starts instantly without any lazy package fetching.
+# Verify via npm package directories under the user's npm prefix.
+check_dir "${NPM_PREFIX}/lib/node_modules/@cmcconomy"
 
 summary

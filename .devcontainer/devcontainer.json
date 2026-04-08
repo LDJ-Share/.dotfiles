@@ -1,0 +1,7 @@
+{
+  "name": "dev-env",
+  "image": "ghcr.io/ldj-share/.dotfiles/dev-env:latest",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "remoteUser": "dev"
+}
