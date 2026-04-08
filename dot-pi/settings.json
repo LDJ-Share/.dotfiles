@@ -1,5 +1,5 @@
 {
-  "defaultModel": "qwen3.5:9b",
+  "defaultModel": "gemma4:26b",
   "defaultProvider": "ollama",
   "defaultThinkingLevel": "medium",
   "lastChangelogVersion": "0.65.0",
