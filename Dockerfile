@@ -253,6 +253,10 @@ COPY --from=builder-kubectx /opt/kubectx /opt/kubectx
 RUN sudo ln -sf /opt/kubectx/kubectx /usr/local/bin/kubectx \
     && sudo ln -sf /opt/kubectx/kubens /usr/local/bin/kubens
 
+# Set npm prefix so `npm config get prefix` resolves to ~/.local at runtime.
+# This ensures test_pi.sh finds packages under ~/.local/lib/node_modules/.
+RUN npm config set prefix "${HOME}/.local"
+
 # ── Dev tools (scoped copies to avoid clobbering rust binaries already present)
 COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.cargo/bin/just /home/dev/.cargo/bin/just
 COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/bin/devcontainer /home/dev/.local/bin/devcontainer
