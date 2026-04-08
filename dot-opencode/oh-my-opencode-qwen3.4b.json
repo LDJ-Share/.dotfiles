@@ -2,60 +2,60 @@
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
     "hephaestus": {
-      "model": "ollama/deepseek-coder-v2:16b"
+      "model": "ollama/qwen3:4b"
     },
     "oracle": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "librarian": {
       "model": "ollama/qwen3:4b"
     },
     "explore": {
-      "model": "ollama/qwen3.5:9b"
+      "model": "ollama/qwen3:4b"
     },
     "multimodal-looker": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "prometheus": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "metis": {
-      "model": "ollama/deepseek-r1:8b"
+      "model": "ollama/qwen3:4b"
     },
     "momus": {
-      "model": "ollama/qwen3.5:9b"
+      "model": "ollama/qwen3:4b"
     },
     "atlas": {
       "model": "ollama/qwen3:4b"
     },
     "sisyphus-junior": {
-      "model": "ollama/qwen3:1.7b"
+      "model": "ollama/qwen3:4b"
     }
   },
   "categories": {
     "visual-engineering": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "ultrabrain": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "deep": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "artistry": {
-      "model": "ollama/qwen3.5:9b"
+      "model": "ollama/qwen3:4b"
     },
     "quick": {
-      "model": "ollama/qwen3:1.7b"
+      "model": "ollama/tinyllama:1.1b"
     },
     "unspecified-low": {
-      "model": "ollama/qwen3:1.7b"
+      "model": "ollama/tinyllama:1.1b"
     },
     "unspecified-high": {
-      "model": "ollama/gemma4:26b"
+      "model": "ollama/qwen3:4b"
     },
     "writing": {
-      "model": "ollama/qwen3.5:9b"
+      "model": "ollama/qwen3:4b"
     }
   }
 }
