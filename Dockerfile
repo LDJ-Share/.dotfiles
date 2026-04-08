@@ -14,9 +14,13 @@
 #   - Docker Engine (needed to run this image)
 #   - Ollama (runs on Windows host with GPU access)
 #   - Hyper-V / firewall scripts (VM OS-level)
+#
+# Build strategy: multi-stage with BuildKit parallelism.
+# Independent tool installers run as parallel builder stages; assembler
+# collects all outputs; final runs inits in parallel via & + wait.
 # ─────────────────────────────────────────────────────────────────────────────
 
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS base
 
 ARG USERNAME=dev
 ARG USER_UID=1000
@@ -26,8 +30,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LAYER 1 — System packages
-# Grouped together to minimise layer count for rarely-changing base deps.
+# System packages + all apt-based tool repos
+# Everything installed as root here so builder stages inherit a clean apt state
+# and never need sudo apt-get.
 # ─────────────────────────────────────────────────────────────────────────────
 RUN apt-get update -qq && apt-get install -y -qq \
     apt-transport-https \
@@ -68,9 +73,46 @@ RUN apt-get update -qq && apt-get install -y -qq \
     && locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LAYER 2 — Non-root user
-# ─────────────────────────────────────────────────────────────────────────────
+# Node.js LTS (required for npm globals in builder stages)
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt-get install -y -qq nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# eza
+RUN mkdir -p /etc/apt/keyrings \
+    && wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc \
+       | gpg --dearmor -o /etc/apt/keyrings/gierens.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" \
+       > /etc/apt/sources.list.d/gierens.list \
+    && chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list \
+    && apt-get update -qq && apt-get install -y -qq eza \
+    && rm -rf /var/lib/apt/lists/*
+
+# gh CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update -qq && apt-get install -y -qq gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# kubectl
+RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key \
+      | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg \
+    && echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' \
+      > /etc/apt/sources.list.d/kubernetes.list \
+    && apt-get update -qq && apt-get install -y -qq kubectl \
+    && rm -rf /var/lib/apt/lists/*
+
+# PowerShell
+RUN curl -fsSL "https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb" \
+      -o /tmp/packages-microsoft-prod.deb \
+    && dpkg -i /tmp/packages-microsoft-prod.deb \
+    && rm /tmp/packages-microsoft-prod.deb \
+    && apt-get update -qq && apt-get install -y -qq powershell \
+    && rm -rf /var/lib/apt/lists/*
+
+# Non-root user
 RUN userdel -r ubuntu 2>/dev/null || true \
     && groupdel ubuntu 2>/dev/null || true \
     && groupadd --gid "${USER_GID}" "${USERNAME}" \
@@ -86,27 +128,19 @@ ENV LANG=en_US.UTF-8
 ENV PATH="/home/dev/.opencode/bin:/home/dev/.local/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/home/dev/.cargo/bin:/home/dev/.dotnet:/home/dev/.dotnet/tools:/home/dev/.bun/bin"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LAYER 3 — Neovim (tarball, >= 0.11 required for fzf-lua)
+# Parallel builder stages — all FROM base, run simultaneously by BuildKit
 # ─────────────────────────────────────────────────────────────────────────────
+
+FROM base AS builder-neovim
 RUN curl -Lo /tmp/nvim.tar.gz \
     "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz" \
     && sudo tar -C /usr/local -xzf /tmp/nvim.tar.gz --strip-components=1 \
     && rm /tmp/nvim.tar.gz
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LAYER 4 — Shell tools
-# zoxide, eza, lazygit, television, oh-my-posh, upgraded fzf
-# ─────────────────────────────────────────────────────────────────────────────
-RUN curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+# ──
 
-RUN sudo mkdir -p /etc/apt/keyrings \
-    && wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc \
-       | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" \
-       | sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null \
-    && sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list \
-    && sudo apt-get update -qq && sudo apt-get install -y -qq eza \
-    && sudo rm -rf /var/lib/apt/lists/*
+FROM base AS builder-shell-tools
+RUN curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 
 RUN LAZYGIT_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest \
       | jq -r '.tag_name' | tr -d 'v') \
@@ -132,82 +166,107 @@ RUN FZF_ASSET=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/lates
     && curl -sSfL "${FZF_ASSET}" | tar -xz -C /tmp \
     && sudo mv /tmp/fzf /usr/local/bin/fzf
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LAYER 5 — Language runtimes
-# Go, Rust, Node.js (LTS), Bun, PowerShell, .NET SDK
-# ─────────────────────────────────────────────────────────────────────────────
+# ──
+
+FROM base AS builder-go
 RUN GO_LATEST=$(curl -s "https://go.dev/VERSION?m=text" | head -1 | tr -d '[:space:]') \
     && curl -Lo /tmp/go.tar.gz "https://go.dev/dl/${GO_LATEST}.linux-amd64.tar.gz" \
     && sudo rm -rf /usr/local/go \
     && sudo tar -C /usr/local -xzf /tmp/go.tar.gz \
     && rm /tmp/go.tar.gz
 
+# ──
+
+FROM base AS builder-rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - \
-    && sudo apt-get install -y -qq nodejs \
-    && sudo rm -rf /var/lib/apt/lists/*
+# ──
 
+FROM base AS builder-bun
 RUN curl -fsSL https://bun.sh/install | bash
 
-RUN if ! dpkg -l packages-microsoft-prod >/dev/null 2>&1; then \
-      curl -fsSL "https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb" \
-        -o /tmp/packages-microsoft-prod.deb \
-      && sudo dpkg -i /tmp/packages-microsoft-prod.deb \
-      && rm /tmp/packages-microsoft-prod.deb; \
-    fi \
-    && sudo apt-get update -qq \
-    && sudo apt-get install -y -qq powershell \
-    && sudo rm -rf /var/lib/apt/lists/*
+# ──
 
+FROM base AS builder-dotnet
 RUN curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel LTS
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LAYER 6 — Dev tools
-# gh CLI, kubectl, kubectx/kubens, devcontainer CLI, just
-# ─────────────────────────────────────────────────────────────────────────────
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-      | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
-https://cli.github.com/packages stable main" \
-      | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null \
-    && sudo apt-get update -qq && sudo apt-get install -y -qq gh \
-    && sudo rm -rf /var/lib/apt/lists/*
+# ──
 
-RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key \
-      | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg \
-    && echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' \
-      | sudo tee /etc/apt/sources.list.d/kubernetes.list >/dev/null \
-    && sudo apt-get update -qq && sudo apt-get install -y -qq kubectl \
-    && sudo rm -rf /var/lib/apt/lists/*
+FROM base AS builder-kubectx
+RUN sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx
 
-RUN sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx \
-    && sudo ln -sf /opt/kubectx/kubectx /usr/local/bin/kubectx \
-    && sudo ln -sf /opt/kubectx/kubens /usr/local/bin/kubens
+# ──
+# builder-dev-tools: serial after builder-rust (needs cargo + rustup toolchain)
 
-# devcontainer CLI + just (cargo)
-# Set npm prefix before any global installs
+FROM base AS builder-dev-tools
+COPY --chown=dev:dev --from=builder-rust /home/dev/.cargo /home/dev/.cargo
+COPY --chown=dev:dev --from=builder-rust /home/dev/.rustup /home/dev/.rustup
 RUN npm config set prefix "${HOME}/.local" \
-    && npm install -g @devcontainers/cli
-
+    && npm install -g @devcontainers/cli \
+    && rm -rf "${HOME}/.npm"
 RUN "${HOME}/.cargo/bin/cargo" install just
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LAYER 7 — AI tools: OpenCode, oh-my-opencode, Pi
-# ─────────────────────────────────────────────────────────────────────────────
+# ──
+# builder-ai-tools: serial after builder-bun (opencode installer detects bun on PATH)
+
+FROM base AS builder-ai-tools
+COPY --chown=dev:dev --from=builder-bun /home/dev/.bun /home/dev/.bun
 RUN curl -fsSL https://opencode.ai/install | bash
-
-# Install Pi coding agent
-RUN npm install -g @mariozechner/pi-coding-agent
-
-# Pre-install Pi extension packages from settings.json (prevents runtime download)
-RUN npm install -g @cmcconomy/pi-qwen-tool-parser@1.0.0
+RUN npm config set prefix "${HOME}/.local" \
+    && npm install -g @mariozechner/pi-coding-agent \
+    && npm install -g @cmcconomy/pi-qwen-tool-parser@1.0.0 \
+    && rm -rf "${HOME}/.npm"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LAYER 8 — Copy dotfiles and stow
+# assembler — collects all builder outputs, then stows dotfiles
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM base AS assembler
+
+# ── Neovim
+COPY --from=builder-neovim /usr/local/bin/nvim /usr/local/bin/nvim
+COPY --from=builder-neovim /usr/local/lib/nvim /usr/local/lib/nvim
+COPY --from=builder-neovim /usr/local/share/nvim /usr/local/share/nvim
+
+# ── Shell tools
+COPY --chown=dev:dev --from=builder-shell-tools /home/dev/.local/bin/zoxide /home/dev/.local/bin/zoxide
+COPY --chown=dev:dev --from=builder-shell-tools /home/dev/.local/bin/oh-my-posh /home/dev/.local/bin/oh-my-posh
+COPY --from=builder-shell-tools /usr/local/bin/lazygit /usr/local/bin/lazygit
+COPY --from=builder-shell-tools /usr/local/bin/tv /usr/local/bin/tv
+COPY --from=builder-shell-tools /usr/local/bin/fzf /usr/local/bin/fzf
+
+# ── Go
+COPY --from=builder-go /usr/local/go /usr/local/go
+
+# ── Rust (full dirs first, then just from dev-tools on top)
+COPY --chown=dev:dev --from=builder-rust /home/dev/.cargo /home/dev/.cargo
+COPY --chown=dev:dev --from=builder-rust /home/dev/.rustup /home/dev/.rustup
+
+# ── Bun
+COPY --chown=dev:dev --from=builder-bun /home/dev/.bun /home/dev/.bun
+
+# ── .NET
+COPY --chown=dev:dev --from=builder-dotnet /home/dev/.dotnet /home/dev/.dotnet
+
+# ── kubectx (symlinks require a RUN since /usr/local/bin is a system path)
+COPY --from=builder-kubectx /opt/kubectx /opt/kubectx
+RUN sudo ln -sf /opt/kubectx/kubectx /usr/local/bin/kubectx \
+    && sudo ln -sf /opt/kubectx/kubens /usr/local/bin/kubens
+
+# ── Dev tools (scoped copies to avoid clobbering rust binaries already present)
+COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.cargo/bin/just /home/dev/.cargo/bin/just
+COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/bin/devcontainer /home/dev/.local/bin/devcontainer
+COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/lib/node_modules/@devcontainers /home/dev/.local/lib/node_modules/@devcontainers
+
+# ── AI tools (scoped copies to avoid clobbering node_modules from dev-tools)
+COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.opencode /home/dev/.opencode
+COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/bin/pi /home/dev/.local/bin/pi
+COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/lib/node_modules/@mariozechner /home/dev/.local/lib/node_modules/@mariozechner
+COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/lib/node_modules/@cmcconomy /home/dev/.local/lib/node_modules/@cmcconomy
+
+# ── Dotfiles and stow
 # Placed late so config changes don't bust the tool-install cache above.
-# ─────────────────────────────────────────────────────────────────────────────
-COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/.dotfiles/
+COPY --chown=dev:dev . /home/dev/.dotfiles/
 
 # Stow root dotfiles → ~/.config  (nvim, tmux, zshrc, ssh, television, etc.)
 RUN mkdir -p "${HOME}/.config" \
@@ -220,6 +279,8 @@ RUN mkdir -p "${HOME}/.pi/agent" \
     && stow .
 
 # Stow dot-opencode → ~/.opencode  (config.json, oh-my-opencode.json)
+# opencode binary is already at ~/.opencode/bin/opencode (from builder-ai-tools);
+# stow safely adds the config symlinks alongside it.
 RUN mkdir -p "${HOME}/.opencode" \
     && cd "${HOME}/.dotfiles/dot-opencode" \
     && stow .
@@ -228,37 +289,38 @@ RUN mkdir -p "${HOME}/.opencode" \
 RUN printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "${HOME}/.zshrc"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LAYER 9 — Pre-initialization
+# final — pre-initialization (parallel via & + wait)
+#
 # All applications are fully initialized here so nothing is lazy-loaded at
 # runtime on the corporate machine (no internet required after docker pull).
+#
+# tmux TPM install and oh-my-opencode install run in background while the
+# three sequential nvim init commands run in the foreground group.
+# Wall-clock time: max(~10 min nvim, ~1.5 min tmux, ~1.5 min opencode) ≈ 10 min.
+#
+# Note: oh-my-opencode writes to ~/.config/opencode/opencode.json (XDG path),
+# not through the ~/.opencode/config.json stow symlink.
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Neovim: bootstrap lazy.nvim and sync all plugins
-RUN nvim --headless \
-    -c "lua require('lazy').sync({wait=true, show=false})" \
-    -c "qa" 2>/dev/null || true
+FROM assembler AS final
 
-# ── Neovim: install Mason LSP servers (explicit install; mason-lspconfig
-#    ensure_installed does not auto-trigger in headless mode)
-RUN nvim --headless \
-    -c "MasonInstall typescript-language-server html-lsp css-lsp tailwindcss-language-server svelte-language-server lua-language-server graphql-language-service-cli emmet-ls prisma-language-server pyright eslint-lsp gopls bash-language-server json-lsp omnisharp" \
-    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 900000)" \
-    2>/dev/null || true
-
-# ── Neovim: install Mason tools (mason-tool-installer, run_on_start=false by default)
-RUN nvim --headless \
-    -c "MasonToolsInstall" \
-    -c "lua vim.defer_fn(function() vim.cmd('qa') end, 600000)" \
-    2>/dev/null || true
-
-# ── tmux: clone TPM and install all plugins from tmux.conf headlessly
 RUN git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm" \
-    && TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins" \
-       "${HOME}/.tmux/plugins/tpm/scripts/install_plugins.sh" 2>/dev/null || true
-
-# ── oh-my-opencode: install agents and modify opencode config
-RUN "${HOME}/.bun/bin/bunx" oh-my-opencode install \
-    --no-tui --claude=no --openai=no --gemini=no --copilot=no 2>/dev/null || true
+    && (TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins" \
+        "${HOME}/.tmux/plugins/tpm/scripts/install_plugins.sh" 2>/dev/null || true) & \
+    ("${HOME}/.bun/bin/bunx" oh-my-opencode install \
+        --no-tui --claude=no --openai=no --gemini=no --copilot=no 2>/dev/null || true) & \
+    (nvim --headless \
+        -c "lua require('lazy').sync({wait=true, show=false})" \
+        -c "qa" 2>/dev/null || true \
+    && nvim --headless \
+        -c "MasonInstall typescript-language-server html-lsp css-lsp tailwindcss-language-server svelte-language-server lua-language-server graphql-language-service-cli emmet-ls prisma-language-server pyright eslint-lsp gopls bash-language-server json-lsp omnisharp" \
+        -c "lua vim.defer_fn(function() vim.cmd('qa') end, 900000)" \
+        2>/dev/null || true \
+    && nvim --headless \
+        -c "MasonToolsInstall" \
+        -c "lua vim.defer_fn(function() vim.cmd('qa') end, 600000)" \
+        2>/dev/null || true) & \
+    wait
 
 # ─────────────────────────────────────────────────────────────────────────────
 WORKDIR /workspace
