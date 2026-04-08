@@ -60,8 +60,8 @@ if (Test-Path $ModulePath) {
 
 # ── Tool Initialisations ─────────────────────────────────────────────────────
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
-    zoxide init powershell | Invoke-Expression
+    Invoke-Expression (& { (zoxide init powershell | Out-String )})
 }
 if (Get-Command direnv -ErrorAction SilentlyContinue) {
-    direnv hook pwsh | Invoke-Expression
+    Invoke-Expression (& { (direnv hook pwsh | Out-String )})
 }

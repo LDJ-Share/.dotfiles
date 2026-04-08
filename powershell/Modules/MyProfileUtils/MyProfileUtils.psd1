@@ -7,7 +7,7 @@
 @{
     RootModule        = 'MyProfileUtils.psm1'
     ModuleVersion     = '1.0'
-    GUID              = '886ad269-9b41-4d0d-83d7-589bb71368f'
+    GUID              = '886ad269-9b41-4d0d-83d7-589bb71368fa'
     Author            = 'krawlz'
     CompanyName       = 'Unknown'
     Copyright         = '(c) 2026 krawlz. All rights reserved.'
