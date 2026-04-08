@@ -15,16 +15,16 @@
 
 ## Containerization Remaining
 
-- [ ] **Phase 4: Slim setup.sh** — once PR #2 merges
-  - Remove all modules now handled by the container (system, neovim, shell, kubernetes,
-    languages, dev-tools, vscode, claude, opencode, pi, dotfiles)
-  - Keep: `module_docker` (needed to pull/run the container)
-  - Add: `module_container` — `docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest`
-  - Remove: `module_nvidia` (already excluded from MODULE_ORDER; delete entirely)
+- [x] **Phase 4: Slim setup.sh** — merged in PR #2
+  - `module_system` slimmed to VM-host-only packages + openssh-server
+  - `module_container` added (docker pull from GHCR)
+  - `MODULE_ORDER` slimmed to system/docker/container
+  - Base dev packages moved to `module_shell` for non-containerized use
 
-- [ ] **Phase 5: README final pass** — after setup.sh is slimmed
-  - Update "What setup.sh Installs" module table
-  - Add note about `devcontainer.json` for VS Code Remote integration
+- [x] **Phase 5: README final pass**
+  - Updated "What setup.sh Installs" module table
+  - Added VS Code Remote Development section (Remote-SSH + Dev Containers)
+  - Updated firewall docs and security table to reflect SSH inbound rule
 
 ## Documentation
 
