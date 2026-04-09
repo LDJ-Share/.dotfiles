@@ -1,0 +1,91 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# Ollama Image — Pre-baked with gemma4:26b and gemma4:e4b
+#
+# Published to: ghcr.io/ldj-share/.dotfiles/ollama-models:latest
+#
+# PURPOSE:
+#   Build a self-contained Ollama image with both gemma4 model blobs baked in
+#   at build time. Required for air-gap deployment — no internet access is
+#   available on the target machine after the image is exported.
+#
+# GPU PASSTHROUGH:
+#   GPU support is handled at RUNTIME by the NVIDIA Container Toolkit.
+#   This image builds once and supports both GPU and CPU-only machines.
+#   No GPU-specific directives are in this Dockerfile — see docker-compose.yml
+#   (Phase 2) for runtime GPU configuration via deploy.resources.reservations.
+#
+# GHCR LAYER LIMITS:
+#   gemma4:26b (~18GB) and gemma4:e4b (~9.6GB) exceed the 10GB per-layer GHCR
+#   limit. The Docker push client handles splitting transparently across multiple
+#   OCI layers — no manual intervention required.
+#
+# BUILD:
+#   docker build -f Dockerfile.ollama -t ollama-models:local .
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+# T-1-01 mitigation: pin exact semver — mutable :latest tag enables supply chain substitution
+FROM ollama/ollama:0.20.3
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Install curl — required for HEALTHCHECK
+# curl is absent from the ollama/ollama base image (github.com/ollama/ollama/issues/9781)
+# ─────────────────────────────────────────────────────────────────────────────
+RUN apt-get update -qq && apt-get install -y -qq curl && rm -rf /var/lib/apt/lists/*
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pull gemma4:26b (~18GB) — GHA cache scope: ollama-gemma4-26b
+#
+# Build-time server runs on 127.0.0.1:11235 (not 11434) to avoid collision with
+# the final OLLAMA_HOST ENV binding set below. The retry loop uses `ollama ls`
+# as the readiness probe — no curl needed inside the container during build.
+# Separate RUN layer (D-02) gives this model an independent GHA cache entry.
+# ─────────────────────────────────────────────────────────────────────────────
+RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
+    _pid=$! && \
+    _ready=0 && \
+    for i in $(seq 1 30); do \
+      if OLLAMA_HOST=127.0.0.1:11235 ollama ls >/dev/null 2>&1; then \
+        _ready=1; break; \
+      fi; \
+      sleep 2; \
+    done && \
+    [ "$_ready" = "1" ] || (echo "ERROR: ollama server did not start within 60s" && kill $_pid && exit 1) && \
+    OLLAMA_HOST=127.0.0.1:11235 ollama pull gemma4:26b && \
+    kill $_pid && wait $_pid 2>/dev/null || true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pull gemma4:e4b (~9.6GB) — separate RUN = independent cache layer (D-02)
+#
+# Separate from gemma4:26b so a version bump to e4b does not invalidate the
+# 18GB gemma4:26b cache entry in GHA. Same retry loop pattern as above.
+# ─────────────────────────────────────────────────────────────────────────────
+RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
+    _pid=$! && \
+    _ready=0 && \
+    for i in $(seq 1 30); do \
+      if OLLAMA_HOST=127.0.0.1:11235 ollama ls >/dev/null 2>&1; then \
+        _ready=1; break; \
+      fi; \
+      sleep 2; \
+    done && \
+    [ "$_ready" = "1" ] || (echo "ERROR: ollama server did not start within 60s" && kill $_pid && exit 1) && \
+    OLLAMA_HOST=127.0.0.1:11235 ollama pull gemma4:e4b && \
+    kill $_pid && wait $_pid 2>/dev/null || true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Runtime binding — set AFTER all model pull RUN layers (D-05)
+#
+# 0.0.0.0 binds to all interfaces so the container is reachable from other
+# containers on the Docker bridge network (required for compose integration).
+# ─────────────────────────────────────────────────────────────────────────────
+ENV OLLAMA_HOST=0.0.0.0:11434
+
+EXPOSE 11434
+
+# HEALTHCHECK uses curl (installed above in the apt step).
+# start-period=60s allows ollama to load model weights before probing.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -sf http://localhost:11434/api/tags || exit 1
+
+# No CMD override — base image CMD is `ollama serve`, which is correct.
