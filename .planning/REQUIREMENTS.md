@@ -77,35 +77,35 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OLLAMA-01 | Phase TBD | Pending |
-| OLLAMA-02 | Phase TBD | Pending |
-| OLLAMA-03 | Phase TBD | Pending |
-| OLLAMA-04 | Phase TBD | Pending |
-| COMPOSE-01 | Phase TBD | Pending |
-| COMPOSE-02 | Phase TBD | Pending |
-| COMPOSE-03 | Phase TBD | Pending |
-| COMPOSE-04 | Phase TBD | Pending |
-| COMPOSE-05 | Phase TBD | Pending |
-| DEV-01 | Phase TBD | Pending |
-| DEV-02 | Phase TBD | Pending |
-| DEV-03 | Phase TBD | Pending |
-| EXPORT-01 | Phase TBD | Pending |
-| EXPORT-02 | Phase TBD | Pending |
-| EXPORT-03 | Phase TBD | Pending |
-| EXPORT-04 | Phase TBD | Pending |
-| CUDA-01 | Phase TBD | Pending |
-| CUDA-02 | Phase TBD | Pending |
-| CUDA-03 | Phase TBD | Pending |
-| IMPORT-01 | Phase TBD | Pending |
-| IMPORT-02 | Phase TBD | Pending |
-| IMPORT-03 | Phase TBD | Pending |
-| TMPL-01 | Phase TBD | Pending |
-| TMPL-02 | Phase TBD | Pending |
+| OLLAMA-01 | Phase 1 | Pending |
+| OLLAMA-02 | Phase 1 | Pending |
+| OLLAMA-03 | Phase 1 | Pending |
+| OLLAMA-04 | Phase 1 | Pending |
+| COMPOSE-01 | Phase 2 | Pending |
+| COMPOSE-02 | Phase 2 | Pending |
+| COMPOSE-03 | Phase 2 | Pending |
+| COMPOSE-04 | Phase 2 | Pending |
+| COMPOSE-05 | Phase 2 | Pending |
+| DEV-01 | Phase 3 | Pending |
+| DEV-02 | Phase 3 | Pending |
+| DEV-03 | Phase 3 | Pending |
+| EXPORT-01 | Phase 4 | Pending |
+| EXPORT-02 | Phase 4 | Pending |
+| EXPORT-03 | Phase 4 | Pending |
+| EXPORT-04 | Phase 4 | Pending |
+| CUDA-01 | Phase 4 | Pending |
+| CUDA-02 | Phase 4 | Pending |
+| CUDA-03 | Phase 4 | Pending |
+| IMPORT-01 | Phase 5 | Pending |
+| IMPORT-02 | Phase 5 | Pending |
+| IMPORT-03 | Phase 5 | Pending |
+| TMPL-01 | Phase 6 | Pending |
+| TMPL-02 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 24 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 24 ⚠️
+- Mapped to phases: 24
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-08*
