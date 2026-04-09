@@ -36,6 +36,12 @@
 
 **Notes:** Models are 22GB+ combined. Use `ollama serve & sleep 10` with a health-check retry loop inside the Dockerfile RUN layer before model pulls. Use BuildKit GHA cache (`--cache-from type=gha`) scoped per model layer to avoid 30+ minute full rebuilds on every CI run. GHCR single-layer limit is 10GB — document expected multi-layer push behavior. Do not use `device_requests` (deprecated); use `deploy.resources.reservations.devices` in compose.
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Create Dockerfile.ollama with pre-baked gemma4 models (OLLAMA-01, OLLAMA-02, OLLAMA-03)
+- [ ] 01-02-PLAN.md — Create build-ollama.yml CI workflow (OLLAMA-04)
+
 ---
 
 ### Phase 2: Compose Stack
