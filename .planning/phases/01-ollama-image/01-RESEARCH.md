@@ -615,22 +615,19 @@ jobs:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **GHA cache total size for two model scopes**
    - What we know: gemma4:26b is 18GB, gemma4:e4b is 9.6GB; GHA free tier is 10GB/repo
-   - What's unclear: With `mode=max`, will BuildKit attempt to store the full 27GB+ model data in GHA cache? If so, the free tier will evict on every run and the cache provides no benefit.
-   - Recommendation: On the first CI run, check the GHA cache size in the Actions UI. If model blobs exceed the GHA cache budget, switch `cache-to` to `type=registry` using a throwaway GHCR tag (e.g., `ghcr.io/.../ollama-models:buildcache`) — this has no size limit and persists between runs.
+   - RESOLVED: Use `type=gha` with `mode=max` as the primary cache backend. The GHA free tier (10GB) will be exceeded by a single model scope, meaning cache eviction will occur on cold runs. **Accepted risk** — cold builds take 30–40 min; warm builds after a cache hit are fast. If this becomes unacceptable (e.g., frequent eviction on active development), the fallback is to switch `cache-to` to `type=registry,ref=ghcr.io/.../ollama-models:buildcache` — no size limit, persists across runs. Plan 01-02 proceeds with `type=gha`; registry fallback is a one-line change per model scope.
 
 2. **Can the build-and-test and publish jobs share a GHA cache restore, or must publish rebuild from scratch?**
    - What we know: Each job runs on a fresh runner. GHA cache is restored from the same scope names.
-   - What's unclear: Whether BuildKit can restore from the same GHA cache entries that were just populated by build-and-test in the same workflow run (same SHA).
-   - Recommendation: Use the same `cache-from` scopes in both jobs. BuildKit's GHA backend reads from the cache store after it is committed; the publish job should get a full cache hit from the build-and-test job's `cache-to` writes.
+   - RESOLVED: Use the same `cache-from` scopes in both jobs. BuildKit's GHA backend reads from the cache store after it is committed by the build-and-test job; the publish job will get a cache hit from the same run's `cache-to` writes. Plan 01-02 implements this pattern.
 
 3. **Ollama version to pin in `FROM ollama/ollama:X.Y.Z`**
    - What we know: gemma4 requires v0.20.0+; latest stable as of research is 0.20.3
-   - What's unclear: Whether to pin exactly or use a minor-level float (e.g., `0.20`)
-   - Recommendation: Pin the patch version (`0.20.3`) for full reproducibility. Update via a Dockerfile.ollama edit (which triggers the workflow via path filter).
+   - RESOLVED: Pin to `ollama/ollama:0.20.3` (exact patch version). Updating requires a Dockerfile.ollama edit, which triggers the workflow via path filter. Plan 01-01 uses this pin.
 
 ---
 
