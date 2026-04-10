@@ -18,67 +18,7 @@ A hardened, all-in-one AI coding environment deployable as a docker-compose stac
 <!-- GSD:project-end -->
 
 <!-- GSD:stack-start source:codebase/STACK.md -->
-## Technology Stack
-
-## Languages
-- Bash (shell scripts, setup automation)
-- Lua (Neovim configuration, WezTerm configuration)
-- Zsh (default shell)
-- PowerShell (Windows host scripting)
-- Python 3 (build tools, linting)
-- Go (runtime)
-- Rust/Cargo (runtime)
-- Node.js (JavaScript runtime for Pi, OpenCode)
-- C# / .NET (SDK installed)
-## Runtimes & Platforms
-- Ubuntu 24.04 LTS (dev VM)
-- Windows 11 Pro/Enterprise (host OS)
-- Hyper-V (hypervisor)
-- Docker (container runtime)
-- Node.js LTS (npm packages)
-- Bun (JavaScript/TypeScript runtime)
-- Go (latest stable)
-- Rust (via rustup)
-- .NET SDK (LTS)
-- PowerShell Core
-## Key Tools & CLI
-- **Editors**: Neovim 0.11+, VS Code
-- **Git/Version Control**: Git, GitHub CLI (gh), Lazygit
-- **Shell Utilities**: Zoxide, Bat, Ripgrep (rg), Fd-find, Fzf, Eza, Tree, Ranger
-- **Development**: Just (task runner), Devcontainer CLI, Kubectl, Kubectx, Kubens
-- **Productivity**: Television (terminal UI), Oh-My-Posh (shell prompt)
-- **Terminal**: Tmux, WezTerm, Zsh + Oh-My-Zsh
-- **AI Tools**: Pi coding agent (@mariozechner/pi-coding-agent), OpenCode, Ollama CLI
-- **Container**: Docker CE, Docker Compose
-- **Code Analysis**: ShellCheck (linting)
-## Package Managers
-- apt (Ubuntu system packages)
-- npm (Node.js packages)
-- Cargo (Rust packages)
-- pip3 (Python packages)
-- GitHub Releases (tool downloads)
-## Build & Task Runners
-- just (task runner via Cargo)
-- Bash scripts (setup.sh, firewall-enable.sh, firewall-disable.sh)
-- GitHub Actions (CI/CD for container builds and tests)
-- Docker Buildx (multi-stage container builds)
-## Container & VM
-- Docker (container engine on Ubuntu VM)
-- Hyper-V (Windows host hypervisor)
-- Hyper-V Internal Switch (OllamaNet - isolated virtual network)
-- ghcr.io (GitHub Container Registry - dev-env:latest image)
-- Ubuntu:24.04 base image
-## AI/LLM Integrations
-- **Ollama** (Windows host, GPU-accelerated inference at 10.10.10.10:11434)
-- **Pi Coding Agent** (npm package, OpenAI-compatible interface)
-- **OpenCode** (npm package, code generation tool)
-- **AI Models** (via Ollama):
-## Text Editors & IDE Configuration
-- **Neovim Plugins** (lazy.nvim plugin manager):
-## Firewall & Network Isolation
-- **UFW** (Ubuntu host firewall)
-- **Windows Firewall** (host-level access control)
-- **Hyper-V Network Architecture**: OllamaNet Internal Switch (10.10.10.0/24)
+<!-- Stack section intentionally omitted — descriptive content that doesn't constrain Claude behavior. See codebase/STACK.md for the full list. -->
 <!-- GSD:stack-end -->
 
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
@@ -211,16 +151,8 @@ A hardened, all-in-one AI coding environment deployable as a docker-compose stac
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
-## Architecture
-
-## System Overview
-## Summary
 <!-- GSD:architecture-end -->
-
 <!-- GSD:skills-start source:skills/ -->
-## Project Skills
-
-No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, or `.github/skills/` with a `SKILL.md` index file.
 <!-- GSD:skills-end -->
 
 <!-- GSD:workflow-start source:GSD defaults -->
@@ -239,8 +171,4 @@ Do not make direct repo edits outside a GSD workflow unless the user explicitly 
 
 
 <!-- GSD:profile-start -->
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
 <!-- GSD:profile-end -->
