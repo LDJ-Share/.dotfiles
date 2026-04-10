@@ -132,11 +132,13 @@ Layer 2 — Windows Firewall (host)
 
 Layer 3 — UFW (VM guest)
   The VM's firewall default policy denies all inbound and outbound
-  traffic at the kernel level. The only permitted outbound rule is TCP
-  to 10.10.10.10:11434. A compromised process inside the VM cannot
-  initiate connections to any other destination. Because UFW uses
-  kernel-level iptables/nftables rules, no userspace process can bypass
-  this regardless of what tools are installed in the VM.
+  traffic at the kernel level. Two rules are permitted: inbound SSH
+  (port 22/tcp) from the Windows host (10.10.10.10) for operator
+  access, and outbound TCP to 10.10.10.10:11434 for Ollama. A
+  compromised process inside the VM cannot initiate connections to any
+  other destination. Because UFW uses kernel-level iptables/nftables
+  rules, no userspace process can bypass this regardless of what tools
+  are installed in the VM.
 
 Layer 4 — Account hardening (VM guest)
   The dev account (which runs Pi) is removed from the sudo group and
@@ -151,9 +153,10 @@ Layer 4 — Account hardening (VM guest)
 | Action | Permitted | Enforced By |
 |---|---|---|
 | Send a prompt to Ollama | Yes | UFW allow rule |
+| Accept SSH from Windows host (10.10.10.10) | Yes | UFW allow rule — operator access only |
 | Access the internet | No | Hyper-V switch type + UFW default deny |
 | Reach other machines on the LAN | No | Hyper-V switch type + UFW default deny |
-| Receive inbound connections | No | UFW default deny incoming |
+| Receive inbound connections from any other source | No | UFW default deny incoming |
 | Communicate with other VMs | No | Hyper-V Internal switch (no VM-to-VM without host routing) |
 | Disable or modify the firewall | No | Account hardening (no sudo) + UFW kernel enforcement |
 | Install network tunneling software | No | Account hardening (no sudo / no apt-get) |
@@ -319,6 +322,34 @@ Everything inside the container is pre-initialized at build time:
 - Pi and OpenCode are ready to use without any first-run downloads
 - All configs already point to `10.10.10.10:11434`
 
+### VS Code Remote Development
+
+The repo includes `.devcontainer/devcontainer.json`, which lets VS Code open
+the project directly inside the pre-built container image without any manual
+`docker run` commands.
+
+**One-time setup on the Windows host:**
+
+1. Install the **Remote - SSH** extension in VS Code.
+2. Install the **Dev Containers** extension in VS Code.
+3. Add the VM to your SSH config:
+   ```
+   Host ollamanet-vm
+     HostName 10.10.10.20
+     User dev
+   ```
+
+**Daily workflow:**
+
+1. In VS Code, open the Remote Explorer and connect to `ollamanet-vm` via SSH.
+2. Once connected, VS Code will detect `.devcontainer/devcontainer.json` and
+   offer to **Reopen in Container**. Accept it.
+3. VS Code attaches to the running `dev-env:latest` container. All extensions,
+   terminals, and the integrated editor run inside the container.
+
+The container is already fully initialized — Neovim, LSP servers, Pi, and
+OpenCode are ready to use without any first-run downloads.
+
 ### How Images Are Built
 
 Every push to `master` that touches a dotfile or the `Dockerfile` triggers
@@ -380,21 +411,27 @@ export. The VM retains full internet access during the entire build phase.
 The setup script is modular. Each module can be run independently using
 `--only <module>` or skipped with `--skip <module>`.
 
-| Module | What It Installs |
-|---|---|
-| `system` | Base packages: git, curl, fzf, ripgrep, neovim, zsh, tmux, bat, fd, etc. |
-| `docker` | Docker CE and Docker Compose |
-| `podman` | Podman and Podman Desktop (via Flatpak) |
-| `neovim` | Latest Neovim AppImage if the distro version is too old |
-| `shell` | Zoxide, Eza, WezTerm, Oh My Posh, Lazygit, Television |
-| `kubernetes` | kubectl, kubectx, kubens |
-| `languages` | Go, Rust/Cargo, Node.js, Bun, PowerShell Core, .NET SDK |
-| `dev-tools` | GitHub CLI, devcontainer CLI, Ollama CLI |
-| `vscode` | VS Code and extensions from `vsc-extensions.txt` |
-| `opencode` | opencode CLI and oh-my-opencode |
-| `pi` | Pi coding agent (npm) |
-| `dotfiles` | Applies all dotfiles via stow, sets zsh as default shell, installs fonts |
-| `nvidia` | *(Not in default order)* NVIDIA drivers + CUDA — only needed if running Ollama inside the VM rather than on the host |
+The default run (`bash setup.sh`) installs only what the VM host needs.
+All dev tooling lives in the container image pulled by the `container` module.
+For a full non-containerized install, use `just install-full`.
+
+| Module | Default | What It Installs |
+|---|---|---|
+| `system` | ✓ | Minimal VM host packages: git, curl, stow, openssh-server, etc. Enables SSH server for Remote-SSH workflows. |
+| `docker` | ✓ | Docker CE and Docker Compose |
+| `container` | ✓ | Pulls `ghcr.io/ldj-share/.dotfiles/dev-env:latest` from GHCR |
+| `shell` | | Base dev packages (zsh, fzf, bat, ripgrep, tmux, etc.) plus Zoxide, Eza, WezTerm, Oh My Posh, Lazygit, Television |
+| `neovim` | | Latest Neovim (tarball) if the installed version is too old |
+| `kubernetes` | | kubectl, kubectx, kubens |
+| `languages` | | Go, Rust/Cargo, Node.js, Bun, PowerShell Core, .NET SDK |
+| `dev-tools` | | GitHub CLI, devcontainer CLI, Ollama CLI |
+| `vscode` | | VS Code and extensions from `vsc-extensions.txt` |
+| `opencode` | | opencode CLI and oh-my-opencode |
+| `pi` | | Pi coding agent (npm) |
+| `dotfiles` | | Applies all dotfiles via stow, sets zsh as default shell, installs fonts |
+| `podman` | | Podman and Podman Desktop (via Flatpak) |
+| `nvidia` | | NVIDIA drivers + CUDA — only needed if running Ollama inside the VM rather than on the host |
+| `claude` | | Claude Code CLI — for non-air-gapped environments only |
 
 ---
 
@@ -419,8 +456,10 @@ sudo bash ~/.dotfiles/firewall-enable.sh [username]
 
 **What it does:**
 
-1. Installs UFW and applies a default-deny policy with a single outbound rule
-   permitting traffic to `10.10.10.10:11434` (Ollama on the host).
+1. Installs UFW and applies a default-deny policy with two rules:
+   - Inbound SSH (port 22/tcp) from `10.10.10.10` only — for Remote-SSH and
+     devcontainer access from the Windows host.
+   - Outbound TCP to `10.10.10.10:11434` — Ollama on the host.
 2. Removes the dev account from the `sudo` group. Without sudo, no process
    running under the dev account — including Pi — can modify firewall rules,
    manage services, or install software.
@@ -477,7 +516,7 @@ Once exported, the VM will have no internet access on the target machine.
 - [ ] Firewall and account hardening applied (run as root, final step):
       `sudo bash ~/.dotfiles/firewall-enable.sh`
 - [ ] UFW status confirms the expected rules:
-      `sudo ufw status verbose` shows only loopback and `10.10.10.10:11434`
+      `sudo ufw status verbose` shows loopback, SSH inbound from `10.10.10.10`, and `10.10.10.10:11434` outbound
 - [ ] Dev account no longer has sudo: log in as the dev user and confirm
       `sudo echo test` is denied
 - [ ] VM has been shut down cleanly before export
@@ -500,6 +539,7 @@ Default: deny (incoming), deny (outgoing), disabled (routed)
 To                         Action      From
 --                         ------      ----
 Anywhere on lo             ALLOW IN    Anywhere
+22/tcp                     ALLOW IN    10.10.10.10
 10.10.10.10 11434/tcp      ALLOW OUT   Anywhere
 Anywhere on lo             ALLOW OUT   Anywhere
 ```

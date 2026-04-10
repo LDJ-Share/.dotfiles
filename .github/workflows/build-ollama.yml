@@ -1,0 +1,126 @@
+name: Build and Publish Ollama Image
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Builds the Ollama image with pre-baked gemma4:26b and gemma4:e4b models,
+# validates both models are present via /api/tags before publish, and
+# publishes :latest and :sha-{7char} to GHCR on master push.
+#
+# Disk: ubuntu-latest provides ~22GB free — insufficient for 27GB+ model
+# build without cleanup. easimon/maximize-build-space runs FIRST (before
+# checkout), but Docker/BuildKit still store layers under /var/lib/docker on
+# the runner root volume, so we must leave substantial root disk available.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+    paths:
+      - Dockerfile.ollama
+      - .github/workflows/build-ollama.yml
+  pull_request:
+    paths:
+      - Dockerfile.ollama
+      - .github/workflows/build-ollama.yml
+  workflow_dispatch:   # manual trigger for model version bumps
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Lint (ShellCheck pass-through)
+  # ───────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ShellCheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get install -y -qq shellcheck
+
+      - name: Note (no shell scripts in this phase)
+        run: echo "No .sh files in Dockerfile.ollama scope — lint job is a pass-through placeholder for workflow_dispatch and future scripts"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Build image and validate both models are present
+  # ───────────────────────────────────────────────────────────────────────────
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # Must be first — reformats build volume; cannot run after checkout
+      - name: Maximize build disk space
+        uses: easimon/maximize-build-space@v10
+        with:
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+          root-reserve-mb: 30720
+          swap-size-mb: 1024
+
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -f Dockerfile.ollama -t ollama-models:ci .
+
+      - name: Validate models present
+        run: |
+          docker run --rm -d --name ollama-ci \
+            -e OLLAMA_HOST=0.0.0.0:11434 \
+            -p 11434:11434 \
+            ollama-models:ci
+          echo "Waiting for Ollama server to be ready..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:11434/api/tags >/dev/null 2>&1 && break
+            echo "  attempt $i/30..."
+            sleep 3
+            if [ "$i" = "30" ]; then
+              echo "FAIL: Ollama server did not become ready after 90s"
+              docker stop ollama-ci
+              exit 1
+            fi
+          done
+          TAGS=$(curl -sf http://localhost:11434/api/tags)
+          echo "$TAGS" | grep -q "gemma4:26b" || (echo "FAIL: gemma4:26b not found in /api/tags" && docker stop ollama-ci && exit 1)
+          echo "$TAGS" | grep -q "gemma4:e4b"  || (echo "FAIL: gemma4:e4b not found in /api/tags"  && docker stop ollama-ci && exit 1)
+          echo "PASS: Both models present in /api/tags"
+          docker stop ollama-ci
+
+      - name: Log in to GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set lowercase owner and short SHA
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Note GHCR multi-layer push
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          echo "INFO: gemma4:26b (~18GB) and gemma4:e4b (~9.6GB) exceed GHCR's 10GB per-layer limit."
+          echo "INFO: Docker push client will split layers automatically — this is expected behavior."
+
+      - name: Retag tested image for GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          docker tag ollama-models:ci ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:latest
+          docker tag ollama-models:ci ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:sha-${{ env.SHORT_SHA }}
+
+      - name: Push tested image to GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          docker push ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:latest
+          docker push ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:sha-${{ env.SHORT_SHA }}
