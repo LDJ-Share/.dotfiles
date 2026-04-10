@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 06
-status: Phase 06 complete
-last_updated: "2026-04-10T15:23:40.000Z"
+status: Phase 06 verified; milestone audit refreshed
+last_updated: "2026-04-10T15:36:11.000Z"
 progress:
   total_phases: 6
   completed_phases: 6
@@ -24,22 +24,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** A developer on an air-gapped machine can open VS Code, reopen in devcontainer, and immediately have a full AI coding session — with no setup, no internet, and no firewall exceptions.
-**Current focus:** Phase 06 complete — copyable workspace template and drift checks are now in place
+**Current focus:** Milestone audit refreshed after backfilling missing validation/verification artifacts for Phases 02-06
 
 ## Phase Status
 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Ollama Image | Blocked |
-| 2 | Compose Stack | Complete |
+| 2 | Compose Stack | Verified |
 | 3 | Devcontainer Integration | Verified |
-| 4 | Export Scripts + CUDA Prep | Complete |
-| 5 | Import Scripts | Complete |
-| 6 | Workspace Template | Complete |
+| 4 | Export Scripts + CUDA Prep | Verified |
+| 5 | Import Scripts | Verified |
+| 6 | Workspace Template | Verified |
 
 ## Active Context
 
-Phase 6 added a copyable `templates/workspace-template/` artifact that mirrors the repo's compose-backed devcontainer contract, keeps the default path CPU-safe and compose-internal, and documents the full air-gap operator flow inline from `cuda-prep` through `image-import` and VS Code reopen. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so manual model pull on a connected staging machine is still the temporary fallback for image availability.
+Phases 2 through 6 now have backfilled `VALIDATION.md` and `VERIFICATION.md` artifacts based on the implemented code and fresh command evidence from this workspace. The milestone audit now reflects that the compose, devcontainer, export, import, and template phases are structurally verified. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so offline model availability is still the remaining real cross-phase gap.
 
 ## Key Decisions
 
@@ -66,3 +66,4 @@ Phase 6 added a copyable `templates/workspace-template/` artifact that mirrors t
 | Date | Quick Task | Outcome |
 |------|------------|---------|
 | 2026-04-10 | Mark Phase 1 Ollama build/publish as blocked by hosted-runner disk limits | Completed; planning artifacts updated, Phase 2 unblocked with manual model pull fallback |
+| 2026-04-10 | Backfill missing validation/verification artifacts for Phases 02-06 and refresh milestone audit | Completed; Nyquist coverage restored for Phases 02-06 and the audit now isolates the remaining real Phase 1 transport gaps |

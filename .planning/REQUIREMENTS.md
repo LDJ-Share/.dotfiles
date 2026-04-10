@@ -8,17 +8,17 @@
 ### Ollama Container
 
 - [ ] **OLLAMA-01**: Ollama container image pre-baked with `gemma4:26b` and `gemma4:e4b` models, published to GHCR
-- [ ] **OLLAMA-02**: Ollama container supports NVIDIA GPU passthrough when available; degrades gracefully to CPU when not
-- [ ] **OLLAMA-03**: Ollama container's `OLLAMA_HOST` bound to `0.0.0.0:11434` for internal network accessibility
+- [x] **OLLAMA-02**: Ollama container supports NVIDIA GPU passthrough when available; degrades gracefully to CPU when not
+- [x] **OLLAMA-03**: Ollama container's `OLLAMA_HOST` bound to `0.0.0.0:11434` for internal network accessibility
 - [ ] **OLLAMA-04**: GitHub Actions workflow builds and publishes the Ollama image to GHCR on changes
 
 ### Compose
 
-- [ ] **COMPOSE-01**: `docker-compose.yml` defines `dev-env` and `ollama` services on an isolated internal bridge network
-- [ ] **COMPOSE-02**: Dev-env service resolves Ollama by service hostname (`OLLAMA_HOST` defaults to `http://ollama:11434`)
-- [ ] **COMPOSE-03**: `OLLAMA_HOST` env var override allows switching to Windows host Ollama at `10.10.10.10:11434`
-- [ ] **COMPOSE-04**: Compose file includes `x-podman` extension block; compatible with both `docker compose` v2 and `podman compose`
-- [ ] **COMPOSE-05**: Ollama service health check (`GET /api/tags`) gates `dev-env` startup via `depends_on: condition: service_healthy`
+- [x] **COMPOSE-01**: `docker-compose.yml` defines `dev-env` and `ollama` services on an isolated internal bridge network
+- [x] **COMPOSE-02**: Dev-env service resolves Ollama by service hostname (`OLLAMA_HOST` defaults to `http://ollama:11434`)
+- [x] **COMPOSE-03**: `OLLAMA_HOST` env var override allows switching to Windows host Ollama at `10.10.10.10:11434`
+- [x] **COMPOSE-04**: Compose file includes `x-podman` extension block; compatible with both `docker compose` v2 and `podman compose`
+- [x] **COMPOSE-05**: Ollama service health check (`GET /api/tags`) gates `dev-env` startup via `depends_on: condition: service_healthy`
 
 ### Devcontainer
 
@@ -77,30 +77,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OLLAMA-01 | Phase 1 | Implemented, unpublished |
-| OLLAMA-02 | Phase 1 | Implemented, unpublished |
-| OLLAMA-03 | Phase 1 | Implemented, unpublished |
+| OLLAMA-01 | Phase 1 | Partial - Dockerfile bakes models, but no verified published transport image exists yet |
+| OLLAMA-02 | Phase 1 | Verified (static) |
+| OLLAMA-03 | Phase 1 | Verified (static) |
 | OLLAMA-04 | Phase 1 | Blocked by GitHub-hosted runner disk limits |
-| COMPOSE-01 | Phase 2 | Pending |
-| COMPOSE-02 | Phase 2 | Pending |
-| COMPOSE-03 | Phase 2 | Pending |
-| COMPOSE-04 | Phase 2 | Pending |
-| COMPOSE-05 | Phase 2 | Pending |
-| DEV-01 | Phase 3 | Complete |
-| DEV-02 | Phase 3 | Complete |
-| DEV-03 | Phase 3 | Complete |
-| EXPORT-01 | Phase 4 | Complete |
-| EXPORT-02 | Phase 4 | Complete |
-| EXPORT-03 | Phase 4 | Complete |
-| EXPORT-04 | Phase 4 | Complete |
-| CUDA-01 | Phase 4 | Complete |
-| CUDA-02 | Phase 4 | Complete |
-| CUDA-03 | Phase 4 | Complete |
-| IMPORT-01 | Phase 5 | Complete |
-| IMPORT-02 | Phase 5 | Complete |
-| IMPORT-03 | Phase 5 | Complete |
-| TMPL-01 | Phase 6 | Complete |
-| TMPL-02 | Phase 6 | Complete |
+| COMPOSE-01 | Phase 2 | Verified (static) |
+| COMPOSE-02 | Phase 2 | Verified (static) |
+| COMPOSE-03 | Phase 2 | Verified (static) |
+| COMPOSE-04 | Phase 2 | Verified (static) |
+| COMPOSE-05 | Phase 2 | Verified (static) |
+| DEV-01 | Phase 3 | Verified (static) |
+| DEV-02 | Phase 3 | Verified (static) |
+| DEV-03 | Phase 3 | Verified (static) |
+| EXPORT-01 | Phase 4 | Verified (static) |
+| EXPORT-02 | Phase 4 | Verified (static; PowerShell runtime pending) |
+| EXPORT-03 | Phase 4 | Verified (static) |
+| EXPORT-04 | Phase 4 | Verified (static) |
+| CUDA-01 | Phase 4 | Verified (static; PowerShell runtime pending) |
+| CUDA-02 | Phase 4 | Verified (static; PowerShell runtime pending) |
+| CUDA-03 | Phase 4 | Verified (static) |
+| IMPORT-01 | Phase 5 | Verified (static) |
+| IMPORT-02 | Phase 5 | Verified (static; PowerShell runtime pending) |
+| IMPORT-03 | Phase 5 | Verified (static; PowerShell runtime pending) |
+| TMPL-01 | Phase 6 | Verified (static) |
+| TMPL-02 | Phase 6 | Verified (static) |
 
 **Coverage:**
 - v1 requirements: 24 total
@@ -109,4 +109,4 @@
 
 ---
 *Requirements defined: 2026-04-08*
-*Last updated: 2026-04-10 after Phase 6 workspace template execution*
+*Last updated: 2026-04-10 after audit backfill for Phases 02-06*

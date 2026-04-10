@@ -9,11 +9,11 @@
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
 | 1 | Ollama Image | Pre-baked Ollama image with models published to GHCR | OLLAMA-01, OLLAMA-02, OLLAMA-03, OLLAMA-04 | Image pulls and serves models; GPU/CPU fallback confirmed; CI workflow publishes to GHCR. Status: blocked on GitHub-hosted runner disk limits as of run `24223620363`. |
-| 2 | Compose Stack | Two-service compose stack with health-gated startup | COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05 | `docker compose up` starts both services; dev-env resolves ollama by hostname; podman compose also works |
-| 3 | Devcontainer Integration | VS Code reopen-in-container launches full compose stack | DEV-01, DEV-02, DEV-03 | VS Code reopen triggers both services; workspace mounts correctly; AI tools reach Ollama |
-| 4 | Export Scripts + CUDA Prep | Transport archive produced with manifest + CUDA installers bundled | EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, CUDA-01, CUDA-02, CUDA-03 | Single tar.gz with SHA256 created; manifest.json present; CUDA/driver installers bundled |
-| 5 | Import Scripts | Archive verified and loaded on air-gapped machine | IMPORT-01, IMPORT-02, IMPORT-03 | SHA256 verified; images loaded; compose syntax validated; CUDA/driver installers applied |
-| 6 | Workspace Template | Copyable template with full inline workflow documentation | TMPL-01, TMPL-02 | Template copied to new project; reopen-in-container works; air-gap workflow documented end-to-end. Status: complete with `templates/workspace-template/` and static drift checks. |
+| 2 | Compose Stack | Two-service compose stack with health-gated startup | COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05 | `docker compose up` starts both services; dev-env resolves ollama by hostname; podman compose also works. Status: verified statically on 2026-04-10 with compose render and endpoint-rewrite checks; live compose-up remains human follow-up. |
+| 3 | Devcontainer Integration | VS Code reopen-in-container launches full compose stack | DEV-01, DEV-02, DEV-03 | VS Code reopen triggers both services; workspace mounts correctly; AI tools reach Ollama. Status: verified statically on 2026-04-10 with JSON assertions and `devcontainer read-configuration`; live editor reopen remains human follow-up. |
+| 4 | Export Scripts + CUDA Prep | Transport archive produced with manifest + CUDA installers bundled | EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, CUDA-01, CUDA-02, CUDA-03 | Single tar.gz with SHA256 created; manifest.json present; CUDA/driver installers bundled. Status: verified statically on 2026-04-10; live export and PowerShell runtime remain human follow-up. |
+| 5 | Import Scripts | Archive verified and loaded on air-gapped machine | IMPORT-01, IMPORT-02, IMPORT-03 | SHA256 verified; images loaded; compose syntax validated; CUDA/driver installers applied. Status: verified statically on 2026-04-10; live import and PowerShell runtime remain human follow-up. |
+| 6 | Workspace Template | Copyable template with full inline workflow documentation | TMPL-01, TMPL-02 | Template copied to new project; reopen-in-container works; air-gap workflow documented end-to-end. Status: verified statically on 2026-04-10 with template drift checks. |
 
 ---
 
@@ -147,30 +147,30 @@ Plans:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OLLAMA-01 | Phase 1 | Implemented, unpublished |
-| OLLAMA-02 | Phase 1 | Implemented, unpublished |
-| OLLAMA-03 | Phase 1 | Implemented, unpublished |
+| OLLAMA-01 | Phase 1 | Partial - Dockerfile bakes models, but no verified published transport image exists yet |
+| OLLAMA-02 | Phase 1 | Verified (static) |
+| OLLAMA-03 | Phase 1 | Verified (static) |
 | OLLAMA-04 | Phase 1 | Blocked by GitHub-hosted runner disk limits |
-| COMPOSE-01 | Phase 2 | Pending |
-| COMPOSE-02 | Phase 2 | Pending |
-| COMPOSE-03 | Phase 2 | Pending |
-| COMPOSE-04 | Phase 2 | Pending |
-| COMPOSE-05 | Phase 2 | Pending |
-| DEV-01 | Phase 3 | Complete |
-| DEV-02 | Phase 3 | Complete |
-| DEV-03 | Phase 3 | Complete |
-| EXPORT-01 | Phase 4 | Complete |
-| EXPORT-02 | Phase 4 | Complete |
-| EXPORT-03 | Phase 4 | Complete |
-| EXPORT-04 | Phase 4 | Complete |
-| CUDA-01 | Phase 4 | Complete |
-| CUDA-02 | Phase 4 | Complete |
-| CUDA-03 | Phase 4 | Complete |
-| IMPORT-01 | Phase 5 | Complete |
-| IMPORT-02 | Phase 5 | Complete |
-| IMPORT-03 | Phase 5 | Complete |
-| TMPL-01 | Phase 6 | Complete |
-| TMPL-02 | Phase 6 | Complete |
+| COMPOSE-01 | Phase 2 | Verified (static) |
+| COMPOSE-02 | Phase 2 | Verified (static) |
+| COMPOSE-03 | Phase 2 | Verified (static) |
+| COMPOSE-04 | Phase 2 | Verified (static) |
+| COMPOSE-05 | Phase 2 | Verified (static) |
+| DEV-01 | Phase 3 | Verified (static) |
+| DEV-02 | Phase 3 | Verified (static) |
+| DEV-03 | Phase 3 | Verified (static) |
+| EXPORT-01 | Phase 4 | Verified (static) |
+| EXPORT-02 | Phase 4 | Verified (static; PowerShell runtime pending) |
+| EXPORT-03 | Phase 4 | Verified (static) |
+| EXPORT-04 | Phase 4 | Verified (static) |
+| CUDA-01 | Phase 4 | Verified (static; PowerShell runtime pending) |
+| CUDA-02 | Phase 4 | Verified (static; PowerShell runtime pending) |
+| CUDA-03 | Phase 4 | Verified (static) |
+| IMPORT-01 | Phase 5 | Verified (static) |
+| IMPORT-02 | Phase 5 | Verified (static; PowerShell runtime pending) |
+| IMPORT-03 | Phase 5 | Verified (static; PowerShell runtime pending) |
+| TMPL-01 | Phase 6 | Verified (static) |
+| TMPL-02 | Phase 6 | Verified (static) |
 
 **Coverage:**
 - v1 requirements: 24 total
