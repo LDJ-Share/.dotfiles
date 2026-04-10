@@ -81,7 +81,6 @@ declare -A LSP_BINS=(
   [tailwindcss]="tailwindcss-language-server"
   [svelte]="svelteserver"
   [lua_ls]="lua-language-server"
-  [graphql]="graphql-lsp"
   [emmet_ls]="emmet-ls"
   [prismals]="prisma-language-server"
   [pyright]="pyright"

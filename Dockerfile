@@ -217,6 +217,9 @@ RUN npm config set prefix "${HOME}/.local" \
     && npm install -g @cmcconomy/pi-qwen-tool-parser@1.0.0 \
     && rm -rf "${HOME}/.npm"
 
+# Verify installation
+RUN pi --version
+
 # ─────────────────────────────────────────────────────────────────────────────
 # assembler — collects all builder outputs, then stows dotfiles
 # ─────────────────────────────────────────────────────────────────────────────
