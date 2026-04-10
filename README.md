@@ -668,6 +668,36 @@ Import-VM -Path "C:\Path\To\ExportedVM\VM.vmcx" -Copy -GenerateNewId
 # (Hyper-V Manager → VM Settings → Network Adapter → OllamaNet)
 ```
 
+### Restore the Compose Bundle
+
+After copying the Phase 4 export artifacts onto the target machine, restore the
+compose image set before opening the workspace in VS Code.
+
+Required sibling files:
+
+- `airgap-dev-env.tar.gz`
+- `airgap-dev-env-manifest.json`
+- `airgap-dev-env-SHA256SUMS`
+
+Linux or WSL import path:
+
+```bash
+bash ./image-import.sh ./airgap-dev-env.tar.gz
+```
+
+Windows host import path:
+
+```powershell
+pwsh -File .\image-import.ps1 -BundlePath .\airgap-dev-env.tar.gz
+```
+
+Both scripts follow the same contract:
+
+1. Verify `SHA256` before extraction or `docker load`
+2. Extract `images.tar` from the bundle payload and restore it locally
+3. Validate `.devcontainer/docker-compose.yml` with `docker compose config`
+4. Report the compose services and required images detected after import
+
 ### Verify After Import
 
 1. Start the VM.

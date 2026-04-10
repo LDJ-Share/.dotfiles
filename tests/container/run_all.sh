@@ -13,6 +13,7 @@ TESTS=(
   test_tmux.sh
   test_configs.sh
   test_export_scripts.sh
+  test_import_scripts.sh
 )
 
 for test in "${TESTS[@]}"; do
