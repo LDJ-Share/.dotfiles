@@ -4,7 +4,7 @@
 
 ### GitHub / GHCR
 - **Build & Publish**: GitHub Actions builds Docker images on every master push
-- **Registry**: ghcr.io/ldj-share/.dotfiles/dev-env:latest (pre-built container)
+- **Registry**: ghcr.io/ldj-share/dotfiles/dev-env:latest (pre-built container)
 - **Authentication**: GITHUB_TOKEN for GHCR publish
 - **Workflow Triggers**: Dockerfile, setup.sh, dot-pi, dot-opencode, nvim, tmux, zshrc changes
 
@@ -93,7 +93,7 @@
 
 ### VS Code Integration
 - **Devcontainer**: Defined in .devcontainer/devcontainer.json
-- **Image**: ghcr.io/ldj-share/.dotfiles/dev-env:latest
+- **Image**: ghcr.io/ldj-share/dotfiles/dev-env:latest
 - **Workspace Mount**: /workspace (bind mount from host)
 - **Extensions**: Listed in vsc-extensions.txt, pre-installed in Dockerfile
 

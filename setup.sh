@@ -160,8 +160,8 @@ module_container() {
   log "━━ Running module: container ━━"
   # Use sudo so the pull works even before the user logs out to activate the
   # docker group membership that module_docker just added.
-  sudo docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
-  log "Container image pulled. Run with: docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
+  sudo docker pull ghcr.io/ldj-share/dotfiles/dev-env:latest
+  log "Container image pulled. Run with: docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/dotfiles/dev-env:latest"
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -816,13 +816,13 @@ echo -e "${GREEN}Setup complete!${NC}"
 echo ""
 echo "Next steps:"
 echo "  1. Start the dev container:"
-echo "       docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/.dotfiles/dev-env:latest"
+echo "       docker run -it --rm -v ~/workspace:/workspace ghcr.io/ldj-share/dotfiles/dev-env:latest"
 echo "  2. From VS Code on the Windows host, use Remote-SSH to connect to this VM,"
 echo "     then reopen the workspace in the dev container (Dev Containers extension)."
 echo ""
 echo "  Before exporting the VM for air-gapped deployment:"
 echo "  3. Verify the container can reach Ollama:"
-echo "       docker run --rm ghcr.io/ldj-share/.dotfiles/dev-env:latest curl -s http://10.10.10.10:11434"
+echo "       docker run --rm ghcr.io/ldj-share/dotfiles/dev-env:latest curl -s http://10.10.10.10:11434"
 echo "  4. Remove the Default Switch network adapter in Hyper-V Manager."
 echo "  5. Run the firewall and account hardening script (as root):"
 echo "       sudo bash ~/.dotfiles/firewall-enable.sh"

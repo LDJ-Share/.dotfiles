@@ -6,7 +6,10 @@ x-podman:
 
 services:
   dev-env:
-    image: ${DEV_ENV_IMAGE:-ghcr.io/ldj-share/.dotfiles/dev-env:latest}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: ${DEV_ENV_IMAGE:-dotfiles-dev-env:local}
     init: true
     working_dir: /workspace
     environment:
@@ -25,13 +28,13 @@ services:
         condition: service_healthy
 
   ollama:
-    image: ${OLLAMA_IMAGE:-ghcr.io/ldj-share/.dotfiles/ollama-models:latest}
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.20.3}
     init: true
     environment:
       OLLAMA_HOST: 0.0.0.0:11434
       OLLAMA_KEEP_ALIVE: 24h
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      test: ["CMD", "ollama", "ls"]
       interval: 10s
       timeout: 5s
       retries: 12

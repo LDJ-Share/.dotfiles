@@ -104,7 +104,7 @@ service, which is also local.
 | **Ollama** | Windows host | Serves AI model inference via HTTP. Bound exclusively to `10.10.10.10:11434`. Uses the NVIDIA GPU for fast responses. |
 | **OllamaNet** | Hyper-V Internal Switch | A virtual network that exists only inside the host machine. Provides a communication channel between the VM and Ollama. Has no connection to physical network adapters. |
 | **Ubuntu VM** | Hyper-V guest | The developer workspace OS layer. Runs Docker and enforces network policy via UFW. Has no internet access once deployed. |
-| **dev-env container** | Docker inside the VM | Pre-built image (`ghcr.io/ldj-share/.dotfiles/dev-env:latest`) containing all dev tools fully initialized. Pulled once from GHCR; runs without any internet access thereafter. |
+| **dev-env container** | Docker inside the VM | Pre-built image (`ghcr.io/ldj-share/dotfiles/dev-env:latest`) containing all dev tools fully initialized. Pulled once from GHCR; runs without any internet access thereafter. |
 | **Pi / OpenCode / Neovim** | dev-env container | AI coding agents and editor. Send prompts to Ollama over the OllamaNet switch and return responses to the developer. |
 | **ufw** | Ubuntu VM | Linux firewall. Enforces the VM's network isolation policy at the OS level. The container inherits the VM's network namespace, so UFW rules apply to all container traffic. |
 
@@ -303,17 +303,17 @@ After the VM is set up, all development work happens inside the container:
 
 ```bash
 # Pull the latest image (only needs ghcr.io)
-docker pull ghcr.io/ldj-share/.dotfiles/dev-env:latest
+docker pull ghcr.io/ldj-share/dotfiles/dev-env:latest
 
 # Start a session with your workspace mounted
 docker run -it --rm \
   -v ~/workspace:/workspace \
-  ghcr.io/ldj-share/.dotfiles/dev-env:latest
+  ghcr.io/ldj-share/dotfiles/dev-env:latest
 
 # Or pin to a specific version for reproducibility
 docker run -it --rm \
   -v ~/workspace:/workspace \
-  ghcr.io/ldj-share/.dotfiles/dev-env:<git-sha>
+  ghcr.io/ldj-share/dotfiles/dev-env:<git-sha>
 ```
 
 Everything inside the container is pre-initialized at build time:
@@ -420,7 +420,7 @@ For a full non-containerized install, use `just install-full`.
 |---|---|---|
 | `system` | ✓ | Minimal VM host packages: git, curl, stow, openssh-server, etc. Enables SSH server for Remote-SSH workflows. |
 | `docker` | ✓ | Docker CE and Docker Compose |
-| `container` | ✓ | Pulls `ghcr.io/ldj-share/.dotfiles/dev-env:latest` from GHCR |
+| `container` | ✓ | Pulls `ghcr.io/ldj-share/dotfiles/dev-env:latest` from GHCR |
 | `shell` | | Base dev packages (zsh, fzf, bat, ripgrep, tmux, etc.) plus Zoxide, Eza, WezTerm, Oh My Posh, Lazygit, Television |
 | `neovim` | | Latest Neovim (tarball) if the installed version is too old |
 | `kubernetes` | | kubectl, kubectx, kubens |

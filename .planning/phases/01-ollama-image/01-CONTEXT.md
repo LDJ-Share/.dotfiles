@@ -26,7 +26,7 @@ Build and publish a pre-baked Ollama container image containing gemma4:26b and g
 ### Image tagging
 - **D-03:** Push both `:latest` and `:sha-{7-char-git-short}` tags on every successful build
 - `:sha-` tags enable reproducible air-gap exports (export scripts can pin to a specific build)
-- Image name: `ghcr.io/ldj-share/.dotfiles/ollama-models`
+- Image name: `ghcr.io/ldj-share/dotfiles/ollama-models`
 
 ### CI workflow structure
 - **D-04:** New dedicated `build-ollama.yml` workflow — does not extend existing `build-container.yml`
@@ -78,7 +78,7 @@ Build and publish a pre-baked Ollama container image containing gemma4:26b and g
 
 ### Reusable Assets
 - `.github/workflows/build-container.yml`: Full working example of multi-job CI workflow with ShellCheck lint, Docker Buildx build, GHCR publish, and path-scoped triggers — use as structural template for `build-ollama.yml`
-- `.devcontainer/devcontainer.json`: Current devcontainer uses `ghcr.io/ldj-share/.dotfiles/dev-env:latest` image reference — shows the GHCR naming convention in use
+- `.devcontainer/devcontainer.json`: Current devcontainer uses `ghcr.io/ldj-share/dotfiles/dev-env:latest` image reference — shows the GHCR naming convention in use
 
 ### Established Patterns
 - Existing `Dockerfile` uses multi-stage build with parallel builder stages — Ollama Dockerfile is simpler (single stage, no multi-stage needed) but CI structure is the same

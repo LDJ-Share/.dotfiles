@@ -19,8 +19,8 @@ Define the two-service compose stack for `dev-env` and `ollama`, with service di
 
 ### Compose image references
 - **D-03:** Compose uses environment-driven image references with sensible defaults instead of hard-coded tags.
-- `DEV_ENV_IMAGE` defaults to `ghcr.io/ldj-share/.dotfiles/dev-env:latest`.
-- `OLLAMA_IMAGE` defaults to `ghcr.io/ldj-share/.dotfiles/ollama-models:latest`.
+- `DEV_ENV_IMAGE` defaults to `ghcr.io/ldj-share/dotfiles/dev-env:latest`.
+- `OLLAMA_IMAGE` defaults to `ghcr.io/ldj-share/dotfiles/ollama-models:latest`.
 
 ### Persistence layout
 - **D-04:** Keep persistence minimal but practical. Persist Ollama model data and the main dev cache volume only.
