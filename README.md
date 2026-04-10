@@ -324,9 +324,9 @@ Everything inside the container is pre-initialized at build time:
 
 ### VS Code Remote Development
 
-The repo includes `.devcontainer/devcontainer.json`, which lets VS Code open
-the project directly inside the pre-built container image without any manual
-`docker run` commands.
+The repo includes `.devcontainer/devcontainer.json`, which lets VS Code reopen
+the project through the existing `.devcontainer/docker-compose.yml` stack
+without any manual `docker run` commands.
 
 **One-time setup on the Windows host:**
 
@@ -344,8 +344,9 @@ the project directly inside the pre-built container image without any manual
 1. In VS Code, open the Remote Explorer and connect to `ollamanet-vm` via SSH.
 2. Once connected, VS Code will detect `.devcontainer/devcontainer.json` and
    offer to **Reopen in Container**. Accept it.
-3. VS Code attaches to the running `dev-env:latest` container. All extensions,
-   terminals, and the integrated editor run inside the container.
+3. VS Code starts both `dev-env` and `ollama`, then attaches to the `dev-env`
+   service. All extensions, terminals, and the integrated editor run inside the
+   dev environment container.
 
 The container is already fully initialized — Neovim, LSP servers, Pi, and
 OpenCode are ready to use without any first-run downloads.

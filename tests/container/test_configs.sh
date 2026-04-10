@@ -35,6 +35,20 @@ for pat in "${BAD_PATTERNS[@]}"; do
 done
 
 echo ""
+echo "=== Configs: devcontainer compose contract ==="
+check_file ".devcontainer/devcontainer.json"
+check_contains "devcontainer uses compose mode" \
+  ".devcontainer/devcontainer.json" '"dockerComposeFile": "docker-compose.yml"'
+check_contains "devcontainer targets dev-env service" \
+  ".devcontainer/devcontainer.json" '"service": "dev-env"'
+check_contains "devcontainer starts ollama sidecar" \
+  ".devcontainer/devcontainer.json" '"ollama"'
+check_contains "devcontainer workspace path preserved" \
+  ".devcontainer/devcontainer.json" '"workspaceFolder": "/workspace"'
+check_contains "devcontainer remote user preserved" \
+  ".devcontainer/devcontainer.json" '"remoteUser": "dev"'
+
+echo ""
 echo "=== Configs: default model set ==="
 check_contains "Pi default model set" \
   "${HOME}/.pi/agent/settings.json" "defaultModel"
