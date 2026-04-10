@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** A developer on an air-gapped machine can open VS Code, reopen in devcontainer, and immediately have a full AI coding session — with no setup, no internet, and no firewall exceptions.
-**Current focus:** Phase 04 — export-scripts-cuda-prep
+**Current focus:** Phase 04 complete — transport archive export and CUDA staging are ready for Phase 05 import work
 
 ## Phase Status
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 | 1 | Ollama Image | Blocked |
 | 2 | Compose Stack | Complete |
 | 3 | Devcontainer Integration | Verified |
-| 4 | Export Scripts + CUDA Prep | Pending |
+| 4 | Export Scripts + CUDA Prep | Complete |
 | 5 | Import Scripts | Pending |
 | 6 | Workspace Template | Pending |
 
