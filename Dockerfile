@@ -26,8 +26,10 @@ ARG USERNAME=dev
 ARG USER_UID=1000
 ARG USER_GID=1000
 
+ENV NODE_ENV=production
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
+ENV NPM_CONFIG_LOGLEVEL=warn
 
 # ─────────────────────────────────────────────────────────────────────────────
 # System packages + all apt-based tool repos
@@ -206,20 +208,6 @@ RUN npm config set prefix "${HOME}/.local" \
     && rm -rf "${HOME}/.npm"
 RUN "${HOME}/.cargo/bin/cargo" install just
 
-# ──
-# builder-ai-tools: serial after builder-bun (opencode installer detects bun on PATH)
-
-FROM base AS builder-ai-tools
-COPY --chown=dev:dev --from=builder-bun /home/dev/.bun /home/dev/.bun
-RUN curl -fsSL https://opencode.ai/install | bash
-RUN npm config set prefix "${HOME}/.local" \
-    && npm install -g @mariozechner/pi-coding-agent \
-    && npm install -g @cmcconomy/pi-qwen-tool-parser@1.0.0 \
-    && rm -rf "${HOME}/.npm"
-
-# Verify installation
-RUN pi --version
-
 # ─────────────────────────────────────────────────────────────────────────────
 # assembler — collects all builder outputs, then stows dotfiles
 # ─────────────────────────────────────────────────────────────────────────────
@@ -265,11 +253,33 @@ COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.cargo/bin/just /home/de
 COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/bin/devcontainer /home/dev/.local/bin/devcontainer
 COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/lib/node_modules/@devcontainers /home/dev/.local/lib/node_modules/@devcontainers
 
-# ── AI tools (scoped copies to avoid clobbering node_modules from dev-tools)
-COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.opencode /home/dev/.opencode
-COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/lib/node_modules/@mariozechner /home/dev/.local/lib/node_modules/@mariozechner
-COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/lib/node_modules/@cmcconomy /home/dev/.local/lib/node_modules/@cmcconomy
-RUN ln -sf /home/dev/.local/lib/node_modules/@mariozechner/pi-coding-agent/dist/cli.js /home/dev/.local/bin/pi
+# ─────────────────────────────────────────────────────────────────────────────
+# final — pre-initialization (parallel via & + wait)
+#
+# All applications are fully initialized here so nothing is lazy-loaded at
+# runtime on the corporate machine (no internet required after docker pull).
+#
+# tmux TPM install and oh-my-opencode install run in background while the
+# three sequential nvim init commands run in the foreground group.
+# Wall-clock time: max(~10 min nvim, ~1.5 min tmux, ~1.5 min opencode) ≈ 10 min.
+#
+# Note: oh-my-opencode writes to ~/.config/opencode/opencode.json (XDG path),
+# not through the ~/.opencode/config.json stow symlink.
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM assembler AS final
+
+# ── OpenCode
+RUN curl -fsSL https://opencode.ai/install | bash
+
+# ── Pi
+RUN npm config set prefix "${HOME}/.local" \
+    && npm install -g @mariozechner/pi-coding-agent \
+    && npm install -g @cmcconomy/pi-qwen-tool-parser@1.0.0 \
+    && rm -rf "${HOME}/.npm"
+
+# Verify installation
+RUN pi --version
 
 # ── Dotfiles and stow
 # Placed late so config changes don't bust the tool-install cache above.
@@ -295,26 +305,17 @@ RUN mkdir -p "${HOME}/.opencode" \
 # Write ~/.zshrc wrapper (sources the stowed zshrc)
 RUN printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "${HOME}/.zshrc"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# final — pre-initialization (parallel via & + wait)
-#
-# All applications are fully initialized here so nothing is lazy-loaded at
-# runtime on the corporate machine (no internet required after docker pull).
-#
-# tmux TPM install and oh-my-opencode install run in background while the
-# three sequential nvim init commands run in the foreground group.
-# Wall-clock time: max(~10 min nvim, ~1.5 min tmux, ~1.5 min opencode) ≈ 10 min.
-#
-# Note: oh-my-opencode writes to ~/.config/opencode/opencode.json (XDG path),
-# not through the ~/.opencode/config.json stow symlink.
-# ─────────────────────────────────────────────────────────────────────────────
-
-FROM assembler AS final
-
+# ── tmux plugins
 RUN git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
 RUN TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins" "${HOME}/.tmux/plugins/tpm/scripts/install_plugins.sh" 2>/dev/null || true
+
+# ── oh-my-opencode
 RUN "${HOME}/.bun/bin/bunx" oh-my-opencode install --no-tui --claude=no --openai=no --gemini=no --copilot=no 2>/dev/null || true
+
+# ── get-shit-done
 RUN npx get-shit-done-cc --opencode --global 
+
+# ── NeoVim initialization
 RUN nvim --headless "+Lazy! sync" +qa  2>/dev/null || true
 RUN nvim --headless "+MasonInstall typescript-language-server" +qa
 RUN nvim --headless "+MasonInstall html-lsp" +qa
