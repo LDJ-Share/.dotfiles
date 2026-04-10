@@ -43,6 +43,7 @@ RUN apt-get update -qq && apt-get install -y -qq curl && rm -rf /var/lib/apt/lis
 # ─────────────────────────────────────────────────────────────────────────────
 RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
     _pid=$! && \
+    trap 'kill $_pid 2>/dev/null; wait $_pid 2>/dev/null || true' EXIT && \
     _ready=0 && \
     for i in $(seq 1 30); do \
       if OLLAMA_HOST=127.0.0.1:11235 ollama ls >/dev/null 2>&1; then \
@@ -50,9 +51,10 @@ RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
       fi; \
       sleep 2; \
     done && \
-    [ "$_ready" = "1" ] || (echo "ERROR: ollama server did not start within 60s" && kill $_pid && exit 1) && \
+    [ "$_ready" = "1" ] || (echo "ERROR: ollama server did not start within 60s" && exit 1) && \
     OLLAMA_HOST=127.0.0.1:11235 ollama pull gemma4:26b && \
-    kill $_pid && wait $_pid 2>/dev/null || true
+    kill $_pid && wait $_pid 2>/dev/null || true && \
+    trap - EXIT
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pull gemma4:e4b (~9.6GB) — separate RUN = independent cache layer (D-02)
@@ -62,6 +64,7 @@ RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
 # ─────────────────────────────────────────────────────────────────────────────
 RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
     _pid=$! && \
+    trap 'kill $_pid 2>/dev/null; wait $_pid 2>/dev/null || true' EXIT && \
     _ready=0 && \
     for i in $(seq 1 30); do \
       if OLLAMA_HOST=127.0.0.1:11235 ollama ls >/dev/null 2>&1; then \
@@ -69,9 +72,10 @@ RUN OLLAMA_HOST=127.0.0.1:11235 ollama serve & \
       fi; \
       sleep 2; \
     done && \
-    [ "$_ready" = "1" ] || (echo "ERROR: ollama server did not start within 60s" && kill $_pid && exit 1) && \
+    [ "$_ready" = "1" ] || (echo "ERROR: ollama server did not start within 60s" && exit 1) && \
     OLLAMA_HOST=127.0.0.1:11235 ollama pull gemma4:e4b && \
-    kill $_pid && wait $_pid 2>/dev/null || true
+    kill $_pid && wait $_pid 2>/dev/null || true && \
+    trap - EXIT
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Runtime binding — set AFTER all model pull RUN layers (D-05)

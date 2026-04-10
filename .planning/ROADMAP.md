@@ -39,8 +39,8 @@
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Create Dockerfile.ollama with pre-baked gemma4 models (OLLAMA-01, OLLAMA-02, OLLAMA-03)
-- [ ] 01-02-PLAN.md — Create build-ollama.yml CI workflow (OLLAMA-04)
+- [x] 01-01-PLAN.md — Create Dockerfile.ollama with pre-baked gemma4 models (OLLAMA-01, OLLAMA-02, OLLAMA-03)
+- [x] 01-02-PLAN.md — Create build-ollama.yml CI workflow (OLLAMA-04)
 
 ---
 

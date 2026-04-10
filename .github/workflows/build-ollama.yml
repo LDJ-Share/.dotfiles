@@ -58,7 +58,7 @@ jobs:
     steps:
       # Must be first — reformats build volume; cannot run after checkout
       - name: Maximize build disk space
-        uses: easimon/maximize-build-space@master
+        uses: easimon/maximize-build-space@v10
         with:
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -98,6 +98,11 @@ jobs:
             curl -sf http://localhost:11434/api/tags >/dev/null 2>&1 && break
             echo "  attempt $i/30..."
             sleep 3
+            if [ "$i" = "30" ]; then
+              echo "FAIL: Ollama server did not become ready after 90s"
+              docker stop ollama-ci
+              exit 1
+            fi
           done
           TAGS=$(curl -sf http://localhost:11434/api/tags)
           echo "$TAGS" | grep -q "gemma4:26b" || (echo "FAIL: gemma4:26b not found in /api/tags" && docker stop ollama-ci && exit 1)
@@ -105,36 +110,8 @@ jobs:
           echo "PASS: Both models present in /api/tags"
           docker stop ollama-ci
 
-  # ───────────────────────────────────────────────────────────────────────────
-  # JOB 3 — Publish to GHCR (master push only, after tests pass)
-  # ───────────────────────────────────────────────────────────────────────────
-  publish:
-    name: Publish to GHCR
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    permissions:
-      contents: read
-      packages: write   # T-1-02 mitigation: scoped to packages only
-
-    steps:
-      # Must be first — reformats build volume; cannot run after checkout
-      - name: Maximize build disk space
-        uses: easimon/maximize-build-space@master
-        with:
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-          root-reserve-mb: 2048
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -142,27 +119,25 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set lowercase owner and short SHA
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Note GHCR multi-layer push
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           echo "INFO: gemma4:26b (~18GB) and gemma4:e4b (~9.6GB) exceed GHCR's 10GB per-layer limit."
           echo "INFO: Docker push client will split layers automatically — this is expected behavior."
 
-      - name: Push to GHCR
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.ollama
-          push: true
-          tags: |
-            ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:latest
-            ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:sha-${{ env.SHORT_SHA }}
-          cache-from: |
-            type=gha,scope=ollama-gemma4-26b
-            type=gha,scope=ollama-gemma4-e4b
-          cache-to: |
-            type=gha,mode=max,scope=ollama-gemma4-26b
-            type=gha,mode=max,scope=ollama-gemma4-e4b
+      - name: Retag tested image for GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          docker tag ollama-models:ci ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:latest
+          docker tag ollama-models:ci ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:sha-${{ env.SHORT_SHA }}
+
+      - name: Push tested image to GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          docker push ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:latest
+          docker push ghcr.io/${{ env.OWNER }}/dotfiles/ollama-models:sha-${{ env.SHORT_SHA }}
