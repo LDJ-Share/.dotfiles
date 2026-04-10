@@ -68,3 +68,4 @@ All phases (1-6) now have backfilled `VALIDATION.md` and `VERIFICATION.md` artif
 | 2026-04-10 | Mark Phase 1 Ollama build/publish as blocked by hosted-runner disk limits | Completed; planning artifacts updated, Phase 2 unblocked with manual model pull fallback |
 | 2026-04-10 | Backfill missing validation/verification artifacts for Phases 02-06 and refresh milestone audit | Completed; Nyquist coverage restored for Phases 02-06 and the audit now isolates the remaining real Phase 1 transport gaps |
 | 2026-04-10 | Document manual Ollama model import procedure for shared volume | Completed; MANUAL-MODEL-IMPORT.md created, OLLAMA-01 verified via volume import approach |
+| 2026-04-10 | Fix pi symlink and test_workspace_template path | Completed; 2 commits — Dockerfile ln -sf restores ESM resolution, TEMPLATES_DIR env var makes test portable across CI and local compose |
