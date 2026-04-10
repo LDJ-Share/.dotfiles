@@ -13,7 +13,7 @@ QWEN_PKG_DIR="${NPM_PREFIX}/lib/node_modules/@cmcconomy/pi-qwen-tool-parser"
 
 echo "=== Pi: binary ==="
 check_cmd pi
-check "pi --help exits 0" pi --help
+check "pi --help exits 0" pi --help --offline
 
 echo ""
 echo "=== Pi: config files ==="

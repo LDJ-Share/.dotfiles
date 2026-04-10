@@ -319,7 +319,6 @@ RUN nvim --headless "+MasonInstall css-lsp" +qa
 RUN nvim --headless "+MasonInstall tailwindcss-language-server" +qa
 RUN nvim --headless "+MasonInstall svelte-language-server" +qa
 RUN nvim --headless "+MasonInstall lua-language-server" +qa
-RUN nvim --headless "+MasonInstall graphql-language-service-cli" +qa
 RUN nvim --headless "+MasonInstall emmet-ls" +qa
 RUN nvim --headless "+MasonInstall prisma-language-server" +qa
 RUN nvim --headless "+MasonInstall pyright" +qa
