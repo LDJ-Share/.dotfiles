@@ -156,9 +156,9 @@ Plans:
 | COMPOSE-03 | Phase 2 | Pending |
 | COMPOSE-04 | Phase 2 | Pending |
 | COMPOSE-05 | Phase 2 | Pending |
-| DEV-01 | Phase 3 | Pending |
-| DEV-02 | Phase 3 | Pending |
-| DEV-03 | Phase 3 | Pending |
+| DEV-01 | Phase 3 | Complete |
+| DEV-02 | Phase 3 | Complete |
+| DEV-03 | Phase 3 | Complete |
 | EXPORT-01 | Phase 4 | Pending |
 | EXPORT-02 | Phase 4 | Pending |
 | EXPORT-03 | Phase 4 | Pending |

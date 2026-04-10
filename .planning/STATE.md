@@ -2,44 +2,44 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 02
+current_phase: 03
 status: active
-last_updated: "2026-04-10T03:54:56.748Z"
+last_updated: "2026-04-10T13:36:38.548Z"
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 2
-  completed_plans: 2
-  percent: 17
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
 
 **Project:** Air-Gapped AI Dev Environment — Compose-First Deployment
 **Initialized:** 2026-04-08
-**Current Phase:** 02
+**Current Phase:** 03
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** A developer on an air-gapped machine can open VS Code, reopen in devcontainer, and immediately have a full AI coding session — with no setup, no internet, and no firewall exceptions.
-**Current focus:** Phase 02 — compose-stack
+**Current focus:** Phase 03 complete — ready for verification and Phase 04 planning
 
 ## Phase Status
 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Ollama Image | Blocked |
-| 2 | Compose Stack | Current |
-| 3 | Devcontainer Integration | Pending |
+| 2 | Compose Stack | Complete |
+| 3 | Devcontainer Integration | Complete |
 | 4 | Export Scripts + CUDA Prep | Pending |
 | 5 | Import Scripts | Pending |
 | 6 | Workspace Template | Pending |
 
 ## Active Context
 
-Phase 1 implementation exists, but GHCR publication is blocked on GitHub-hosted runner disk limits. Master run `24223620363` failed in `Build and Test` with `no space left on device` under `/var/lib/docker/buildkit/...` after the maximize-build-space step reduced `/dev/root` to `100M` free. Phase 2 can proceed using manual model pull on a connected staging machine as the temporary fallback.
+Phase 3 now routes VS Code devcontainer startup through the existing compose stack: `devcontainer.json` attaches to `dev-env`, starts both `dev-env` and `ollama`, and preserves the `/workspace` mount and `dev` user contract. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so manual model pull on a connected staging machine is still the temporary fallback for image availability.
 
 ## Key Decisions
 
@@ -53,6 +53,8 @@ Phase 1 implementation exists, but GHCR publication is blocked on GitHub-hosted 
 | BuildKit GHA cache scoped per model layer | Prevents 30+ min full rebuilds on every CI run for 22GB+ image | Phase 1 |
 | GitHub-hosted runner disk is insufficient for the current Ollama image path | Run `24223620363` failed in `Build image` with `/var/lib/docker/buildkit/...: no space left on device` after `/dev/root` dropped to `100M` free | Phase 1 |
 | Manual model pull is acceptable while GHCR publish is blocked | Keeps compose-stack work moving without waiting on larger/self-hosted CI capacity | Phase 1 -> Phase 2 |
+| Devcontainer uses compose mode via `.devcontainer/docker-compose.yml` | Keeps VS Code aligned with the existing stack instead of introducing a separate container path | Phase 3 |
+| Devcontainer verification stays static-first | JSON field checks and `devcontainer read-configuration` are reliable here; full editor reopen automation is deferred | Phase 3 |
 | SHA256 verification before any image load | Fail-fast on corruption; prevents partial state on the offline machine | Phase 5 |
 | CUDA prep as separate script bundled by export | Keeps export script general-purpose; CUDA prep is optional and offline-machine-specific | Phase 4 |
 

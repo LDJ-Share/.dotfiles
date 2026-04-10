@@ -22,9 +22,9 @@
 
 ### Devcontainer
 
-- [ ] **DEV-01**: `.devcontainer/devcontainer.json` updated to use `dockerComposeFile` pointing to compose file in `.devcontainer/`
-- [ ] **DEV-02**: `devcontainer.json` correctly sets `service: dev-env`, `workspaceFolder: /workspace`, `remoteUser: dev`
-- [ ] **DEV-03**: `devcontainer.json` starts both `dev-env` and `ollama` via `runServices`
+- [x] **DEV-01**: `.devcontainer/devcontainer.json` updated to use `dockerComposeFile` pointing to compose file in `.devcontainer/`
+- [x] **DEV-02**: `devcontainer.json` correctly sets `service: dev-env`, `workspaceFolder: /workspace`, `remoteUser: dev`
+- [x] **DEV-03**: `devcontainer.json` starts both `dev-env` and `ollama` via `runServices`
 
 ### Export Scripts
 
@@ -86,9 +86,9 @@
 | COMPOSE-03 | Phase 2 | Pending |
 | COMPOSE-04 | Phase 2 | Pending |
 | COMPOSE-05 | Phase 2 | Pending |
-| DEV-01 | Phase 3 | Pending |
-| DEV-02 | Phase 3 | Pending |
-| DEV-03 | Phase 3 | Pending |
+| DEV-01 | Phase 3 | Complete |
+| DEV-02 | Phase 3 | Complete |
+| DEV-03 | Phase 3 | Complete |
 | EXPORT-01 | Phase 4 | Pending |
 | EXPORT-02 | Phase 4 | Pending |
 | EXPORT-03 | Phase 4 | Pending |
