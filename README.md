@@ -698,6 +698,18 @@ Both scripts follow the same contract:
 3. Validate `.devcontainer/docker-compose.yml` with `docker compose config`
 4. Report the compose services and required images detected after import
 
+If the bundle contains `cuda/metadata.json`, the import scripts also inspect the
+optional GPU payload:
+
+- `image-import.sh` verifies the CUDA `SHA256SUMS`, runs the Linux CUDA toolkit
+  and container toolkit installers when present, and warns if only Windows
+  driver media is bundled
+- `image-import.ps1` verifies the same metadata and runs the bundled Windows
+  NVIDIA driver installer when present
+- If `metadata.json` exists but the required installers are missing, both
+  scripts warn and tell the operator to re-run `cuda-prep` with the correct
+  download URLs on the connected staging machine
+
 ### Verify After Import
 
 1. Start the VM.

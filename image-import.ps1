@@ -42,6 +42,84 @@ function Get-ComposeImages {
   return @($images | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
 
+function Verify-CudaChecksums {
+  param([string]$CudaDir)
+
+  $checksums = Join-Path $CudaDir 'SHA256SUMS'
+  if (-not (Test-Path $checksums -PathType Leaf)) {
+    Write-Warning "CUDA payload is missing SHA256SUMS; skipping installer verification"
+    return
+  }
+
+  $lines = @(Get-Content $checksums | Where-Object { $_ -match '\S' })
+  if ($lines.Count -eq 0) {
+    Write-Warning "CUDA payload has no staged installer hashes; treating this as a metadata-only bundle"
+    return
+  }
+
+  Write-Host "Verifying CUDA payload checksums" -ForegroundColor Green
+  foreach ($line in $lines) {
+    $parts = $line -split '\s+', 2
+    $expected = $parts[0].ToLowerInvariant()
+    $relativePath = $parts[1].Trim()
+    $target = Join-Path $CudaDir ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+
+    if (-not (Test-Path $target -PathType Leaf)) {
+      throw "CUDA payload file listed in SHA256SUMS is missing: $relativePath"
+    }
+
+    $actual = (Get-FileHash $target -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($expected -ne $actual) {
+      throw "CUDA payload checksum mismatch for $relativePath"
+    }
+  }
+}
+
+function Write-CudaPrepGuidance {
+  param([pscustomobject]$Metadata)
+
+  Write-Warning "CUDA metadata.json is present but the required installers are missing. Re-run cuda-prep with the needed URLs on the connected staging machine."
+  Write-Host ("  pwsh -File .\cuda-prep.ps1 -GpuModel '{0}' -DriverVersion '{1}' -LinuxOs '{2}' -KernelVersion '{3}' -WindowsOs '{4}' -LinuxToolkitUrl <url> -ContainerToolkitUrl <url> -WindowsDriverUrl <url>" -f $Metadata.gpu_model, $Metadata.driver_version, $Metadata.linux_os, $Metadata.kernel_version, $Metadata.windows_os)
+}
+
+function Invoke-CudaImport {
+  param([string]$PayloadDir)
+
+  $cudaDir = Join-Path $PayloadDir 'cuda'
+  $metadataPath = Join-Path $cudaDir 'metadata.json'
+  $windowsDriver = Join-Path $cudaDir 'downloads/windows/nvidia-driver.exe'
+  $linuxToolkit = Join-Path $cudaDir 'downloads/linux/cuda-toolkit.run'
+  $containerToolkit = Join-Path $cudaDir 'downloads/linux/nvidia-container-toolkit.pkg'
+
+  if (-not (Test-Path $cudaDir -PathType Container)) {
+    Write-Host "No CUDA payload bundled; CPU-only import remains valid" -ForegroundColor Green
+    return
+  }
+
+  if (-not (Test-Path $metadataPath -PathType Leaf)) {
+    Write-Warning "CUDA payload found without metadata.json; skipping installer execution"
+    return
+  }
+
+  $metadata = Get-Content -Raw $metadataPath | ConvertFrom-Json
+  Verify-CudaChecksums -CudaDir $cudaDir
+
+  if (Test-Path $linuxToolkit -PathType Leaf -or Test-Path $containerToolkit -PathType Leaf) {
+    Write-Warning "Linux CUDA artifacts are bundled in the archive. Install them from the Linux/WSL import path with image-import.sh."
+  }
+
+  if (Test-Path $windowsDriver -PathType Leaf) {
+    Write-Host "Running Windows NVIDIA driver installer: $windowsDriver" -ForegroundColor Green
+    & $windowsDriver /s
+    if ($LASTEXITCODE -ne 0) {
+      throw "Windows NVIDIA driver installer failed."
+    }
+    return
+  }
+
+  Write-CudaPrepGuidance -Metadata $metadata
+}
+
 if ($Help) {
   Show-Usage
   exit 0
@@ -161,6 +239,8 @@ try {
 
     Write-Host "Image available locally: $image" -ForegroundColor Green
   }
+
+  Invoke-CudaImport -PayloadDir $payloadDir
 
   Write-Host "Import workflow completed successfully" -ForegroundColor Green
 }
