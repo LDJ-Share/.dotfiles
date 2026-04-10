@@ -22,6 +22,7 @@ A developer on an air-gapped machine can open VS Code, reopen in devcontainer, a
 - ✓ GNU Stow dotfiles management — existing
 - ✓ GitHub Actions CI/CD (build, test, publish to GHCR) — existing
 - ✓ Container test suite (binaries, neovim, tmux, pi, opencode, configs) — existing
+- ✓ Offline import workflow scripts: `image-import.sh` / `image-import.ps1` verify the bundle, restore images, validate compose, and handle optional CUDA payloads — validated in Phase 05
 
 ### Active
 
@@ -78,6 +79,7 @@ A developer on an air-gapped machine can open VS Code, reopen in devcontainer, a
 | Manual model pull is an acceptable temporary fallback | GitHub-hosted runner disk limits blocked the GHCR publish path in run `24223620363`; Phase 2 still needs a usable Ollama source | Accepted on 2026-04-10 |
 | Replace .devcontainer with compose-based version | Simplify primary use case; old approach was workaround | — Pending |
 | Podman + Docker compat | Host has Podman Desktop; target uses Docker in WSL2 | — Pending |
+| Import validates first, starts later | Offline restore should verify checksum, image availability, and compose syntax without implicitly starting services | Accepted in Phase 05 |
 
 ## Evolution
 
@@ -97,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-10 after Phase 1 block assessment*
+*Last updated: 2026-04-10 after Phase 5 import workflow completion*
