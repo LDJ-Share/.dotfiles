@@ -6,7 +6,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama",
       "options": {
-        "baseURL": "http://10.10.10.10:11434/v1"
+        "baseURL": "http://ollama:11434/v1"
       },
       "models": {
         "bcluzel/LFM2.5-1.2B-Instruct:Q4_K_M": {

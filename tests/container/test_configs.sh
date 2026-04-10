@@ -4,7 +4,7 @@ set -uo pipefail
 # shellcheck source=helpers.sh
 source "$(dirname "$0")/helpers.sh"
 
-OLLAMA_HOST="10\.10\.10\.10:11434"
+OLLAMA_HOST="ollama:11434"
 BAD_PATTERNS=("127\.0\.0\.1" "localhost")
 
 echo "=== Configs: dotfiles stowed ==="
@@ -18,7 +18,7 @@ check_file "${HOME}/.opencode/oh-my-opencode.json"
 
 echo ""
 echo "=== Configs: Ollama URL in Pi models.json ==="
-check_contains "models.json → OllamaNet host" \
+check_contains "models.json → compose Ollama host" \
   "${HOME}/.pi/agent/models.json" "${OLLAMA_HOST}"
 for pat in "${BAD_PATTERNS[@]}"; do
   check_not_contains "models.json → no ${pat}" \
@@ -27,7 +27,7 @@ done
 
 echo ""
 echo "=== Configs: Ollama URL in OpenCode config.json ==="
-check_contains "opencode config.json → OllamaNet host" \
+check_contains "opencode config.json → compose Ollama host" \
   "${HOME}/.opencode/config.json" "${OLLAMA_HOST}"
 for pat in "${BAD_PATTERNS[@]}"; do
   check_not_contains "opencode config.json → no ${pat}" \

@@ -57,8 +57,8 @@ done
 
 echo ""
 echo "=== OpenCode: Ollama URL ==="
-check_contains "config uses OllamaNet host" \
-  "${OPENCODE_CONFIG}" "10\.10\.10\.10:11434"
+check_contains "config uses compose Ollama host" \
+  "${OPENCODE_CONFIG}" "ollama:11434"
 check_not_contains "config does not use localhost" \
   "${OPENCODE_CONFIG}" "127\.0\.0\.1"
 check_not_contains "config does not use localhost (hostname)" \

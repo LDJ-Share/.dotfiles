@@ -3,7 +3,7 @@
     "ollama": {
       "api": "openai-completions",
       "apiKey": "ollama",
-      "baseUrl": "http://10.10.10.10:11434/v1",
+      "baseUrl": "http://ollama:11434/v1",
       "models": [
         {
           "_launch": true,

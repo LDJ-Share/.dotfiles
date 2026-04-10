@@ -22,8 +22,8 @@ check_file "${PI_SETTINGS}"
 
 echo ""
 echo "=== Pi: Ollama URL ==="
-check_contains "models.json uses OllamaNet host" \
-  "${PI_MODELS}" "10\.10\.10\.10:11434"
+check_contains "models.json uses compose Ollama host" \
+  "${PI_MODELS}" "ollama:11434"
 check_not_contains "models.json does not use localhost" \
   "${PI_MODELS}" "127\.0\.0\.1"
 check_not_contains "models.json does not use localhost (hostname)" \

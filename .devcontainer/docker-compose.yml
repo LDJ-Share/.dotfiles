@@ -1,0 +1,52 @@
+name: airgap-dev-env
+
+x-podman:
+  in_pod: false
+  default_net_name: ai-net
+
+services:
+  dev-env:
+    image: ${DEV_ENV_IMAGE:-ghcr.io/ldj-share/.dotfiles/dev-env:latest}
+    init: true
+    working_dir: /workspace
+    environment:
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+    command:
+      - /bin/zsh
+      - -lc
+      - /workspace/.devcontainer/configure-ollama-endpoint.sh && exec sleep infinity
+    volumes:
+      - ..:/workspace
+      - dev-cache:/home/dev/.cache
+    networks:
+      - ai-net
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  ollama:
+    image: ${OLLAMA_IMAGE:-ghcr.io/ldj-share/.dotfiles/ollama-models:latest}
+    init: true
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: 24h
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    name: ai-net
+    driver: bridge
+    internal: false
+
+volumes:
+  ollama-data:
+  dev-cache:
