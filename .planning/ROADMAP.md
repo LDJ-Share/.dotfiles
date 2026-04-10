@@ -8,7 +8,7 @@
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
-| 1 | Ollama Image | Pre-baked Ollama image with models published to GHCR | OLLAMA-01, OLLAMA-02, OLLAMA-03, OLLAMA-04 | Image pulls and serves models; GPU/CPU fallback confirmed; CI workflow publishes to GHCR |
+| 1 | Ollama Image | Pre-baked Ollama image with models published to GHCR | OLLAMA-01, OLLAMA-02, OLLAMA-03, OLLAMA-04 | Image pulls and serves models; GPU/CPU fallback confirmed; CI workflow publishes to GHCR. Status: blocked on GitHub-hosted runner disk limits as of run `24223620363`. |
 | 2 | Compose Stack | Two-service compose stack with health-gated startup | COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05 | `docker compose up` starts both services; dev-env resolves ollama by hostname; podman compose also works |
 | 3 | Devcontainer Integration | VS Code reopen-in-container launches full compose stack | DEV-01, DEV-02, DEV-03 | VS Code reopen triggers both services; workspace mounts correctly; AI tools reach Ollama |
 | 4 | Export Scripts + CUDA Prep | Transport archive produced with manifest + CUDA installers bundled | EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, CUDA-01, CUDA-02, CUDA-03 | Single tar.gz with SHA256 created; manifest.json present; CUDA/driver installers bundled |
@@ -35,6 +35,8 @@
 3. GitHub Actions workflow completes and the image tag appears in GHCR within the CI run
 
 **Notes:** Models are 22GB+ combined. Use `ollama serve & sleep 10` with a health-check retry loop inside the Dockerfile RUN layer before model pulls. Use BuildKit GHA cache (`--cache-from type=gha`) scoped per model layer to avoid 30+ minute full rebuilds on every CI run. GHCR single-layer limit is 10GB — document expected multi-layer push behavior. Do not use `device_requests` (deprecated); use `deploy.resources.reservations.devices` in compose.
+
+**Current Status (2026-04-10):** Blocked for GHCR publication on GitHub-hosted runners. Master run `24223620363` failed in `Build and Test` before validation/publish after the maximize-build-space step left `/dev/root` at `100M` free and BuildKit failed with `no space left on device` while copying the `ollama/ollama:0.20.3` base layer into `/var/lib/docker/buildkit/...`. Manual model pull on a connected staging machine is an acceptable fallback for now so Phase 2 can continue.
 
 **Plans:** 2 plans
 
@@ -145,10 +147,10 @@ Plans:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OLLAMA-01 | Phase 1 | Pending |
-| OLLAMA-02 | Phase 1 | Pending |
-| OLLAMA-03 | Phase 1 | Pending |
-| OLLAMA-04 | Phase 1 | Pending |
+| OLLAMA-01 | Phase 1 | Implemented, unpublished |
+| OLLAMA-02 | Phase 1 | Implemented, unpublished |
+| OLLAMA-03 | Phase 1 | Implemented, unpublished |
+| OLLAMA-04 | Phase 1 | Blocked by GitHub-hosted runner disk limits |
 | COMPOSE-01 | Phase 2 | Pending |
 | COMPOSE-02 | Phase 2 | Pending |
 | COMPOSE-03 | Phase 2 | Pending |

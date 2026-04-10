@@ -27,7 +27,7 @@ A developer on an air-gapped machine can open VS Code, reopen in devcontainer, a
 
 <!-- Current scope — this milestone -->
 
-- [ ] Ollama container image pre-baked with `gemma4:26b` + `gemma4:e4b`, published to GHCR
+- [ ] Ollama container image pre-baked with `gemma4:26b` + `gemma4:e4b`, published to GHCR; manual model pull is the temporary fallback while hosted-runner publish remains blocked
 - [ ] `docker-compose.yml` bridging dev container + ollama container on internal Docker network
 - [ ] `.devcontainer/` updated to use docker-compose (compose-first replaces direct host Ollama)
 - [ ] Windows host Ollama mode (`10.10.10.10:11434`) still functional as fallback
@@ -51,7 +51,7 @@ A developer on an air-gapped machine can open VS Code, reopen in devcontainer, a
 2. docker-compose in Linux VM
 3. Direct Ubuntu VM via `setup.sh` (existing)
 
-**Air-gap constraint:** All container images must be fully pre-initialized before export. No runtime pulls from registries, package managers, or model hubs. Models baked into the Ollama image at build time.
+**Air-gap constraint:** All container images must be fully pre-initialized before export. No runtime pulls from registries, package managers, or model hubs. Models baked into the Ollama image at build time. Until GHCR publication is unblocked, a connected staging machine may manually pull the required Ollama models before export.
 
 **Podman note:** Windows host has Podman Desktop (not Docker Desktop). The compose file must work with `podman compose`. Air-gapped target machine uses Docker in WSL2 directly (no Desktop).
 
@@ -75,6 +75,7 @@ A developer on an air-gapped machine can open VS Code, reopen in devcontainer, a
 | Ollama as separate container in compose | GPU isolation, keeps dev container clean, standard pattern | — Pending |
 | Keep host Ollama as fallback | Not everyone has WSL2/Docker, Hyper-V path still valid | — Pending |
 | Bake models into Ollama image | Air-gap requirement — no pull at runtime | — Pending |
+| Manual model pull is an acceptable temporary fallback | GitHub-hosted runner disk limits blocked the GHCR publish path in run `24223620363`; Phase 2 still needs a usable Ollama source | Accepted on 2026-04-10 |
 | Replace .devcontainer with compose-based version | Simplify primary use case; old approach was workaround | — Pending |
 | Podman + Docker compat | Host has Podman Desktop; target uses Docker in WSL2 | — Pending |
 
@@ -96,4 +97,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-08 after initialization*
+*Last updated: 2026-04-10 after Phase 1 block assessment*
