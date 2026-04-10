@@ -166,9 +166,9 @@ Plans:
 | CUDA-01 | Phase 4 | Complete |
 | CUDA-02 | Phase 4 | Complete |
 | CUDA-03 | Phase 4 | Complete |
-| IMPORT-01 | Phase 5 | Pending |
-| IMPORT-02 | Phase 5 | Pending |
-| IMPORT-03 | Phase 5 | Pending |
+| IMPORT-01 | Phase 5 | Complete |
+| IMPORT-02 | Phase 5 | Complete |
+| IMPORT-03 | Phase 5 | Complete |
 | TMPL-01 | Phase 6 | Pending |
 | TMPL-02 | Phase 6 | Pending |
 

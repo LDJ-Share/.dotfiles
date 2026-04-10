@@ -41,9 +41,9 @@
 
 ### Import Scripts
 
-- [ ] **IMPORT-01**: `image-import.sh` verifies SHA256, loads images via `docker load`, validates compose syntax, reports service status
-- [ ] **IMPORT-02**: `image-import.ps1` PowerShell equivalent for Windows host import workflow
-- [ ] **IMPORT-03**: If CUDA/driver installers are present in archive, import script installs them; if GPU config exists but no installers found, warns with instructions to re-run `cuda-prep`
+- [x] **IMPORT-01**: `image-import.sh` verifies SHA256, loads images via `docker load`, validates compose syntax, reports service status
+- [x] **IMPORT-02**: `image-import.ps1` PowerShell equivalent for Windows host import workflow
+- [x] **IMPORT-03**: If CUDA/driver installers are present in archive, import script installs them; if GPU config exists but no installers found, warns with instructions to re-run `cuda-prep`
 
 ### Workspace Template
 
@@ -96,9 +96,9 @@
 | CUDA-01 | Phase 4 | Complete |
 | CUDA-02 | Phase 4 | Complete |
 | CUDA-03 | Phase 4 | Complete |
-| IMPORT-01 | Phase 5 | Pending |
-| IMPORT-02 | Phase 5 | Pending |
-| IMPORT-03 | Phase 5 | Pending |
+| IMPORT-01 | Phase 5 | Complete |
+| IMPORT-02 | Phase 5 | Complete |
+| IMPORT-03 | Phase 5 | Complete |
 | TMPL-01 | Phase 6 | Pending |
 | TMPL-02 | Phase 6 | Pending |
 

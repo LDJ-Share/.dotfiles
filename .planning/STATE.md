@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 5
+current_phase: 6
 status: Ready to plan
-last_updated: "2026-04-10T14:46:01.378Z"
+last_updated: "2026-04-10T14:59:35.020Z"
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 5
+  total_plans: 6
+  completed_plans: 6
   percent: 100
 ---
 
@@ -17,14 +17,14 @@ progress:
 
 **Project:** Air-Gapped AI Dev Environment — Compose-First Deployment
 **Initialized:** 2026-04-08
-**Current Phase:** 5
+**Current Phase:** 6
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** A developer on an air-gapped machine can open VS Code, reopen in devcontainer, and immediately have a full AI coding session — with no setup, no internet, and no firewall exceptions.
-**Current focus:** Phase 04 complete — transport archive export and CUDA staging are ready for Phase 05 import work
+**Current focus:** Phase 05 complete — offline bundle import and optional CUDA handling are ready for Phase 06 template documentation
 
 ## Phase Status
 
@@ -34,12 +34,12 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 | 2 | Compose Stack | Complete |
 | 3 | Devcontainer Integration | Verified |
 | 4 | Export Scripts + CUDA Prep | Complete |
-| 5 | Import Scripts | Pending |
+| 5 | Import Scripts | Complete |
 | 6 | Workspace Template | Pending |
 
 ## Active Context
 
-Phase 3 now routes VS Code devcontainer startup through the existing compose stack: `devcontainer.json` attaches to `dev-env`, starts both `dev-env` and `ollama`, and preserves the `/workspace` mount and `dev` user contract. Local verification passed using a compose-friendly setup where `dev-env` builds locally, `ollama` defaults to `ollama/ollama:0.20.3`, and the health check uses `ollama ls`. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so manual model pull on a connected staging machine is still the temporary fallback for image availability.
+Phase 5 added the offline restore path for the compose bundle: Bash and PowerShell import scripts verify sibling checksums before extraction, restore images from `images.tar`, validate `.devcontainer/docker-compose.yml`, and handle optional CUDA or driver payloads with host-specific guidance. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so manual model pull on a connected staging machine is still the temporary fallback for image availability.
 
 ## Key Decisions
 
@@ -57,6 +57,7 @@ Phase 3 now routes VS Code devcontainer startup through the existing compose sta
 | Devcontainer verification stays static-first | JSON field checks and `devcontainer read-configuration` are reliable here; full editor reopen automation is deferred | Phase 3 |
 | Local compose verification should not depend on blocked GHCR image publication | Default `dev-env` to a local build, use `ollama/ollama:0.20.3` for the sidecar, and use `ollama ls` for health until the baked Ollama image is available | Phase 3 |
 | SHA256 verification before any image load | Fail-fast on corruption; prevents partial state on the offline machine | Phase 5 |
+| CUDA import handling stays host-specific | Bash installs Linux payloads, PowerShell installs the Windows driver, and missing installers warn with `cuda-prep` guidance instead of failing silently | Phase 5 |
 | CUDA prep as separate script bundled by export | Keeps export script general-purpose; CUDA prep is optional and offline-machine-specific | Phase 4 |
 
 ## Quick Tasks Completed
