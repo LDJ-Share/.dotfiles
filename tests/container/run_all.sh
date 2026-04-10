@@ -14,6 +14,7 @@ TESTS=(
   test_configs.sh
   test_export_scripts.sh
   test_import_scripts.sh
+  test_workspace_template.sh
 )
 
 for test in "${TESTS[@]}"; do

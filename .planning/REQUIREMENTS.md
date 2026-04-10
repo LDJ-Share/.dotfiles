@@ -47,8 +47,8 @@
 
 ### Workspace Template
 
-- [ ] **TMPL-01**: Example workspace template (`.devcontainer/` + `docker-compose.yml`) provided for users to copy into their own project
-- [ ] **TMPL-02**: Template includes inline documentation covering the full air-gap deployment workflow (export → transport → import → open in VS Code)
+- [x] **TMPL-01**: Example workspace template (`.devcontainer/` + `docker-compose.yml`) provided for users to copy into their own project
+- [x] **TMPL-02**: Template includes inline documentation covering the full air-gap deployment workflow (export → transport → import → open in VS Code)
 
 ## v2 Requirements
 
@@ -99,8 +99,8 @@
 | IMPORT-01 | Phase 5 | Complete |
 | IMPORT-02 | Phase 5 | Complete |
 | IMPORT-03 | Phase 5 | Complete |
-| TMPL-01 | Phase 6 | Pending |
-| TMPL-02 | Phase 6 | Pending |
+| TMPL-01 | Phase 6 | Complete |
+| TMPL-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 24 total
@@ -109,4 +109,4 @@
 
 ---
 *Requirements defined: 2026-04-08*
-*Last updated: 2026-04-10 after Phase 1 block assessment*
+*Last updated: 2026-04-10 after Phase 6 workspace template execution*

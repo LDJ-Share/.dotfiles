@@ -13,7 +13,7 @@
 | 3 | Devcontainer Integration | VS Code reopen-in-container launches full compose stack | DEV-01, DEV-02, DEV-03 | VS Code reopen triggers both services; workspace mounts correctly; AI tools reach Ollama |
 | 4 | Export Scripts + CUDA Prep | Transport archive produced with manifest + CUDA installers bundled | EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, CUDA-01, CUDA-02, CUDA-03 | Single tar.gz with SHA256 created; manifest.json present; CUDA/driver installers bundled |
 | 5 | Import Scripts | Archive verified and loaded on air-gapped machine | IMPORT-01, IMPORT-02, IMPORT-03 | SHA256 verified; images loaded; compose syntax validated; CUDA/driver installers applied |
-| 6 | Workspace Template | Copyable template with full inline workflow documentation | TMPL-01, TMPL-02 | Template copied to new project; reopen-in-container works; air-gap workflow documented end-to-end |
+| 6 | Workspace Template | Copyable template with full inline workflow documentation | TMPL-01, TMPL-02 | Template copied to new project; reopen-in-container works; air-gap workflow documented end-to-end. Status: complete with `templates/workspace-template/` and static drift checks. |
 
 ---
 
@@ -169,8 +169,8 @@ Plans:
 | IMPORT-01 | Phase 5 | Complete |
 | IMPORT-02 | Phase 5 | Complete |
 | IMPORT-03 | Phase 5 | Complete |
-| TMPL-01 | Phase 6 | Pending |
-| TMPL-02 | Phase 6 | Pending |
+| TMPL-01 | Phase 6 | Complete |
+| TMPL-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 24 total

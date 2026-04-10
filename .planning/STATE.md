@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 6
-status: Ready to plan
-last_updated: "2026-04-10T14:59:35.020Z"
+current_phase: 06
+status: Phase 06 complete
+last_updated: "2026-04-10T15:23:40.000Z"
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 6
-  completed_plans: 6
+  completed_phases: 6
+  total_plans: 7
+  completed_plans: 7
   percent: 100
 ---
 
@@ -17,14 +17,14 @@ progress:
 
 **Project:** Air-Gapped AI Dev Environment — Compose-First Deployment
 **Initialized:** 2026-04-08
-**Current Phase:** 6
+**Current Phase:** 06
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** A developer on an air-gapped machine can open VS Code, reopen in devcontainer, and immediately have a full AI coding session — with no setup, no internet, and no firewall exceptions.
-**Current focus:** Phase 05 complete — offline bundle import and optional CUDA handling are ready for Phase 06 template documentation
+**Current focus:** Phase 06 complete — copyable workspace template and drift checks are now in place
 
 ## Phase Status
 
@@ -35,11 +35,11 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 | 3 | Devcontainer Integration | Verified |
 | 4 | Export Scripts + CUDA Prep | Complete |
 | 5 | Import Scripts | Complete |
-| 6 | Workspace Template | Pending |
+| 6 | Workspace Template | Complete |
 
 ## Active Context
 
-Phase 5 added the offline restore path for the compose bundle: Bash and PowerShell import scripts verify sibling checksums before extraction, restore images from `images.tar`, validate `.devcontainer/docker-compose.yml`, and handle optional CUDA or driver payloads with host-specific guidance. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so manual model pull on a connected staging machine is still the temporary fallback for image availability.
+Phase 6 added a copyable `templates/workspace-template/` artifact that mirrors the repo's compose-backed devcontainer contract, keeps the default path CPU-safe and compose-internal, and documents the full air-gap operator flow inline from `cuda-prep` through `image-import` and VS Code reopen. Phase 1 GHCR publication remains blocked on GitHub-hosted runner disk limits, so manual model pull on a connected staging machine is still the temporary fallback for image availability.
 
 ## Key Decisions
 
@@ -59,6 +59,7 @@ Phase 5 added the offline restore path for the compose bundle: Bash and PowerShe
 | SHA256 verification before any image load | Fail-fast on corruption; prevents partial state on the offline machine | Phase 5 |
 | CUDA import handling stays host-specific | Bash installs Linux payloads, PowerShell installs the Windows driver, and missing installers warn with `cuda-prep` guidance instead of failing silently | Phase 5 |
 | CUDA prep as separate script bundled by export | Keeps export script general-purpose; CUDA prep is optional and offline-machine-specific | Phase 4 |
+| Workspace template mirrors the production compose/devcontainer contract | New projects copy the existing `dev-env` / `ollama` / `ai-net` / `/workspace` shape instead of maintaining a separate onboarding variant | Phase 6 |
 
 ## Quick Tasks Completed
 

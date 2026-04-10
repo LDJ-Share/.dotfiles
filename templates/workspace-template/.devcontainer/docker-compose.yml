@@ -1,0 +1,76 @@
+# Copy this template into a project root, then follow the air-gap path in order:
+# 1. Optional GPU staging on the connected machine: `bash ./cuda-prep.sh` or `pwsh -File .\cuda-prep.ps1`
+# 2. Export the compose bundle: `bash ./image-export.sh` or `pwsh -File .\image-export.ps1`
+# 3. Transfer the generated `.tar.gz`, manifest, and `SHA256SUMS` into the air gap
+# 4. Restore the bundle on the offline machine: `bash ./image-import.sh ./airgap-dev-env.tar.gz`
+# 5. Start the stack here with `docker compose up -d`, then reopen this folder in VS Code
+#
+# Active default: compose-internal Ollama on CPU via `http://ollama:11434`
+# Optional examples only:
+# - Pin images from GHCR with `DEV_ENV_IMAGE=ghcr.io/ldj-share/dotfiles/dev-env:<tag>`
+# - Use a Windows host Ollama with `OLLAMA_HOST=http://10.10.10.10:11434 docker compose up -d`
+# - Add a GPU reservation block for `ollama` only after the target machine has completed `cuda-prep`
+
+name: airgap-dev-env
+
+x-podman:
+  in_pod: false
+  default_net_name: ai-net
+
+services:
+  dev-env:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: ${DEV_ENV_IMAGE:-dotfiles-dev-env:local}
+    init: true
+    working_dir: /workspace
+    environment:
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+    command:
+      - /bin/zsh
+      - -lc
+      - /workspace/.devcontainer/configure-ollama-endpoint.sh && exec sleep infinity
+    volumes:
+      - ..:/workspace
+      - dev-cache:/home/dev/.cache
+    networks:
+      - ai-net
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.20.3}
+    init: true
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: 24h
+    healthcheck:
+      test: ["CMD", "ollama", "ls"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - ai-net
+    # Example GPU enablement after offline CUDA setup succeeds:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+networks:
+  ai-net:
+    name: ai-net
+    driver: bridge
+    internal: false
+
+volumes:
+  ollama-data:
+  dev-cache:

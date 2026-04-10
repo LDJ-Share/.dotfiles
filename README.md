@@ -328,6 +328,13 @@ The repo includes `.devcontainer/devcontainer.json`, which lets VS Code reopen
 the project through the existing `.devcontainer/docker-compose.yml` stack
 without any manual `docker run` commands.
 
+If you want the same compose-first workflow in another repository, copy
+`templates/workspace-template/` into that repo and use it as the starting
+`.devcontainer/` plus override example set. The template keeps the same
+`dev-env` / `ollama` / `ai-net` contract and includes inline air-gap workflow
+notes so operators can go from `cuda-prep` through `image-import` to VS Code
+reopen without a separate template README.
+
 **One-time setup on the Windows host:**
 
 1. Install the **Remote - SSH** extension in VS Code.

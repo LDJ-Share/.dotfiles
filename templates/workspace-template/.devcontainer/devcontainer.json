@@ -1,0 +1,12 @@
+{
+  "name": "dev-env",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev-env",
+  "runServices": [
+    "dev-env",
+    "ollama"
+  ],
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "remoteUser": "dev"
+}
