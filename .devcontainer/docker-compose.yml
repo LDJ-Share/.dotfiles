@@ -28,7 +28,7 @@ services:
         condition: service_healthy
 
   ollama:
-    image: ${OLLAMA_IMAGE:-ollama/ollama:0.20.3}
+    image: ${OLLAMA_IMAGE:-ghcr.io/ldj-share/.dotfiles/ollama:base}
     init: true
     environment:
       OLLAMA_HOST: 0.0.0.0:11434

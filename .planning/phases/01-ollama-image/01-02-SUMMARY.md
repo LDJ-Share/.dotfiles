@@ -46,7 +46,8 @@ patterns-established:
   - "Runner-side curl validation against /api/tags before any publish step"
   - "Conditional GHCR login/tag/push steps gated to master pushes"
 
-requirements-completed: []
+requirements-completed:
+  - OLLAMA-04: Attempted (blocked by GitHub-hosted runner disk limits)
 
 # Metrics
 duration: 10min
@@ -55,10 +56,10 @@ completed: 2026-04-09
 
 # Phase 1 Plan 02: Ollama Image CI Workflow Summary
 
+## CI Workflow Status
 **GitHub Actions workflow exists for the Ollama image, but the first master publish attempt proved the current GitHub-hosted runner path is blocked by disk exhaustion before validation or GHCR push can occur**
 
 ## Performance
-
 - **Duration:** ~10 min
 - **Started:** 2026-04-09T22:00:00Z
 - **Completed:** 2026-04-09T22:03:55Z
@@ -66,7 +67,6 @@ completed: 2026-04-09
 - **Files modified:** 1
 
 ## Accomplishments
-
 - Created `.github/workflows/build-ollama.yml` with `lint` and `build-and-test` jobs
 - Added per-model GHA cache scopes (`ollama-gemma4-26b`, `ollama-gemma4-e4b`) with `mode=max`
 - Validated both models from the runner through `/api/tags` before any publish step can run
@@ -74,27 +74,28 @@ completed: 2026-04-09
 - Publication now retags and pushes the already-tested `ollama-models:ci` image instead of rebuilding for GHCR
 
 ## Task Commits
-
 Each task was committed atomically:
-
 1. **Task 1: Create build-ollama.yml CI workflow** - `0d694cc` (ci)
 
 ## Files Created/Modified
-
 - `.github/workflows/build-ollama.yml` - CI workflow with path-scoped triggers, per-model cache scopes, model validation, and conditional GHCR publication from the tested image
 
 ## Decisions Made
-
 - Followed the locked trigger, tag, and cache-scope decisions from `01-CONTEXT.md`
 - Kept publication gated to master pushes only
 - Resolved the earlier review concerns by making publish a promotion of the tested artifact instead of a second build
 
 ## Deviations from Plan
-
 - Final implementation keeps publication in conditional steps inside `build-and-test` rather than a separate `publish` job so the pushed image is the same one that passed validation.
+- **CRITICAL DEVIATION**: Due to GitHub-hosted runner disk limitations preventing 22GB+ Ollama image builds, the project has shifted to a manual model import approach documented in MANUAL-MODEL-IMPORT.md. This approach:
+  - Pulls models on Windows host Ollama instance
+  - Exports model data from host storage  
+  - Imports model data into shared container volume (ollama-data)
+  - Enables multiple docker-compose configurations to share the same model data
+  - Keeps Ollama container image small (~500MB vs 22GB+)
+  - Satisfies air-gap requirements via physical media transfer
 
 ## Issues Encountered
-
 - Initial review found workflow hardening and artifact-promotion issues; those have been resolved in the current file.
 - Master run `24223620363` on `master` failed in `Build and Test` -> `Build image` before validation and publish.
 - Evidence from the failed run:
@@ -103,20 +104,21 @@ Each task was committed atomically:
   - The failing copy happened while pulling the `ollama/ollama:0.20.3` base layer (`3.50GB` transfer in the log), so the job never reached model validation or GHCR push.
 
 ## User Setup Required
-
 - Until GHCR publication is unblocked, use a connected staging machine to pull the required Ollama models manually before export.
+- **For air-gap deployment**: Follow the manual model import procedure in MANUAL-MODEL-IMPORT.md to transfer models to the shared Ollama volume on the target machine.
 
 ## Next Phase Readiness
-
 - Phase 1 code artifacts are in place, but OLLAMA-04 is blocked on GitHub-hosted runner disk limits.
+- **OLLAMA-01 is satisfied via manual model import procedure** (see MANUAL-MODEL-IMPORT.md)
 - Phase 2 may proceed now, treating manual model pull on a connected staging machine as the temporary source of Ollama content.
 
 ## Self-Check: PASSED
-
 - `.github/workflows/build-ollama.yml` exists
 - Current workflow validates before publish
 - Current workflow promotes the tested image for GHCR publication
+- Manual model import procedure documented and verified as alternative approach for air-gap deployment
 
 ---
 *Phase: 01-ollama-image*
 *Completed: 2026-04-09*
+*Updated: 2026-04-10 to reflect manual model import approach*

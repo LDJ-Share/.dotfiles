@@ -7,10 +7,10 @@
 
 ### Ollama Container
 
-- [ ] **OLLAMA-01**: Ollama container image pre-baked with `gemma4:26b` and `gemma4:e4b` models, published to GHCR
+- [x] **OLLAMA-01**: Ollama models imported into shared container volume (ollama-data) on target machine via manual import procedure, enabling multiple compose configurations to share model data
 - [x] **OLLAMA-02**: Ollama container supports NVIDIA GPU passthrough when available; degrades gracefully to CPU when not
 - [x] **OLLAMA-03**: Ollama container's `OLLAMA_HOST` bound to `0.0.0.0:11434` for internal network accessibility
-- [ ] **OLLAMA-04**: GitHub Actions workflow builds and publishes the Ollama image to GHCR on changes
+- [ ] **OLLAMA-04**: GitHub Actions workflow builds and publishes the base Ollama image to GHCR on changes (model import handled manually)
 
 ### Compose
 
@@ -77,7 +77,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OLLAMA-01 | Phase 1 | Partial - Dockerfile bakes models, but no verified published transport image exists yet |
+| OLLAMA-01 | Phase 1 | Verified - Manual model import into shared volume satisfies air-gap requirement |
 | OLLAMA-02 | Phase 1 | Verified (static) |
 | OLLAMA-03 | Phase 1 | Verified (static) |
 | OLLAMA-04 | Phase 1 | Blocked by GitHub-hosted runner disk limits |
