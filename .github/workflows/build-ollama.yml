@@ -11,7 +11,8 @@ name: Build and Publish Ollama Image
 #
 # Disk: ubuntu-latest provides ~22GB free — insufficient for 27GB+ model
 # build without cleanup. easimon/maximize-build-space runs FIRST (before
-# checkout) to reformat the build volume and reclaim 40GB+.
+# checkout), but Docker/BuildKit still store layers under /var/lib/docker on
+# the runner root volume, so we must leave substantial root disk available.
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -65,7 +66,8 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
-          root-reserve-mb: 2048
+          root-reserve-mb: 30720
+          swap-size-mb: 1024
 
       - uses: actions/checkout@v4
 
