@@ -77,10 +77,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OLLAMA-01 | Phase 1 | Pending |
-| OLLAMA-02 | Phase 1 | Pending |
-| OLLAMA-03 | Phase 1 | Pending |
-| OLLAMA-04 | Phase 1 | Pending |
+| OLLAMA-01 | Phase 1 | Implemented, unpublished |
+| OLLAMA-02 | Phase 1 | Implemented, unpublished |
+| OLLAMA-03 | Phase 1 | Implemented, unpublished |
+| OLLAMA-04 | Phase 1 | Blocked by GitHub-hosted runner disk limits |
 | COMPOSE-01 | Phase 2 | Pending |
 | COMPOSE-02 | Phase 2 | Pending |
 | COMPOSE-03 | Phase 2 | Pending |
@@ -109,4 +109,4 @@
 
 ---
 *Requirements defined: 2026-04-08*
-*Last updated: 2026-04-08 after initial definition*
+*Last updated: 2026-04-10 after Phase 1 block assessment*

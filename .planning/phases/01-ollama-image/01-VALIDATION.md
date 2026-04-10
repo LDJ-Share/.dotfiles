@@ -5,7 +5,7 @@ status: current
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-04-09
-updated: 2026-04-09T22:30:00Z
+updated: 2026-04-10T03:54:56Z
 ---
 
 # Phase 1 — Validation Strategy
@@ -42,7 +42,7 @@ updated: 2026-04-09T22:30:00Z
 | 1-01 | 01 | 1 | OLLAMA-01 | T-1-01 | Base image pinned to semver; both models baked into separate layers | Structural | `grep -q '^FROM ollama/ollama:0\.20\.3$' Dockerfile.ollama && grep -q 'ollama pull gemma4:26b' Dockerfile.ollama && grep -q 'ollama pull gemma4:e4b' Dockerfile.ollama` | ✅ | ✅ green |
 | 1-02 | 01 | 1 | OLLAMA-02 | — | CPU fallback confirmed without GPU-only assumptions in image | Structural + Manual | `! grep -q 'device_requests\|--gpus' Dockerfile.ollama` | ✅ | ✅ green (manual runtime still pending) |
 | 1-03 | 01 | 1 | OLLAMA-03 | — | Server bound to `0.0.0.0:11434` and health-checked via `/api/tags` | Structural | `grep -q 'ENV OLLAMA_HOST=0.0.0.0:11434' Dockerfile.ollama && grep -q 'HEALTHCHECK' Dockerfile.ollama` | ✅ | ✅ green |
-| 1-04 | 02 | 1 | OLLAMA-04 | T-1-02 | Workflow validates before publish and publishes the tested image only | Structural | `grep -q 'easimon/maximize-build-space@v10' .github/workflows/build-ollama.yml && grep -q 'docker tag ollama-models:ci' .github/workflows/build-ollama.yml && grep -q 'docker push ghcr.io/' .github/workflows/build-ollama.yml` | ✅ | ✅ green (human CI run still pending) |
+| 1-04 | 02 | 1 | OLLAMA-04 | T-1-02 | Workflow validates before publish and publishes the tested image only | Structural + Live CI | `grep -q 'easimon/maximize-build-space@v10' .github/workflows/build-ollama.yml && grep -q 'docker tag ollama-models:ci' .github/workflows/build-ollama.yml && grep -q 'docker push ghcr.io/' .github/workflows/build-ollama.yml` | ✅ | ⚠ blocked: master run `24223620363` failed with `/var/lib/docker/buildkit/...: no space left on device` before validation/publish |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -62,7 +62,7 @@ updated: 2026-04-09T22:30:00Z
 |----------|-------------|------------|-------------------|
 | CPU-only startup and `/api/tags` response | OLLAMA-01, OLLAMA-02 | Requires a live container runtime and built image | Run `docker run --rm -p 11434:11434 ghcr.io/.../ollama-models:latest` and call `curl http://localhost:11434/api/tags` |
 | GPU passthrough with NVIDIA runtime | OLLAMA-02 | CI runners have no GPU | On a machine with `nvidia-container-toolkit`, run `docker run --gpus all ghcr.io/.../ollama-models:latest`; verify startup and `/api/tags` |
-| GHCR publication on master push | OLLAMA-04 | Requires live GitHub Actions + GHCR | Push a qualifying change to master and confirm both tags appear in GHCR |
+| GHCR publication on master push | OLLAMA-04 | Current GitHub-hosted runner path is blocked by disk exhaustion | Use run `24223620363` as failure evidence. Re-test only after moving the build to larger or self-hosted capacity. Manual model pull is the temporary fallback for downstream phases. |
 
 ---
 
@@ -75,4 +75,4 @@ updated: 2026-04-09T22:30:00Z
 - [x] Fast structural feedback is available in under 300 seconds
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending live runtime and CI checks
+**Approval:** blocked for OLLAMA-04 on current GitHub-hosted runners; downstream work may proceed under the documented manual model pull fallback

@@ -9,8 +9,8 @@ requires:
   - phase: 01-ollama-image/01-01
     provides: Dockerfile.ollama with pre-baked gemma4 models that this CI workflow builds and validates
 provides:
-  - GitHub Actions CI workflow that builds, validates, and publishes the Ollama image to GHCR
-  - :latest and :sha-{7char} tags at ghcr.io/ldj-share/.dotfiles/ollama-models on master push
+  - GitHub Actions CI workflow intended to build, validate, and publish the Ollama image to GHCR
+  - Evidence that GitHub-hosted runners exhaust disk before the workflow can validate or publish the image
 affects:
   - 01-ollama-image
   - phase 4
@@ -46,7 +46,7 @@ patterns-established:
   - "Runner-side curl validation against /api/tags before any publish step"
   - "Conditional GHCR login/tag/push steps gated to master pushes"
 
-requirements-completed: [OLLAMA-04]
+requirements-completed: []
 
 # Metrics
 duration: 10min
@@ -55,7 +55,7 @@ completed: 2026-04-09
 
 # Phase 1 Plan 02: Ollama Image CI Workflow Summary
 
-**GitHub Actions workflow with per-model BuildKit cache scoping builds the Ollama image, validates both models via `/api/tags`, and publishes the already-tested image to GHCR on master push**
+**GitHub Actions workflow exists for the Ollama image, but the first master publish attempt proved the current GitHub-hosted runner path is blocked by disk exhaustion before validation or GHCR push can occur**
 
 ## Performance
 
@@ -96,15 +96,20 @@ Each task was committed atomically:
 ## Issues Encountered
 
 - Initial review found workflow hardening and artifact-promotion issues; those have been resolved in the current file.
+- Master run `24223620363` on `master` failed in `Build and Test` -> `Build image` before validation and publish.
+- Evidence from the failed run:
+  - `Maximize build disk space` reported `/dev/root` at `145G 145G 100M 100% /` while the workspace mount had `104G` free.
+  - BuildKit then failed with `failed to copy: write /var/lib/docker/buildkit/content/ingest/.../data: no space left on device`.
+  - The failing copy happened while pulling the `ollama/ollama:0.20.3` base layer (`3.50GB` transfer in the log), so the job never reached model validation or GHCR push.
 
 ## User Setup Required
 
-- None beyond the standard GitHub Actions `GITHUB_TOKEN` provided automatically in the repository.
+- Until GHCR publication is unblocked, use a connected staging machine to pull the required Ollama models manually before export.
 
 ## Next Phase Readiness
 
-- Phase 1 is structurally complete and ready for live human verification
-- After runtime and CI confirmation, Phase 2 can consume `ghcr.io/ldj-share/.dotfiles/ollama-models`
+- Phase 1 code artifacts are in place, but OLLAMA-04 is blocked on GitHub-hosted runner disk limits.
+- Phase 2 may proceed now, treating manual model pull on a connected staging machine as the temporary source of Ollama content.
 
 ## Self-Check: PASSED
 
