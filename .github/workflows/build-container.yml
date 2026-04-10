@@ -24,6 +24,7 @@ on:
       - zshrc/**
       - vsc-extensions.txt
       - tests/container/**
+      - templates/**
       - .github/workflows/build-container.yml
   pull_request:
     paths:
@@ -37,6 +38,7 @@ on:
       - zshrc/**
       - vsc-extensions.txt
       - tests/container/**
+      - templates/**
       - .github/workflows/build-container.yml
 
 jobs:
@@ -94,6 +96,7 @@ jobs:
         run: |
           docker run --rm \
             -v "${{ github.workspace }}/tests/container:/tests/container:ro" \
+            -v "${{ github.workspace }}/templates:/templates:ro" \
             dev-env:ci \
             bash /tests/container/run_all.sh
 
