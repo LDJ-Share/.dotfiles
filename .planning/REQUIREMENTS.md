@@ -28,16 +28,16 @@
 
 ### Export Scripts
 
-- [ ] **EXPORT-01**: `image-export.sh` saves all compose images to a single gzipped tarball with SHA256 checksum
-- [ ] **EXPORT-02**: `image-export.ps1` PowerShell equivalent for Windows host export workflow
-- [ ] **EXPORT-03**: Export produces `manifest.json` containing image names, tags, digests, checksums, and CUDA installer list
-- [ ] **EXPORT-04**: Export script bundles any CUDA/driver installers downloaded by `cuda-prep` into the transport archive
+- [x] **EXPORT-01**: `image-export.sh` saves all compose images to a single gzipped tarball with SHA256 checksum
+- [x] **EXPORT-02**: `image-export.ps1` PowerShell equivalent for Windows host export workflow
+- [x] **EXPORT-03**: Export produces `manifest.json` containing image names, tags, digests, checksums, and CUDA installer list
+- [x] **EXPORT-04**: Export script bundles any CUDA/driver installers downloaded by `cuda-prep` into the transport archive
 
 ### CUDA Preparation
 
-- [ ] **CUDA-01**: `cuda-prep.sh` + `cuda-prep.ps1` accept offline machine's GPU model, driver version, and OS; download matching CUDA toolkit + nvidia-container-toolkit for Linux (WSL2/VM target)
-- [ ] **CUDA-02**: `cuda-prep` also downloads the correct Windows NVIDIA driver installer for the specified GPU model
-- [ ] **CUDA-03**: Scripts include inline comments with exact commands to run on the offline machine to retrieve required info (GPU model, driver version, kernel version, OS release)
+- [x] **CUDA-01**: `cuda-prep.sh` + `cuda-prep.ps1` accept offline machine's GPU model, driver version, and OS; download matching CUDA toolkit + nvidia-container-toolkit for Linux (WSL2/VM target)
+- [x] **CUDA-02**: `cuda-prep` also downloads the correct Windows NVIDIA driver installer for the specified GPU model
+- [x] **CUDA-03**: Scripts include inline comments with exact commands to run on the offline machine to retrieve required info (GPU model, driver version, kernel version, OS release)
 
 ### Import Scripts
 
@@ -89,13 +89,13 @@
 | DEV-01 | Phase 3 | Complete |
 | DEV-02 | Phase 3 | Complete |
 | DEV-03 | Phase 3 | Complete |
-| EXPORT-01 | Phase 4 | Pending |
-| EXPORT-02 | Phase 4 | Pending |
-| EXPORT-03 | Phase 4 | Pending |
-| EXPORT-04 | Phase 4 | Pending |
-| CUDA-01 | Phase 4 | Pending |
-| CUDA-02 | Phase 4 | Pending |
-| CUDA-03 | Phase 4 | Pending |
+| EXPORT-01 | Phase 4 | Complete |
+| EXPORT-02 | Phase 4 | Complete |
+| EXPORT-03 | Phase 4 | Complete |
+| EXPORT-04 | Phase 4 | Complete |
+| CUDA-01 | Phase 4 | Complete |
+| CUDA-02 | Phase 4 | Complete |
+| CUDA-03 | Phase 4 | Complete |
 | IMPORT-01 | Phase 5 | Pending |
 | IMPORT-02 | Phase 5 | Pending |
 | IMPORT-03 | Phase 5 | Pending |
