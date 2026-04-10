@@ -522,6 +522,106 @@ Once exported, the VM will have no internet access on the target machine.
       `sudo echo test` is denied
 - [ ] VM has been shut down cleanly before export
 
+### Transport Archive Workflow
+
+Phase 4 adds a repo-local export workflow for the compose stack. Run these
+steps on the connected staging machine before moving media into the air gap.
+
+1. Stage optional GPU artifacts with `cuda-prep.sh` or `cuda-prep.ps1`.
+2. Export the current image set with `image-export.sh` or `image-export.ps1`.
+3. Copy the resulting `.tar.gz`, `manifest.json`, and `SHA256SUMS` files to
+   removable media for the offline import step.
+
+#### 1. Prepare CUDA Artifacts (Optional)
+
+Use this when the target machine should run the Ollama container with GPU
+acceleration. CPU-only deployments can skip this step.
+
+```bash
+# Run these commands on the offline machine first and write down the results:
+nvidia-smi --query-gpu=name --format=csv,noheader
+nvidia-smi --query-gpu=driver_version --format=csv,noheader
+uname -r
+lsb_release -rs
+
+# Then, on the connected staging machine, stage the matching installers.
+bash ./cuda-prep.sh \
+  --gpu-model "NVIDIA RTX 4000 Ada" \
+  --driver-version "572.83" \
+  --linux-os "ubuntu24.04" \
+  --kernel-version "6.8.0-60-generic" \
+  --linux-toolkit-url "https://example.invalid/cuda-toolkit.run" \
+  --container-toolkit-url "https://example.invalid/nvidia-container-toolkit.pkg" \
+  --windows-driver-url "https://example.invalid/nvidia-driver.exe"
+```
+
+The script creates a predictable staging directory at
+`.airgap-artifacts/cuda/` containing:
+
+- `metadata.json` with the target machine details and source URLs
+- `OFFLINE-DISCOVERY.txt` with the exact commands to collect GPU, driver,
+  kernel, and OS details on the offline machine
+- `SHA256SUMS` for any downloaded CUDA artifacts
+- `downloads/linux/` and `downloads/windows/` for the staged installers
+
+PowerShell uses the same contract:
+
+```powershell
+pwsh -File .\cuda-prep.ps1 `
+  -GpuModel "NVIDIA RTX 4000 Ada" `
+  -DriverVersion "572.83" `
+  -LinuxOs "ubuntu24.04" `
+  -KernelVersion "6.8.0-60-generic" `
+  -LinuxToolkitUrl "https://example.invalid/cuda-toolkit.run" `
+  -ContainerToolkitUrl "https://example.invalid/nvidia-container-toolkit.pkg" `
+  -WindowsDriverUrl "https://example.invalid/nvidia-driver.exe"
+```
+
+#### 2. Export the Compose Image Set
+
+By default the export scripts package the current local-compose image set:
+
+- `dotfiles-dev-env:local`
+- `ollama/ollama:0.20.3`
+
+You can override that image list explicitly when needed, but the default path
+keeps Phase 4 aligned with the current local verification workflow while GHCR
+publication remains blocked.
+
+```bash
+bash ./image-export.sh
+
+# Optional overrides
+bash ./image-export.sh \
+  --image dotfiles-dev-env:local \
+  --image ollama/ollama:0.20.3 \
+  --cuda-dir .airgap-artifacts/cuda \
+  --output-dir .airgap-artifacts/export \
+  --bundle-name airgap-dev-env
+```
+
+```powershell
+pwsh -File .\image-export.ps1
+```
+
+Both scripts produce the same output contract in `.airgap-artifacts/export/`:
+
+- `airgap-dev-env.tar.gz` - single transport archive
+- `airgap-dev-env-manifest.json` - image references, tags, digests, and CUDA bundle metadata
+- `airgap-dev-env-SHA256SUMS` - SHA256 verification data for the archive
+
+The archive expands to this layout:
+
+```text
+airgap-dev-env/
+  images.tar
+  manifest.json
+  cuda/
+```
+
+`images.tar` comes from a single `docker save` operation across the full image
+set so the offline import step can load the stack atomically.
+
 ### Apply the Firewall (Final Step Before Export)
 
 ```bash

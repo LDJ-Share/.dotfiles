@@ -12,6 +12,7 @@ TESTS=(
   test_pi.sh
   test_tmux.sh
   test_configs.sh
+  test_export_scripts.sh
 )
 
 for test in "${TESTS[@]}"; do
