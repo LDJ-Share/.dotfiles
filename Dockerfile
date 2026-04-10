@@ -327,7 +327,7 @@ RUN nvim --headless "+MasonInstall gopls" +qa
 RUN nvim --headless "+MasonInstall bash-language-server" +qa
 RUN nvim --headless "+MasonInstall json-lsp" +qa
 RUN nvim --headless "+MasonInstall omnisharp" +qa
-RUN nvim --headless "+MasonToolsInstall" +qa
+RUN nvim --headless "+MasonToolsInstallSync" +qa
 
 # ─────────────────────────────────────────────────────────────────────────────
 WORKDIR /workspace
