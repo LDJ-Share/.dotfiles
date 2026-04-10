@@ -267,9 +267,9 @@ COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/lib/node_modules/
 
 # ── AI tools (scoped copies to avoid clobbering node_modules from dev-tools)
 COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.opencode /home/dev/.opencode
-COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/bin/pi /home/dev/.local/bin/pi
 COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/lib/node_modules/@mariozechner /home/dev/.local/lib/node_modules/@mariozechner
 COPY --chown=dev:dev --from=builder-ai-tools /home/dev/.local/lib/node_modules/@cmcconomy /home/dev/.local/lib/node_modules/@cmcconomy
+RUN ln -sf /home/dev/.local/lib/node_modules/@mariozechner/pi-coding-agent/dist/cli.js /home/dev/.local/bin/pi
 
 # ── Dotfiles and stow
 # Placed late so config changes don't bust the tool-install cache above.
