@@ -4,7 +4,7 @@ set -uo pipefail
 # shellcheck source=helpers.sh
 source "$(dirname "$0")/helpers.sh"
 
-TEMPLATE_DIR="templates/workspace-template"
+TEMPLATE_DIR="/templates/workspace-template"
 COMPOSE_FILE="${TEMPLATE_DIR}/.devcontainer/docker-compose.yml"
 DEVCONTAINER_FILE="${TEMPLATE_DIR}/.devcontainer/devcontainer.json"
 HELPER_FILE="${TEMPLATE_DIR}/.devcontainer/configure-ollama-endpoint.sh"

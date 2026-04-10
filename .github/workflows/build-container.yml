@@ -95,10 +95,13 @@ jobs:
       - name: Copy tests into container and run test suite
         run: |
           docker run --rm \
+            -w /home/dev \
             -v "${{ github.workspace }}/tests/container:/tests/container:ro" \
             -v "${{ github.workspace }}/templates:/templates:ro" \
+            -v "${{ github.workspace }}/.devcontainer:/home/dev/.devcontainer:ro" \
+            -v "${{ github.workspace }}:/home/dev/repo:ro" \
             dev-env:ci \
-            bash /tests/container/run_all.sh
+            bash -c 'cd /home/dev/repo && bash /tests/container/run_all.sh'
 
   # ───────────────────────────────────────────────────────────────────────────
   # JOB 3 — Publish to GHCR (master only, after tests pass)
