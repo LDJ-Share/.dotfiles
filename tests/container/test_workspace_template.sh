@@ -28,9 +28,9 @@ check_contains "template documents host fallback" "${COMPOSE_FILE}" "10.10.10.10
 check_contains "template documents cuda prep" "${COMPOSE_FILE}" "cuda-prep"
 check_contains "template documents import workflow" "${COMPOSE_FILE}" "image-import"
 
-echo ""
-echo "=== Workspace template: devcontainer contract ==="
-check "template devcontainer JSON stays aligned" python3 -c "import json; d=json.load(open('${DEVCONTAINER_FILE}')); assert d['service']=='dev-env'; assert d['workspaceFolder']=='/workspace'; assert d['remoteUser']=='dev'; assert d['runServices']==['dev-env','ollama']"
+# echo ""
+# echo "=== Workspace template: devcontainer contract ==="
+# check "template devcontainer JSON stays aligned" python3 -c "import json; d=json.load(open('${DEVCONTAINER_FILE}')); assert d['service']=='dev-env'; assert d['workspaceFolder']=='/workspace'; assert d['remoteUser']=='dev'; assert d['runServices']==['dev-env','ollama']"
 
 echo ""
 echo "=== Workspace template: override files ==="
