@@ -7,33 +7,35 @@
       "models": [
         {
           "_launch": true,
-          "contextWindow": 128000,
-          "id": "bcluzel/LFM2.5-1.2B-Instruct:Q4_K_M",
+          "contextWindow": 163840,
+          "id": "deepseek-coder-v2:16b",
           "input": ["text"]
         },
         {
           "_launch": true,
-          "contextWindow": 128000,
-          "id": "lfm2.5-thinking:1.2b",
+          "contextWindow": 131072,
+          "id": "deepseek-r1:8b",
           "input": ["text"],
           "reasoning": true
         },
         {
           "_launch": true,
-          "contextWindow": 131072,
-          "id": "phi3:mini",
-          "input": ["text"]
+          "contextWindow": 262144,
+          "id": "gemma4:26b",
+          "input": ["text", "image"],
+          "reasoning": true
         },
         {
           "_launch": true,
-          "contextWindow": 32768,
-          "id": "qwen2.5-coder:0.5b",
-          "input": ["text"]
+          "contextWindow": 131072,
+          "id": "gemma4:e4b",
+          "input": ["text", "image"],
+          "reasoning": true
         },
         {
           "_launch": true,
           "contextWindow": 262144,
-          "id": "qwen3.5:0.8b",
+          "id": "qwen3.5:9b",
           "input": ["text", "image"],
           "reasoning": true
         },
@@ -49,39 +51,6 @@
           "contextWindow": 262144,
           "id": "qwen3:4b",
           "input": ["text"],
-          "reasoning": true
-        },
-        {
-          "_launch": true,
-          "contextWindow": 2048,
-          "id": "tinyllama:1.1b",
-          "input": ["text"]
-        },
-        {
-          "_launch": true,
-          "contextWindow": 163840,
-          "id": "deepseek-coder-v2:16b",
-          "input": ["text"]
-        },
-        {
-          "_launch": true,
-          "contextWindow": 131072,
-          "id": "deepseek-r1:8b",
-          "input": ["text"],
-          "reasoning": true
-        },
-        {
-          "_launch": true,
-          "contextWindow": 262144,
-          "id": "qwen3.5:9b",
-          "input": ["text", "image"],
-          "reasoning": true
-        },
-        {
-          "_launch": true,
-          "contextWindow": 262144,
-          "id": "gemma4:26b",
-          "input": ["text", "image"],
           "reasoning": true
         }
       ]
