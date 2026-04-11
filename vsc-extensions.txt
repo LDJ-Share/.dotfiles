@@ -33,3 +33,8 @@ pkief.material-icon-theme
 pomdtr.excalidraw-editor
 redhat.vscode-yaml
 stylelint.vscode-stylelint
+teamsdevapp.vscode-ai-foundry
+yzhang.markdown-all-in-one
+nefrob.vscode-just-syntax
+dreamcatcher45.podmanager
+johnpapa.vscode-peacock

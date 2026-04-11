@@ -37,22 +37,35 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 # and never need sudo apt-get.
 # ─────────────────────────────────────────────────────────────────────────────
 RUN apt-get update -qq && apt-get install -y -qq \
+    aggregate \
     apt-transport-https \
     bat \
     build-essential \
     ca-certificates \
     curl \
     direnv \
+    dnsutils \
     fd-find \
     ffmpeg \
     fzf \
+    fzf \
+    gh \
     git \
     gitk \
     gnupg \
+    gnupg2 \
+    htop \
+    iproute2 \
+    ipset \
+    iptables \
     jq \
+    less \
     locales \
     lsb-release \
+    man-db \
+    nano \
     nmap \
+    procps \
     python3 \
     python3-pip \
     ranger \
@@ -64,6 +77,7 @@ RUN apt-get update -qq && apt-get install -y -qq \
     tmux \
     tree \
     unzip \
+    vim \
     wget \
     zip \
     zsh \
@@ -269,6 +283,10 @@ COPY --chown=dev:dev --from=builder-dev-tools /home/dev/.local/lib/node_modules/
 
 FROM assembler AS final
 
+# ── Dotnet global tools
+RUN dotnet tool install -g JetBrains.ReSharper.GlobalTools
+RUN export PATH="$PATH:/home/dev/.dotnet/tools"
+
 # ── OpenCode
 RUN curl -fsSL https://opencode.ai/install | bash
 
@@ -311,9 +329,6 @@ RUN TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins" "${HOME}/.tmux/plugins/tpm/
 
 # ── oh-my-opencode
 RUN "${HOME}/.bun/bin/bunx" oh-my-opencode install --no-tui --claude=no --openai=no --gemini=no --copilot=no 2>/dev/null || true
-
-# ── get-shit-done
-RUN npx get-shit-done-cc --opencode --global 
 
 # ── NeoVim initialization
 RUN nvim --headless "+Lazy! sync" +qa  2>/dev/null || true
