@@ -299,6 +299,15 @@ RUN npm config set prefix "${HOME}/.local" \
 # Verify installation
 RUN pi --version
 
+# RUN pi install npm:pi-prompt-template-model
+# RUN pi install npm:pi-subagents
+# RUN pi install npm:pi-teams
+# RUN pi install npm:pi-lens
+# pi install npm:pi-web-access
+RUN npx @ifi/oh-pi 
+# RUN pi install @ifi/pi-provider-ollama
+RUN pi install npm:@0xkobold/pi-ollama
+
 # ── Dotfiles and stow
 # Placed late so config changes don't bust the tool-install cache above.
 COPY --chown=dev:dev . /home/dev/.dotfiles/
