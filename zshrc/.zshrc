@@ -164,3 +164,5 @@ eval "$(direnv hook zsh)"
 if command -v oh-my-posh &>/dev/null; then
   eval "$(oh-my-posh init zsh --config ~/.config/powershell/oh-my-posh-tokyo-night-storm.toml)"
 fi
+
+set ENABLE_TOOL_SEARCH=true

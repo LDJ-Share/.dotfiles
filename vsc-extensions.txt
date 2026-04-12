@@ -38,3 +38,4 @@ yzhang.markdown-all-in-one
 nefrob.vscode-just-syntax
 dreamcatcher45.podmanager
 johnpapa.vscode-peacock
+nilpatel.title
