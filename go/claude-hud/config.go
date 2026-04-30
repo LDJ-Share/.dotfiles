@@ -9,8 +9,6 @@ import (
 // HudConfig mirrors the upstream config schema so a single
 // ~/.claude/plugins/claude-hud/config.json works for both runtimes.
 type HudConfig struct {
-	LineLayout     string         `json:"lineLayout"`     // "compact" | "expanded"
-	ShowSeparators bool           `json:"showSeparators"` //
 	PathLevels     int            `json:"pathLevels"`
 	ElementOrder   []string       `json:"elementOrder"`
 	GitStatus      GitStatusCfg   `json:"gitStatus"`
@@ -52,8 +50,6 @@ var defaultElementOrder = []string{
 // defaultConfig returns the upstream defaults. Any user config is merged on top.
 func defaultConfig() *HudConfig {
 	return &HudConfig{
-		LineLayout:     "expanded",
-		ShowSeparators: false,
 		PathLevels:     1,
 		ElementOrder:   append([]string{}, defaultElementOrder...),
 		GitStatus: GitStatusCfg{
