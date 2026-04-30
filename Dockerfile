@@ -196,10 +196,10 @@ RUN GO_LATEST=$(curl -s "https://go.dev/VERSION?m=text" | head -1 | tr -d '[:spa
 # ─────────────────────────────────────────────────────────────────────────────
 FROM base AS builder-claude-hud
 COPY --from=builder-go /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:${PATH}"
 COPY go/claude-hud /src/claude-hud
 WORKDIR /src/claude-hud
-RUN go build -trimpath -ldflags="-s -w" -o /out/claude-hud .
+RUN sudo install -d -o dev -g dev /out \
+    && go build -trimpath -ldflags="-s -w" -o /out/claude-hud .
 
 # ──
 
