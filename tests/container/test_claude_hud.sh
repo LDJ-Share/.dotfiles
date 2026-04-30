@@ -9,7 +9,9 @@ echo "=== claude-hud: binary exists and runs ==="
 check_cmd claude-hud
 
 # Without stdin, claude-hud prints an init banner and exits 0.
-check "no-stdin path exits 0" claude-hud
+# Explicitly redirect stdin from /dev/null so it doesn't block on the test
+# runner's inherited stdin (which may be a pipe in CI).
+check "no-stdin path exits 0" bash -c "claude-hud </dev/null"
 
 echo "=== claude-hud: renders minimal stdin ==="
 
