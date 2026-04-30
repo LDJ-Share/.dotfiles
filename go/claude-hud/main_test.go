@@ -60,3 +60,49 @@ func minimalStdin(t *testing.T) string {
 	}
 	return string(b)
 }
+
+func TestProjectLineShowsModelName(t *testing.T) {
+	out := runHud(t, minimalStdin(t))
+	if !strings.Contains(out, "Sonnet") {
+		t.Errorf("expected model name in output, got:\n%s", out)
+	}
+}
+
+func TestProjectLineShowsGitBranchInRepo(t *testing.T) {
+	repo := t.TempDir()
+	for _, args := range [][]string{
+		{"init", "-q", "-b", "main"},
+		{"-c", "user.email=t@t", "-c", "user.name=t",
+			"commit", "--allow-empty", "-q", "-m", "init"},
+	} {
+		c := exec.Command("git", args...)
+		c.Dir = repo
+		if err := c.Run(); err != nil {
+			t.Skipf("git unavailable in test env: %v", err)
+		}
+	}
+
+	payload := map[string]any{
+		"cwd": repo,
+		"model": map[string]any{"id": "claude-sonnet-4-6", "display_name": "Sonnet"},
+		"context_window": map[string]any{"context_window_size": 200000},
+	}
+	b, _ := json.Marshal(payload)
+	out := runHud(t, string(b))
+	if !strings.Contains(out, "git:(main") {
+		t.Errorf("expected git branch in output, got:\n%s", out)
+	}
+}
+
+func TestProjectLineNoGitOutsideRepo(t *testing.T) {
+	payload := map[string]any{
+		"cwd": t.TempDir(),
+		"model": map[string]any{"id": "claude-sonnet-4-6", "display_name": "Sonnet"},
+		"context_window": map[string]any{"context_window_size": 200000},
+	}
+	b, _ := json.Marshal(payload)
+	out := runHud(t, string(b))
+	if strings.Contains(out, "git:(") {
+		t.Errorf("expected no git segment outside repo, got:\n%s", out)
+	}
+}
