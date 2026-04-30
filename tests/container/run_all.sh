@@ -16,6 +16,7 @@ TESTS=(
   test_import_scripts.sh
   test_workspace_template.sh
   test_claude_hud.sh
+  test_superpowers_lite.sh
 )
 
 for test in "${TESTS[@]}"; do
