@@ -19,6 +19,15 @@ bindkey '^L' vi-forward-word
 bindkey '^k' up-line-or-search
 bindkey '^j' down-line-or-search
 
+# use default history navigation instead
+bindkey '^[[A' up-line-or-history
+
+# Ctrl+Left Arrow: move cursor back one word
+bindkey '^[[1;5D' backward-word
+
+# Ctrl+Right Arrow: move cursor forward one word
+bindkey '^[[1;5C' forward-word
+
 ZLE_RPROMPT_INDENT=0
 
 # You may need to manually set your language environment
@@ -45,6 +54,7 @@ alias ga='git add -p'
 alias gcoall='git checkout -- .'
 alias gr='git remote'
 alias gre='git reset'
+alias gitk='gitk &'
 
 # Docker
 alias dco="docker compose"
@@ -154,3 +164,5 @@ eval "$(direnv hook zsh)"
 if command -v oh-my-posh &>/dev/null; then
   eval "$(oh-my-posh init zsh --config ~/.config/powershell/oh-my-posh-tokyo-night-storm.toml)"
 fi
+
+set ENABLE_TOOL_SEARCH=true

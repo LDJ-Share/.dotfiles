@@ -8,5 +8,12 @@
   ],
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-  "remoteUser": "dev"
+  "remoteUser": "dev",
+  // Disabled to avoid a 10+ minute one-time usermod chown on first open.
+  // VS Code rebuilds a derived image when your host UID (run `id -u`) differs
+  // from the image's dev user UID (1000). On WSL2/Windows this is safe to leave
+  // off — Windows does not enforce Unix ownership on bind-mounted files.
+  // On native Linux with a non-1000 host user, set this to true to avoid
+  // permission issues with host-side tooling writing into /workspace.
+  "updateRemoteUserUID": false
 }

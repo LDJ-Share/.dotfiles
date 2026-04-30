@@ -96,6 +96,7 @@ jobs:
         run: |
           docker run --rm \
             -w /home/dev \
+            -e TEMPLATES_DIR=/templates \
             -v "${{ github.workspace }}/tests/container:/tests/container:ro" \
             -v "${{ github.workspace }}/templates:/templates:ro" \
             -v "${{ github.workspace }}/.devcontainer:/home/dev/.devcontainer:ro" \
