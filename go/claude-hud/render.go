@@ -96,8 +96,7 @@ func renderProjectLine(ctx *RenderContext) string {
 func renderContextLine(ctx *RenderContext) string {
 	percent := bufferedPercent(ctx.Stdin)
 	color := contextColorANSI(percent)
-	value := formatContextValue(ctx, percent, "percent")
-	valueDisplay := color + value + ansiReset
+	valueDisplay := color + fmt.Sprintf("%d%%", percent) + ansiReset
 
 	line := cLabel("Context") + " " + contextBar(percent, getAdaptiveBarWidth()) + " " + valueDisplay
 
@@ -110,30 +109,6 @@ func renderContextLine(ctx *RenderContext) string {
 		}
 	}
 	return line
-}
-
-func formatContextValue(ctx *RenderContext, percent int, mode string) string {
-	total := totalTokens(ctx.Stdin)
-	size := ctx.Stdin.ContextWindow.ContextWindowSize
-	switch mode {
-	case "tokens":
-		if size > 0 {
-			return formatTokens(total) + "/" + formatTokens(size)
-		}
-		return formatTokens(total)
-	case "both":
-		if size > 0 {
-			return fmt.Sprintf("%d%% (%s/%s)", percent, formatTokens(total), formatTokens(size))
-		}
-		return fmt.Sprintf("%d%%", percent)
-	case "remaining":
-		rem := 100 - percent
-		if rem < 0 {
-			rem = 0
-		}
-		return fmt.Sprintf("%d%%", rem)
-	}
-	return fmt.Sprintf("%d%%", percent)
 }
 
 func renderUsageLine(ctx *RenderContext) string {
@@ -393,19 +368,9 @@ func renderTodosLine(ctx *RenderContext) string {
 	return yellow("▸") + " " + content + " " + cLabel(fmt.Sprintf("(%d/%d)", completed, total))
 }
 
-func renderSeparator(width int) string {
-	if width < 1 {
-		width = 1
-	}
-	return dim(repeat("─", width))
-}
-
 // ---------------------------------------------------------------------------
-// Layout dispatch — expanded vs compact.
-// Activity elements (tools/agents/todos) sit below the separator if enabled.
+// Layout — expanded only (compact was removed during the trim).
 // ---------------------------------------------------------------------------
-
-var activityElements = map[string]bool{"tools": true, "agents": true, "todos": true}
 
 func renderElement(ctx *RenderContext, name string) string {
 	switch name {
@@ -427,15 +392,10 @@ func renderElement(ctx *RenderContext, name string) string {
 	return ""
 }
 
-type renderedLine struct {
-	line       string
-	isActivity bool
-}
-
-func renderExpanded(ctx *RenderContext) []renderedLine {
+func renderExpanded(ctx *RenderContext) []string {
 	order := elementOrder
 	seen := map[string]bool{}
-	out := []renderedLine{}
+	out := []string{}
 
 	for i := 0; i < len(order); i++ {
 		el := order[i]
@@ -454,11 +414,11 @@ func renderExpanded(ctx *RenderContext) []renderedLine {
 				b := renderElement(ctx, next)
 				switch {
 				case a != "" && b != "":
-					out = append(out, renderedLine{a + " │ " + b, false})
+					out = append(out, a+" │ "+b)
 				case a != "":
-					out = append(out, renderedLine{a, false})
+					out = append(out, a)
 				case b != "":
-					out = append(out, renderedLine{b, false})
+					out = append(out, b)
 				}
 				continue
 			}
@@ -468,21 +428,21 @@ func renderExpanded(ctx *RenderContext) []renderedLine {
 		if line == "" {
 			continue
 		}
-		out = append(out, renderedLine{line, activityElements[el]})
+		out = append(out, line)
 	}
 	return out
 }
 
 // ---------------------------------------------------------------------------
-// Top-level render — handles separators and width-aware truncation
+// Top-level render — handles width-aware wrapping/truncation.
 // ---------------------------------------------------------------------------
 
 func render(ctx *RenderContext, out *strings.Builder) {
 	lines := renderExpanded(ctx)
 	termWidth := getTerminalWidth()
 
-	for _, l := range lines {
-		for _, physical := range strings.Split(l.line, "\n") {
+	for _, line := range lines {
+		for _, physical := range strings.Split(line, "\n") {
 			for _, wrapped := range wrapLineToWidth(physical, termWidth) {
 				out.WriteString(ansiReset)
 				out.WriteString(wrapped)
