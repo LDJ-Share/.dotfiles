@@ -68,7 +68,7 @@ func speedCachePath(s StdinData) string {
 	}
 	sum := sha256.Sum256([]byte(key))
 	hash := hex.EncodeToString(sum[:])
-	return filepath.Join(userClaudeDir(), "plugins", "claude-hud-go", "speed-cache", hash+".json")
+	return filepath.Join(userClaudeDir(), "cache", "claude-hud", "speed-cache", hash+".json")
 }
 
 // getOutputSpeed returns tokens/second for output, or nil if not enough data.
