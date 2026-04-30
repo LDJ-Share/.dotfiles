@@ -191,6 +191,16 @@ RUN GO_LATEST=$(curl -s "https://go.dev/VERSION?m=text" | head -1 | tr -d '[:spa
     && sudo tar -C /usr/local -xzf /tmp/go.tar.gz \
     && rm /tmp/go.tar.gz
 
+# ─────────────────────────────────────────────────────────────────────────────
+# claude-hud — statusline binary, built from in-repo Go source
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base AS builder-claude-hud
+COPY --from=builder-go /usr/local/go /usr/local/go
+COPY go/claude-hud /src/claude-hud
+WORKDIR /src/claude-hud
+RUN sudo install -d -o dev -g dev /out \
+    && go build -trimpath -ldflags="-s -w" -o /out/claude-hud .
+
 # ──
 
 FROM base AS builder-rust
@@ -319,6 +329,16 @@ RUN mkdir -p "${HOME}/.pi/agent" \
 RUN mkdir -p "${HOME}/.opencode" \
     && cd "${HOME}/.dotfiles/dot-opencode" \
     && stow .
+
+# ── claude-hud statusline binary
+COPY --from=builder-claude-hud /out/claude-hud /usr/local/bin/claude-hud
+
+# ── Claude Code settings (container-only; not stowed to host)
+# Pre-create ~/.claude/ owned by dev so Claude Code can later write
+# .credentials.json, projects/, todos/, cache/claude-hud/ etc. as the dev user.
+# Without this, Docker's auto-created COPY parent dir would be root-owned.
+RUN install -d -o dev -g dev /home/dev/.claude
+COPY --chown=dev:dev dot-claude/settings.json /home/dev/.claude/settings.json
 
 # Write ~/.zshrc wrapper (sources the stowed zshrc)
 RUN printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "${HOME}/.zshrc"

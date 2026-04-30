@@ -1,18 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	"golang.org/x/term"
@@ -55,82 +50,6 @@ func getAdaptiveBarWidth() int {
 func itoa(n int) string { return strconv.Itoa(n) }
 
 // ---------------------------------------------------------------------------
-// Claude Code version (best-effort, cached)
-// ---------------------------------------------------------------------------
-
-func getClaudeCodeVersion() string {
-	cachePath := filepath.Join(userClaudeDir(), "plugins", "claude-hud-go", "cc-version.txt")
-	if raw, err := os.ReadFile(cachePath); err == nil {
-		parts := strings.SplitN(strings.TrimSpace(string(raw)), "|", 2)
-		if len(parts) == 2 {
-			ts, err := strconv.ParseInt(parts[0], 10, 64)
-			// Cache for 24h.
-			if err == nil && time.Now().Unix()-ts < 24*3600 {
-				return parts[1]
-			}
-		}
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, "claude", "--version")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = nil
-	if err := cmd.Run(); err != nil {
-		return ""
-	}
-	v := strings.TrimSpace(out.String())
-	// Output looks like "1.0.0 (Claude Code)" — first whitespace-delimited token.
-	if i := strings.IndexByte(v, ' '); i > 0 {
-		v = v[:i]
-	}
-	if v != "" {
-		_ = os.MkdirAll(filepath.Dir(cachePath), 0o755)
-		_ = os.WriteFile(cachePath, []byte(fmt.Sprintf("%d|%s", time.Now().Unix(), v)), 0o644)
-	}
-	return v
-}
-
-// ---------------------------------------------------------------------------
-// Memory info — system RAM
-// ---------------------------------------------------------------------------
-
-func getMemoryInfo() *MemoryInfo {
-	total, used, ok := readSystemMemory()
-	if !ok || total == 0 {
-		return nil
-	}
-	return &MemoryInfo{
-		TotalBytes:  total,
-		UsedBytes:   used,
-		FreeBytes:   total - used,
-		UsedPercent: int(float64(used) / float64(total) * 100),
-	}
-}
-
-func formatBytes(b uint64) string {
-	const (
-		_  = iota
-		kb = 1 << (10 * iota)
-		mb
-		gb
-		tb
-	)
-	switch {
-	case b >= tb:
-		return fmt.Sprintf("%.1fT", float64(b)/float64(tb))
-	case b >= gb:
-		return fmt.Sprintf("%.1fG", float64(b)/float64(gb))
-	case b >= mb:
-		return fmt.Sprintf("%.0fM", float64(b)/float64(mb))
-	case b >= kb:
-		return fmt.Sprintf("%.0fK", float64(b)/float64(kb))
-	}
-	return fmt.Sprintf("%dB", b)
-}
-
-// ---------------------------------------------------------------------------
 // Speed tracker — persists between invocations to compute output tok/s
 // ---------------------------------------------------------------------------
 
@@ -149,7 +68,7 @@ func speedCachePath(s StdinData) string {
 	}
 	sum := sha256.Sum256([]byte(key))
 	hash := hex.EncodeToString(sum[:])
-	return filepath.Join(userClaudeDir(), "plugins", "claude-hud-go", "speed-cache", hash+".json")
+	return filepath.Join(userClaudeDir(), "cache", "claude-hud", "speed-cache", hash+".json")
 }
 
 // getOutputSpeed returns tokens/second for output, or nil if not enough data.
@@ -184,43 +103,6 @@ func getOutputSpeed(s StdinData) *float64 {
 	}
 	speed := float64(deltaTokens) / deltaSec
 	return &speed
-}
-
-// ---------------------------------------------------------------------------
-// Custom shell command label (extra-cmd)
-// ---------------------------------------------------------------------------
-
-func parseExtraCmdArg() string {
-	for i, a := range os.Args {
-		if (a == "--cmd" || a == "-c") && i+1 < len(os.Args) {
-			return os.Args[i+1]
-		}
-		if strings.HasPrefix(a, "--cmd=") {
-			return strings.TrimPrefix(a, "--cmd=")
-		}
-	}
-	return ""
-}
-
-func runExtraCmd(cmdLine string) string {
-	if cmdLine == "" {
-		return ""
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
-	defer cancel()
-
-	var c *exec.Cmd
-	if runtime.GOOS == "windows" {
-		c = exec.CommandContext(ctx, "cmd", "/c", cmdLine)
-	} else {
-		c = exec.CommandContext(ctx, "sh", "-c", cmdLine)
-	}
-	var out bytes.Buffer
-	c.Stdout = &out
-	if err := c.Run(); err != nil {
-		return ""
-	}
-	return strings.TrimSpace(out.String())
 }
 
 // ---------------------------------------------------------------------------

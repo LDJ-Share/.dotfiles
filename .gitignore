@@ -10,3 +10,9 @@ bin/
 obj/
 .worktrees/
 .airgap-artifacts/
+
+# Shell / prompt cache spillover into the repo root
+init.*.zsh
+*.omp.cache
+omp.cache
+excalidraw.log

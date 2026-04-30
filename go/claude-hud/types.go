@@ -84,19 +84,9 @@ type UsageData struct {
 	SevenDayReset *time.Time
 }
 
-type GitFileStats struct {
-	Modified  int
-	Added     int
-	Deleted   int
-	Untracked int
-}
-
 type GitStatus struct {
-	Branch    string
-	IsDirty   bool
-	Ahead     int
-	Behind    int
-	FileStats *GitFileStats
+	Branch  string
+	IsDirty bool
 }
 
 type ConfigCounts struct {
@@ -106,24 +96,13 @@ type ConfigCounts struct {
 	Hooks    int
 }
 
-type MemoryInfo struct {
-	TotalBytes  uint64
-	UsedBytes   uint64
-	FreeBytes   uint64
-	UsedPercent int
-}
-
 type RenderContext struct {
 	Stdin           StdinData
 	Transcript      TranscriptData
 	Counts          ConfigCounts
 	GitStatus       *GitStatus
 	UsageData       *UsageData
-	Memory          *MemoryInfo
-	Config          *HudConfig
 	SessionDuration string
-	ExtraLabel      string
-	ClaudeCodeVer   string
 }
 
 // TranscriptEntry — a single JSONL line.

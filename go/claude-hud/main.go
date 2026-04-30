@@ -2,8 +2,8 @@
 //
 // Drop-in replacement for the upstream node plugin, suitable for locked-down
 // machines where you can copy a self-built .exe but can't install plugins
-// through the marketplace. Reads the same config file upstream uses
-// (~/.claude/plugins/claude-hud/config.json).
+// through the marketplace. Behavior is hardcoded at compile time — no config
+// file is read at runtime.
 package main
 
 import (
@@ -24,35 +24,10 @@ func main() {
 		return
 	}
 
-	cfg := loadConfig()
 	transcript := parseTranscript(stdin.TranscriptPath)
 	counts := getConfigCounts(stdin.Cwd)
-
-	var gitStatus *GitStatus
-	if cfg.GitStatus.Enabled {
-		gitStatus = getGitStatus(stdin.Cwd)
-	}
-
-	var usage *UsageData
-	if cfg.Display.ShowUsage {
-		usage = extractUsage(*stdin)
-	}
-
-	var memory *MemoryInfo
-	if cfg.Display.ShowMemoryUsage && cfg.LineLayout == "expanded" {
-		memory = getMemoryInfo()
-	}
-
-	extraCmd := parseExtraCmdArg()
-	extraLabel := ""
-	if extraCmd != "" {
-		extraLabel = runExtraCmd(extraCmd)
-	}
-
-	ccVer := ""
-	if cfg.Display.ShowClaudeCodeVersion {
-		ccVer = getClaudeCodeVersion()
-	}
+	gitStatus := getGitStatus(stdin.Cwd)
+	usage := extractUsage(*stdin)
 
 	ctx := &RenderContext{
 		Stdin:           *stdin,
@@ -60,11 +35,7 @@ func main() {
 		Counts:          counts,
 		GitStatus:       gitStatus,
 		UsageData:       usage,
-		Memory:          memory,
-		Config:          cfg,
 		SessionDuration: formatSessionDuration(transcript.SessionStart, time.Now().UTC()),
-		ExtraLabel:      extraLabel,
-		ClaudeCodeVer:   ccVer,
 	}
 
 	var out strings.Builder

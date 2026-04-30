@@ -29,6 +29,13 @@ $env:XDG_DATA_HOME      = Join-Path $UserHome ".local/share"
 $env:MYVIMRC            = Join-Path $env:XDG_CONFIG_HOME "nvim/init.lua"
 $env:FZF_DEFAULT_COMMAND = 'fd --type f --hidden --follow'
 
+# Claude Code deferred tool discovery. When enabled, tool schemas load on
+# demand via the ToolSearch tool instead of being dumped into every session
+# prompt — saves significant context on Windows host sessions. Uncomment to
+# turn on. PowerShell stringifies $true as "True"; Claude Code matches that
+# case-insensitively, but "1" / "true" are the canonical values.
+# $env:ENABLE_TOOL_SEARCH = "1"
+
 # ── Aliases ──────────────────────────────────────────────────────────────────
 Set-Alias vi    nvim
 Set-Alias v     nvim
