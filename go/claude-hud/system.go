@@ -1,18 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	"golang.org/x/term"
@@ -108,43 +103,6 @@ func getOutputSpeed(s StdinData) *float64 {
 	}
 	speed := float64(deltaTokens) / deltaSec
 	return &speed
-}
-
-// ---------------------------------------------------------------------------
-// Custom shell command label (extra-cmd)
-// ---------------------------------------------------------------------------
-
-func parseExtraCmdArg() string {
-	for i, a := range os.Args {
-		if (a == "--cmd" || a == "-c") && i+1 < len(os.Args) {
-			return os.Args[i+1]
-		}
-		if strings.HasPrefix(a, "--cmd=") {
-			return strings.TrimPrefix(a, "--cmd=")
-		}
-	}
-	return ""
-}
-
-func runExtraCmd(cmdLine string) string {
-	if cmdLine == "" {
-		return ""
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
-	defer cancel()
-
-	var c *exec.Cmd
-	if runtime.GOOS == "windows" {
-		c = exec.CommandContext(ctx, "cmd", "/c", cmdLine)
-	} else {
-		c = exec.CommandContext(ctx, "sh", "-c", cmdLine)
-	}
-	var out bytes.Buffer
-	c.Stdout = &out
-	if err := c.Run(); err != nil {
-		return ""
-	}
-	return strings.TrimSpace(out.String())
 }
 
 // ---------------------------------------------------------------------------

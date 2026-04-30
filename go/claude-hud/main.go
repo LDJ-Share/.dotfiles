@@ -38,12 +38,6 @@ func main() {
 		usage = extractUsage(*stdin)
 	}
 
-	extraCmd := parseExtraCmdArg()
-	extraLabel := ""
-	if extraCmd != "" {
-		extraLabel = runExtraCmd(extraCmd)
-	}
-
 	ctx := &RenderContext{
 		Stdin:           *stdin,
 		Transcript:      transcript,
@@ -52,7 +46,6 @@ func main() {
 		UsageData:       usage,
 		Config:          cfg,
 		SessionDuration: formatSessionDuration(transcript.SessionStart, time.Now().UTC()),
-		ExtraLabel:      extraLabel,
 	}
 
 	var out strings.Builder

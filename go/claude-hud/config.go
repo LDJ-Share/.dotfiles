@@ -44,7 +44,6 @@ type DisplayCfg struct {
 	UsageThreshold        int    `json:"usageThreshold"`
 	SevenDayThreshold     int    `json:"sevenDayThreshold"`
 	EnvironmentThreshold  int    `json:"environmentThreshold"`
-	CustomLine            string `json:"customLine"`
 }
 
 var defaultElementOrder = []string{
@@ -84,7 +83,6 @@ func defaultConfig() *HudConfig {
 			UsageThreshold:        0,
 			SevenDayThreshold:     80,
 			EnvironmentThreshold:  0,
-			CustomLine:            "",
 		},
 	}
 }

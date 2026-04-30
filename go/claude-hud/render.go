@@ -114,9 +114,6 @@ func renderProjectLine(ctx *RenderContext) string {
 	if d.ShowSessionName && ctx.Transcript.SessionName != "" {
 		parts = append(parts, cLabel(cfg, ctx.Transcript.SessionName))
 	}
-	if ctx.ExtraLabel != "" {
-		parts = append(parts, cLabel(cfg, ctx.ExtraLabel))
-	}
 	if d.ShowSpeed {
 		if speed := getOutputSpeed(ctx.Stdin); speed != nil {
 			parts = append(parts, cLabel(cfg, fmt.Sprintf("out: %.1f tok/s", *speed)))
@@ -125,9 +122,6 @@ func renderProjectLine(ctx *RenderContext) string {
 	if d.ShowDuration && ctx.SessionDuration != "" {
 		// U+23F1 + U+FE0F = emoji presentation of stopwatch.
 		parts = append(parts, cLabel(cfg, "⏱️  "+ctx.SessionDuration))
-	}
-	if d.CustomLine != "" {
-		parts = append(parts, cCustom(cfg, d.CustomLine))
 	}
 
 	if len(parts) == 0 {
@@ -719,12 +713,6 @@ func renderCompact(ctx *RenderContext) []renderedLine {
 	}
 	if d.ShowDuration && ctx.SessionDuration != "" {
 		parts = append(parts, cLabel(cfg, "⏱️  "+ctx.SessionDuration))
-	}
-	if ctx.ExtraLabel != "" {
-		parts = append(parts, cLabel(cfg, ctx.ExtraLabel))
-	}
-	if d.CustomLine != "" {
-		parts = append(parts, cCustom(cfg, d.CustomLine))
 	}
 
 	header := strings.Join(parts, " | ")

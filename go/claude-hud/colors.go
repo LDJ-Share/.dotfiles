@@ -55,9 +55,8 @@ func cGit(cfg *HudConfig, t string) string     { return clr(cfg, t, "git", ansiM
 func cGitBranch(cfg *HudConfig, t string) string {
 	return clr(cfg, t, "gitBranch", ansiCyan)
 }
-func cLabel(cfg *HudConfig, t string) string    { return clr(cfg, t, "label", ansiDim) }
-func cCustom(cfg *HudConfig, t string) string   { return clr(cfg, t, "custom", "\x1b[38;5;208m") } // Claude orange
-func cWarning(cfg *HudConfig, t string) string  { return clr(cfg, t, "warning", ansiYellow) }
+func cLabel(cfg *HudConfig, t string) string   { return clr(cfg, t, "label", ansiDim) }
+func cWarning(cfg *HudConfig, t string) string { return clr(cfg, t, "warning", ansiYellow) }
 func cCritical(cfg *HudConfig, t string) string { return clr(cfg, t, "critical", ansiRed) }
 
 // Threshold-based colors. The fallback path mirrors upstream.

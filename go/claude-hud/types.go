@@ -114,7 +114,6 @@ type RenderContext struct {
 	UsageData       *UsageData
 	Config          *HudConfig
 	SessionDuration string
-	ExtraLabel      string
 }
 
 // TranscriptEntry — a single JSONL line.
