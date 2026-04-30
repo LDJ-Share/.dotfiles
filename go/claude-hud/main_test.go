@@ -146,3 +146,49 @@ func TestTokenBreakdownAbsentBelow85Percent(t *testing.T) {
 		t.Errorf("token breakdown should not appear below 85%%, got:\n%s", out)
 	}
 }
+
+func TestUsageLineHiddenWhenNoRateLimits(t *testing.T) {
+	out := runHud(t, minimalStdin(t))
+	if strings.Contains(out, "Usage") {
+		t.Errorf("expected no Usage line without rate_limits, got:\n%s", out)
+	}
+}
+
+func TestUsageLineShownWith5hRateLimit(t *testing.T) {
+	payload := map[string]any{
+		"cwd":   t.TempDir(),
+		"model": map[string]any{"id": "claude-sonnet-4-6", "display_name": "Sonnet"},
+		"context_window": map[string]any{"context_window_size": 200000},
+		"rate_limits": map[string]any{
+			"five_hour": map[string]any{
+				"used_percentage": 50.0,
+				"resets_at":       float64(2_000_000_000),
+			},
+		},
+	}
+	b, _ := json.Marshal(payload)
+	out := runHud(t, string(b))
+	if !strings.Contains(out, "Usage") {
+		t.Errorf("expected Usage line with rate_limits, got:\n%s", out)
+	}
+	if !strings.Contains(out, "50%") {
+		t.Errorf("expected 50%% in usage line, got:\n%s", out)
+	}
+}
+
+func TestFormatTokens(t *testing.T) {
+	cases := []struct {
+		in   int
+		want string
+	}{
+		{42, "42"},
+		{1_000, "1k"},
+		{12_500, "12k"},
+		{1_200_000, "1.2M"},
+	}
+	for _, c := range cases {
+		if got := formatTokens(c.in); got != c.want {
+			t.Errorf("formatTokens(%d) = %q; want %q", c.in, got, c.want)
+		}
+	}
+}
