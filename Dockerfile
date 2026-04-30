@@ -340,6 +340,12 @@ COPY --from=builder-claude-hud /out/claude-hud /usr/local/bin/claude-hud
 RUN install -d -o dev -g dev /home/dev/.claude
 COPY --chown=dev:dev dot-claude/settings.json /home/dev/.claude/settings.json
 
+# ── Vendored Claude Code skills (superpowers-lite)
+COPY --chown=dev:dev dot-claude/skills /home/dev/.claude/skills
+
+# ── Container-only universal-disciplines CLAUDE.md
+COPY --chown=dev:dev dot-claude/CLAUDE.md /home/dev/.claude/CLAUDE.md
+
 # Write ~/.zshrc wrapper (sources the stowed zshrc)
 RUN printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "${HOME}/.zshrc"
 
