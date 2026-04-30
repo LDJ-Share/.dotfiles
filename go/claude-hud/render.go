@@ -27,52 +27,44 @@ func visualWidth(s string) int {
 // ---------------------------------------------------------------------------
 
 func renderProjectLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	d := cfg.Display
 	parts := []string{}
 
-	if d.ShowModel {
-		name := modelName(ctx.Stdin)
-		provider := providerLabel(ctx.Stdin)
-		hasAPIKey := os.Getenv("ANTHROPIC_API_KEY") != ""
-		qualifier := ""
-		if provider != "" {
-			qualifier = provider
-		} else if d.ShowUsage && hasAPIKey {
-			qualifier = cCritical(cfg, "API")
-		}
-		display := name
-		if qualifier != "" {
-			display = name + " | " + qualifier
-		}
-		parts = append(parts, cModel(cfg, "["+display+"]"))
+	name := modelName(ctx.Stdin)
+	provider := providerLabel(ctx.Stdin)
+	hasAPIKey := os.Getenv("ANTHROPIC_API_KEY") != ""
+	qualifier := ""
+	if provider != "" {
+		qualifier = provider
+	} else if hasAPIKey {
+		qualifier = cCritical("API")
 	}
+	display := name
+	if qualifier != "" {
+		display = name + " | " + qualifier
+	}
+	parts = append(parts, cModel("["+display+"]"))
 
 	var projectPart, gitPart string
-	if d.ShowProject && ctx.Stdin.Cwd != "" {
+	if ctx.Stdin.Cwd != "" {
 		segs := splitPath(ctx.Stdin.Cwd)
-		levels := cfg.PathLevels
-		if levels < 1 {
-			levels = 1
-		}
 		var path string
 		if len(segs) == 0 {
 			path = "/"
-		} else if levels >= len(segs) {
+		} else if pathLevels >= len(segs) {
 			path = strings.Join(segs, "/")
 		} else {
-			path = strings.Join(segs[len(segs)-levels:], "/")
+			path = strings.Join(segs[len(segs)-pathLevels:], "/")
 		}
-		projectPart = cProject(cfg, path)
+		projectPart = cProject(path)
 	}
 
-	if cfg.GitStatus.Enabled && ctx.GitStatus != nil {
+	if ctx.GitStatus != nil {
 		g := ctx.GitStatus
 		branch := g.Branch
-		if cfg.GitStatus.ShowDirty && g.IsDirty {
+		if g.IsDirty {
 			branch += "*"
 		}
-		gitPart = cGit(cfg, "git:(") + cGitBranch(cfg, branch) + cGit(cfg, ")")
+		gitPart = cGit("git:(") + cGitBranch(branch) + cGit(")")
 	}
 
 	switch {
@@ -84,17 +76,15 @@ func renderProjectLine(ctx *RenderContext) string {
 		parts = append(parts, gitPart)
 	}
 
-	if d.ShowSessionName && ctx.Transcript.SessionName != "" {
-		parts = append(parts, cLabel(cfg, ctx.Transcript.SessionName))
+	if ctx.Transcript.SessionName != "" {
+		parts = append(parts, cLabel(ctx.Transcript.SessionName))
 	}
-	if d.ShowSpeed {
-		if speed := getOutputSpeed(ctx.Stdin); speed != nil {
-			parts = append(parts, cLabel(cfg, fmt.Sprintf("out: %.1f tok/s", *speed)))
-		}
+	if speed := getOutputSpeed(ctx.Stdin); speed != nil {
+		parts = append(parts, cLabel(fmt.Sprintf("out: %.1f tok/s", *speed)))
 	}
-	if d.ShowDuration && ctx.SessionDuration != "" {
+	if ctx.SessionDuration != "" {
 		// U+23F1 + U+FE0F = emoji presentation of stopwatch.
-		parts = append(parts, cLabel(cfg, "⏱️  "+ctx.SessionDuration))
+		parts = append(parts, cLabel("⏱️  "+ctx.SessionDuration))
 	}
 
 	if len(parts) == 0 {
@@ -104,31 +94,19 @@ func renderProjectLine(ctx *RenderContext) string {
 }
 
 func renderContextLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	d := cfg.Display
-	raw := contextPercent(ctx.Stdin)
-	buf := bufferedPercent(ctx.Stdin)
-	percent := buf
-	if d.AutocompactBuffer == "disabled" {
-		percent = raw
-	}
-	color := contextColorANSI(percent, cfg)
-	value := formatContextValue(ctx, percent, d.ContextValue)
+	percent := bufferedPercent(ctx.Stdin)
+	color := contextColorANSI(percent)
+	value := formatContextValue(ctx, percent, "percent")
 	valueDisplay := color + value + ansiReset
 
-	var line string
-	if d.ShowContextBar {
-		line = cLabel(cfg, "Context") + " " + contextBar(percent, getAdaptiveBarWidth(), cfg) + " " + valueDisplay
-	} else {
-		line = cLabel(cfg, "Context") + " " + valueDisplay
-	}
+	line := cLabel("Context") + " " + contextBar(percent, getAdaptiveBarWidth()) + " " + valueDisplay
 
-	if d.ShowTokenBreakdown && percent >= 85 {
+	if percent >= tokenBreakdownThreshold {
 		u := ctx.Stdin.ContextWindow.CurrentUsage
 		if u != nil {
 			in := formatTokens(u.InputTokens)
 			cache := formatTokens(u.CacheCreationInputTokens + u.CacheReadInputTokens)
-			line += cLabel(cfg, fmt.Sprintf(" (in: %s, cache: %s)", in, cache))
+			line += cLabel(fmt.Sprintf(" (in: %s, cache: %s)", in, cache))
 		}
 	}
 	return line
@@ -159,13 +137,11 @@ func formatContextValue(ctx *RenderContext, percent int, mode string) string {
 }
 
 func renderUsageLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	d := cfg.Display
-	if !d.ShowUsage || ctx.UsageData == nil || providerLabel(ctx.Stdin) != "" {
+	if ctx.UsageData == nil || providerLabel(ctx.Stdin) != "" {
 		return ""
 	}
 	u := ctx.UsageData
-	usageLabel := cLabel(cfg, "Usage")
+	usageLabel := cLabel("Usage")
 
 	if isLimitReached(u) {
 		var resetAt = u.SevenDayReset
@@ -177,7 +153,7 @@ func renderUsageLine(ctx *RenderContext) string {
 		if rt != "" {
 			msg += fmt.Sprintf(" (resets %s)", rt)
 		}
-		return usageLabel + " " + cCritical(cfg, msg)
+		return usageLabel + " " + cCritical(msg)
 	}
 
 	five := u.FiveHour
@@ -190,32 +166,32 @@ func renderUsageLine(ctx *RenderContext) string {
 	if seven != nil && *seven > effective {
 		effective = *seven
 	}
-	if effective < d.UsageThreshold {
+	if effective < usageDisplayMinimum {
 		return ""
 	}
 
 	barWidth := getAdaptiveBarWidth()
 
 	if five == nil && seven != nil {
-		part := formatUsageWindowPart(cfg, "7d", seven, u.SevenDayReset, d.UsageBarEnabled, barWidth, true)
+		part := formatUsageWindowPart("7d", seven, u.SevenDayReset, true, barWidth, true)
 		return usageLabel + " " + part
 	}
 
-	fivePart := formatUsageWindowPart(cfg, "5h", five, u.FiveHourReset, d.UsageBarEnabled, barWidth, false)
+	fivePart := formatUsageWindowPart("5h", five, u.FiveHourReset, true, barWidth, false)
 
-	if seven != nil && *seven >= d.SevenDayThreshold {
-		sevenPart := formatUsageWindowPart(cfg, "7d", seven, u.SevenDayReset, d.UsageBarEnabled, barWidth, false)
+	if seven != nil && *seven >= sevenDayDisplayThreshold {
+		sevenPart := formatUsageWindowPart("7d", seven, u.SevenDayReset, true, barWidth, false)
 		return usageLabel + " " + fivePart + " | " + sevenPart
 	}
 	return usageLabel + " " + fivePart
 }
 
-func formatUsageWindowPart(cfg *HudConfig, label string, percent *int, reset *time.Time, useBar bool, barWidth int, forceLabel bool) string {
+func formatUsageWindowPart(label string, percent *int, reset *time.Time, useBar bool, barWidth int, forceLabel bool) string {
 	var valueDisplay string
 	if percent == nil {
-		valueDisplay = cLabel(cfg, "--")
+		valueDisplay = cLabel("--")
 	} else {
-		valueDisplay = quotaColorANSI(*percent, cfg) + fmt.Sprintf("%d%%", *percent) + ansiReset
+		valueDisplay = quotaColorANSI(*percent) + fmt.Sprintf("%d%%", *percent) + ansiReset
 	}
 	resetStr := formatResetTime(reset)
 
@@ -226,9 +202,9 @@ func formatUsageWindowPart(cfg *HudConfig, label string, percent *int, reset *ti
 		}
 		var body string
 		if resetStr != "" {
-			body = quotaBar(p, barWidth, cfg) + " " + valueDisplay + fmt.Sprintf(" (resets in %s)", resetStr)
+			body = quotaBar(p, barWidth) + " " + valueDisplay + fmt.Sprintf(" (resets in %s)", resetStr)
 		} else {
-			body = quotaBar(p, barWidth, cfg) + " " + valueDisplay
+			body = quotaBar(p, barWidth) + " " + valueDisplay
 		}
 		if forceLabel {
 			return label + ": " + body
@@ -242,14 +218,9 @@ func formatUsageWindowPart(cfg *HudConfig, label string, percent *int, reset *ti
 }
 
 func renderEnvironmentLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	d := cfg.Display
-	if !d.ShowConfigCounts {
-		return ""
-	}
 	c := ctx.Counts
 	total := c.ClaudeMd + c.Rules + c.MCP + c.Hooks
-	if total == 0 || total < d.EnvironmentThreshold {
+	if total == 0 || total < environmentDisplayMinimum {
 		return ""
 	}
 	parts := []string{}
@@ -268,14 +239,10 @@ func renderEnvironmentLine(ctx *RenderContext) string {
 	if len(parts) == 0 {
 		return ""
 	}
-	return cLabel(cfg, strings.Join(parts, " | "))
+	return cLabel(strings.Join(parts, " | "))
 }
 
 func renderToolsLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	if !cfg.Display.ShowTools {
-		return ""
-	}
 	tools := ctx.Transcript.Tools
 	if len(tools) == 0 {
 		return ""
@@ -298,7 +265,7 @@ func renderToolsLine(ctx *RenderContext) string {
 	for _, t := range running[startRun:] {
 		tgt := truncateToolPath(t.Target, 20)
 		if tgt != "" {
-			parts = append(parts, yellow("◐")+" "+cyan(t.Name)+cLabel(cfg, ": "+tgt))
+			parts = append(parts, yellow("◐")+" "+cyan(t.Name)+cLabel(": "+tgt))
 		} else {
 			parts = append(parts, yellow("◐")+" "+cyan(t.Name))
 		}
@@ -321,7 +288,7 @@ func renderToolsLine(ctx *RenderContext) string {
 		pairs = pairs[:4]
 	}
 	for _, p := range pairs {
-		parts = append(parts, green("✓")+" "+p.name+" "+cLabel(cfg, fmt.Sprintf("×%d", p.n)))
+		parts = append(parts, green("✓")+" "+p.name+" "+cLabel(fmt.Sprintf("×%d", p.n)))
 	}
 	if len(parts) == 0 {
 		return ""
@@ -349,10 +316,6 @@ func truncateToolPath(p string, max int) string {
 }
 
 func renderAgentsLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	if !cfg.Display.ShowAgents {
-		return ""
-	}
 	agents := ctx.Transcript.Agents
 	if len(agents) == 0 {
 		return ""
@@ -385,7 +348,7 @@ func renderAgentsLine(ctx *RenderContext) string {
 		typ := magenta(a.Type)
 		modelPart := ""
 		if a.Model != "" {
-			modelPart = " " + cLabel(cfg, "["+a.Model+"]")
+			modelPart = " " + cLabel("["+a.Model+"]")
 		}
 		desc := ""
 		if a.Description != "" {
@@ -393,19 +356,15 @@ func renderAgentsLine(ctx *RenderContext) string {
 			if len(d) > 40 {
 				d = d[:37] + "..."
 			}
-			desc = cLabel(cfg, ": "+d)
+			desc = cLabel(": " + d)
 		}
 		elapsed := formatElapsed(a.StartTime, a.EndTime)
-		lines = append(lines, icon+" "+typ+modelPart+desc+" "+cLabel(cfg, "("+elapsed+")"))
+		lines = append(lines, icon+" "+typ+modelPart+desc+" "+cLabel("("+elapsed+")"))
 	}
 	return strings.Join(lines, "\n")
 }
 
 func renderTodosLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	if !cfg.Display.ShowTodos {
-		return ""
-	}
 	todos := ctx.Transcript.Todos
 	if len(todos) == 0 {
 		return ""
@@ -423,7 +382,7 @@ func renderTodosLine(ctx *RenderContext) string {
 	total := len(todos)
 	if inProgress == nil {
 		if completed == total && total > 0 {
-			return green("✓") + " All todos complete " + cLabel(cfg, fmt.Sprintf("(%d/%d)", completed, total))
+			return green("✓") + " All todos complete " + cLabel(fmt.Sprintf("(%d/%d)", completed, total))
 		}
 		return ""
 	}
@@ -431,7 +390,7 @@ func renderTodosLine(ctx *RenderContext) string {
 	if len(content) > 50 {
 		content = content[:47] + "..."
 	}
-	return yellow("▸") + " " + content + " " + cLabel(cfg, fmt.Sprintf("(%d/%d)", completed, total))
+	return yellow("▸") + " " + content + " " + cLabel(fmt.Sprintf("(%d/%d)", completed, total))
 }
 
 func renderSeparator(width int) string {
@@ -474,10 +433,7 @@ type renderedLine struct {
 }
 
 func renderExpanded(ctx *RenderContext) []renderedLine {
-	order := ctx.Config.ElementOrder
-	if len(order) == 0 {
-		order = defaultElementOrder
-	}
+	order := elementOrder
 	seen := map[string]bool{}
 	out := []renderedLine{}
 

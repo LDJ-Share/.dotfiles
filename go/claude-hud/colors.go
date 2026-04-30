@@ -42,43 +42,37 @@ func hexToANSI(hex string) string {
 }
 
 // ---------------------------------------------------------------------------
-// Color helpers that respect HudConfig.Colors overrides
+// Color helpers
 // ---------------------------------------------------------------------------
 
-func clr(cfg *HudConfig, text, key, fallback string) string {
-	return wrapColor(text, cfg.colorANSI(key, fallback))
+func cModel(t string) string     { return wrapColor(t, ansiCyan) }
+func cProject(t string) string   { return wrapColor(t, ansiYellow) }
+func cGit(t string) string       { return wrapColor(t, ansiMagenta) }
+func cGitBranch(t string) string { return wrapColor(t, ansiCyan) }
+func cLabel(t string) string     { return wrapColor(t, ansiDim) }
+func cWarning(t string) string   { return wrapColor(t, ansiYellow) }
+func cCritical(t string) string  { return wrapColor(t, ansiRed) }
+
+// Threshold-based colors.
+
+func contextColorANSI(percent int) string {
+	if percent >= contextCriticalPercent {
+		return ansiRed
+	}
+	if percent >= contextWarnPercent {
+		return ansiYellow
+	}
+	return ansiGreen
 }
 
-func cModel(cfg *HudConfig, t string) string   { return clr(cfg, t, "model", ansiCyan) }
-func cProject(cfg *HudConfig, t string) string { return clr(cfg, t, "project", ansiYellow) }
-func cGit(cfg *HudConfig, t string) string     { return clr(cfg, t, "git", ansiMagenta) }
-func cGitBranch(cfg *HudConfig, t string) string {
-	return clr(cfg, t, "gitBranch", ansiCyan)
-}
-func cLabel(cfg *HudConfig, t string) string   { return clr(cfg, t, "label", ansiDim) }
-func cWarning(cfg *HudConfig, t string) string { return clr(cfg, t, "warning", ansiYellow) }
-func cCritical(cfg *HudConfig, t string) string { return clr(cfg, t, "critical", ansiRed) }
-
-// Threshold-based colors. The fallback path mirrors upstream.
-
-func contextColorANSI(percent int, cfg *HudConfig) string {
-	if percent >= 85 {
-		return cfg.colorANSI("critical", ansiRed)
+func quotaColorANSI(percent int) string {
+	if percent >= quotaCriticalPercent {
+		return ansiRed
 	}
-	if percent >= 70 {
-		return cfg.colorANSI("warning", ansiYellow)
+	if percent >= quotaWarnPercent {
+		return ansiBrightMagenta
 	}
-	return cfg.colorANSI("context", ansiGreen)
-}
-
-func quotaColorANSI(percent int, cfg *HudConfig) string {
-	if percent >= 90 {
-		return cfg.colorANSI("critical", ansiRed)
-	}
-	if percent >= 75 {
-		return cfg.colorANSI("usageWarning", ansiBrightMagenta)
-	}
-	return cfg.colorANSI("usage", ansiBrightBlue)
+	return ansiBrightBlue
 }
 
 // ---------------------------------------------------------------------------
@@ -99,12 +93,12 @@ func makeBar(percent, width int, color string) string {
 	return color + repeat("█", filled) + ansiDim + repeat("░", empty) + ansiReset
 }
 
-func contextBar(percent, width int, cfg *HudConfig) string {
-	return makeBar(percent, width, contextColorANSI(percent, cfg))
+func contextBar(percent, width int) string {
+	return makeBar(percent, width, contextColorANSI(percent))
 }
 
-func quotaBar(percent, width int, cfg *HudConfig) string {
-	return makeBar(percent, width, quotaColorANSI(percent, cfg))
+func quotaBar(percent, width int) string {
+	return makeBar(percent, width, quotaColorANSI(percent))
 }
 
 func repeat(s string, n int) string {
