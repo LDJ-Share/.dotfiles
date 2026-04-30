@@ -2,8 +2,8 @@
 //
 // Drop-in replacement for the upstream node plugin, suitable for locked-down
 // machines where you can copy a self-built .exe but can't install plugins
-// through the marketplace. Reads the same config file upstream uses
-// (~/.claude/plugins/claude-hud/config.json).
+// through the marketplace. Behavior is hardcoded at compile time — no config
+// file is read at runtime.
 package main
 
 import (

@@ -1,12 +1,13 @@
-# claude-hud (Go port)
+# claude-hud (Go port — trimmed)
 
 Single-binary Claude Code statusline. Drop-in replacement for the upstream
 [`claude-hud`](https://github.com/jarrodwatts/claude-hud) Node plugin, suitable
 for locked-down machines where you can copy a self-built `.exe` but can't
 install plugins through the marketplace.
 
-Reads the same `~/.claude/plugins/claude-hud/config.json` upstream uses, so
-configuration is portable between the home (Node) and work (Go) versions.
+Behavior is hardcoded at compile time — no config file is read at runtime.
+To change behavior (thresholds, palette, layout), edit the constants in
+`consts.go` or the helpers in `colors.go` and rebuild.
 
 ## Build
 
@@ -38,19 +39,8 @@ it in `~/.claude/settings.json`:
 - `$CLAUDE_CONFIG_DIR/plugins/claude-hud-go/transcript-cache/<sha256>.json` —
   parsed transcript, keyed by mtime+size. Different shape than upstream's so
   both runtimes can coexist without invalidating each other.
-- `$CLAUDE_CONFIG_DIR/plugins/claude-hud-go/speed-cache/<sha256>.json` —
-  previous output-token sample for `display.showSpeed`.
-- `$CLAUDE_CONFIG_DIR/plugins/claude-hud-go/cc-version.txt` — cached
-  `claude --version` output (24h TTL).
-
-## Optional `--cmd` flag
-
-Append a custom shell command label to the project line (mirrors upstream's
-`extra-cmd` arg):
-
-```json
-"command": "C:/path/to/claude-hud.exe --cmd \"git rev-parse --short HEAD\""
-```
+- `$CLAUDE_CONFIG_DIR/cache/claude-hud/speed-cache/<sha256>.json` — previous
+  output-token sample for the always-on speed display.
 
 ## Performance
 
