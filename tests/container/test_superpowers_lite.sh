@@ -79,18 +79,25 @@ echo "=== superpowers-lite: container-only CLAUDE.md ==="
 check_file "${CLAUDE_MD}"
 check_contains "CLAUDE.md mentions universal disciplines" "${CLAUDE_MD}" "Universal disciplines"
 
-echo "=== superpowers-lite: stow dry-run ==="
+echo "=== superpowers-lite: stow package structure ==="
 
+# In the container, ~/.claude is already populated by Dockerfile COPY layers,
+# so stow dry-run against the live target would report conflicts. Validate the
+# package structure against a clean tmp target instead — this confirms .stowrc
+# and skills/ are stow-compatible for host deploy without colliding with the
+# container's COPY layout.
 if [[ -d "${HOME}/.dotfiles/dot-claude" ]]; then
-  if stow -nv -d "${HOME}/.dotfiles" -t "${HOME}/.claude" dot-claude >/dev/null 2>&1; then
-    echo "  PASS: stow dry-run clean"
+  TMP_TARGET=$(mktemp -d)
+  if stow -nv -d "${HOME}/.dotfiles" -t "${TMP_TARGET}" dot-claude >/dev/null 2>&1; then
+    echo "  PASS: stow package validates against clean target"
     ((PASS++)) || true
   else
-    echo "  FAIL: stow dry-run reports conflicts"
+    echo "  FAIL: stow package reports conflicts even against clean target"
     ((FAIL++)) || true
   fi
+  rmdir "${TMP_TARGET}" 2>/dev/null || true
 else
-  echo "  SKIP: dotfiles not stowed at ~/.dotfiles (container-side test)"
+  echo "  SKIP: dotfiles not present at ~/.dotfiles"
 fi
 
 summary
