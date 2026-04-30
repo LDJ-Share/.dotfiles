@@ -84,19 +84,9 @@ type UsageData struct {
 	SevenDayReset *time.Time
 }
 
-type GitFileStats struct {
-	Modified  int
-	Added     int
-	Deleted   int
-	Untracked int
-}
-
 type GitStatus struct {
-	Branch    string
-	IsDirty   bool
-	Ahead     int
-	Behind    int
-	FileStats *GitFileStats
+	Branch  string
+	IsDirty bool
 }
 
 type ConfigCounts struct {

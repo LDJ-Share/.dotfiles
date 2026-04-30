@@ -21,8 +21,6 @@ type HudConfig struct {
 type GitStatusCfg struct {
 	Enabled         bool `json:"enabled"`
 	ShowDirty       bool `json:"showDirty"`
-	ShowAheadBehind bool `json:"showAheadBehind"`
-	ShowFileStats   bool `json:"showFileStats"`
 }
 
 type DisplayCfg struct {
@@ -61,8 +59,6 @@ func defaultConfig() *HudConfig {
 		GitStatus: GitStatusCfg{
 			Enabled:         true,
 			ShowDirty:       true,
-			ShowAheadBehind: false,
-			ShowFileStats:   false,
 		},
 		Display: DisplayCfg{
 			ShowModel:             true,

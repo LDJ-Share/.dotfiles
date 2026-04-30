@@ -72,33 +72,6 @@ func renderProjectLine(ctx *RenderContext) string {
 		if cfg.GitStatus.ShowDirty && g.IsDirty {
 			branch += "*"
 		}
-		if cfg.GitStatus.ShowAheadBehind {
-			if g.Ahead > 0 {
-				branch += fmt.Sprintf(" ↑%d", g.Ahead)
-			}
-			if g.Behind > 0 {
-				branch += fmt.Sprintf(" ↓%d", g.Behind)
-			}
-		}
-		if cfg.GitStatus.ShowFileStats && g.FileStats != nil {
-			fs := g.FileStats
-			pieces := []string{}
-			if fs.Modified > 0 {
-				pieces = append(pieces, fmt.Sprintf("!%d", fs.Modified))
-			}
-			if fs.Added > 0 {
-				pieces = append(pieces, fmt.Sprintf("+%d", fs.Added))
-			}
-			if fs.Deleted > 0 {
-				pieces = append(pieces, fmt.Sprintf("✘%d", fs.Deleted))
-			}
-			if fs.Untracked > 0 {
-				pieces = append(pieces, fmt.Sprintf("?%d", fs.Untracked))
-			}
-			if len(pieces) > 0 {
-				branch += " " + strings.Join(pieces, " ")
-			}
-		}
 		gitPart = cGit(cfg, "git:(") + cGitBranch(cfg, branch) + cGit(cfg, ")")
 	}
 
@@ -607,33 +580,6 @@ func renderCompact(ctx *RenderContext) []renderedLine {
 			branch := g.Branch
 			if cfg.GitStatus.ShowDirty && g.IsDirty {
 				branch += "*"
-			}
-			if cfg.GitStatus.ShowAheadBehind {
-				if g.Ahead > 0 {
-					branch += fmt.Sprintf(" ↑%d", g.Ahead)
-				}
-				if g.Behind > 0 {
-					branch += fmt.Sprintf(" ↓%d", g.Behind)
-				}
-			}
-			if cfg.GitStatus.ShowFileStats && g.FileStats != nil {
-				fs := g.FileStats
-				pieces := []string{}
-				if fs.Modified > 0 {
-					pieces = append(pieces, fmt.Sprintf("!%d", fs.Modified))
-				}
-				if fs.Added > 0 {
-					pieces = append(pieces, fmt.Sprintf("+%d", fs.Added))
-				}
-				if fs.Deleted > 0 {
-					pieces = append(pieces, fmt.Sprintf("✘%d", fs.Deleted))
-				}
-				if fs.Untracked > 0 {
-					pieces = append(pieces, fmt.Sprintf("?%d", fs.Untracked))
-				}
-				if len(pieces) > 0 {
-					branch += " " + strings.Join(pieces, " ")
-				}
 			}
 			gp := cGit(cfg, "git:(") + cGitBranch(cfg, branch) + cGit(cfg, ")")
 			parts = append(parts, projPart+" "+gp)
