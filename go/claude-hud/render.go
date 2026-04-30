@@ -307,19 +307,6 @@ func renderEnvironmentLine(ctx *RenderContext) string {
 	return cLabel(cfg, strings.Join(parts, " | "))
 }
 
-func renderMemoryLine(ctx *RenderContext) string {
-	cfg := ctx.Config
-	d := cfg.Display
-	if cfg.LineLayout != "expanded" || !d.ShowMemoryUsage || ctx.Memory == nil {
-		return ""
-	}
-	m := ctx.Memory
-	color := quotaColorANSI(m.UsedPercent, cfg)
-	pct := color + fmt.Sprintf("%d%%", m.UsedPercent) + ansiReset
-	bar := quotaBar(m.UsedPercent, getAdaptiveBarWidth(), cfg)
-	return cLabel(cfg, "Approx RAM") + " " + bar + " " + formatBytes(m.UsedBytes) + " / " + formatBytes(m.TotalBytes) + " (" + pct + ")"
-}
-
 func renderToolsLine(ctx *RenderContext) string {
 	cfg := ctx.Config
 	if !cfg.Display.ShowTools {
@@ -505,8 +492,6 @@ func renderElement(ctx *RenderContext, name string) string {
 		return renderContextLine(ctx)
 	case "usage":
 		return renderUsageLine(ctx)
-	case "memory":
-		return renderMemoryLine(ctx)
 	case "environment":
 		return renderEnvironmentLine(ctx)
 	case "tools":

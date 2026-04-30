@@ -93,44 +93,6 @@ func getClaudeCodeVersion() string {
 }
 
 // ---------------------------------------------------------------------------
-// Memory info — system RAM
-// ---------------------------------------------------------------------------
-
-func getMemoryInfo() *MemoryInfo {
-	total, used, ok := readSystemMemory()
-	if !ok || total == 0 {
-		return nil
-	}
-	return &MemoryInfo{
-		TotalBytes:  total,
-		UsedBytes:   used,
-		FreeBytes:   total - used,
-		UsedPercent: int(float64(used) / float64(total) * 100),
-	}
-}
-
-func formatBytes(b uint64) string {
-	const (
-		_  = iota
-		kb = 1 << (10 * iota)
-		mb
-		gb
-		tb
-	)
-	switch {
-	case b >= tb:
-		return fmt.Sprintf("%.1fT", float64(b)/float64(tb))
-	case b >= gb:
-		return fmt.Sprintf("%.1fG", float64(b)/float64(gb))
-	case b >= mb:
-		return fmt.Sprintf("%.0fM", float64(b)/float64(mb))
-	case b >= kb:
-		return fmt.Sprintf("%.0fK", float64(b)/float64(kb))
-	}
-	return fmt.Sprintf("%dB", b)
-}
-
-// ---------------------------------------------------------------------------
 // Speed tracker — persists between invocations to compute output tok/s
 // ---------------------------------------------------------------------------
 

@@ -38,11 +38,6 @@ func main() {
 		usage = extractUsage(*stdin)
 	}
 
-	var memory *MemoryInfo
-	if cfg.Display.ShowMemoryUsage && cfg.LineLayout == "expanded" {
-		memory = getMemoryInfo()
-	}
-
 	extraCmd := parseExtraCmdArg()
 	extraLabel := ""
 	if extraCmd != "" {
@@ -60,7 +55,6 @@ func main() {
 		Counts:          counts,
 		GitStatus:       gitStatus,
 		UsageData:       usage,
-		Memory:          memory,
 		Config:          cfg,
 		SessionDuration: formatSessionDuration(transcript.SessionStart, time.Now().UTC()),
 		ExtraLabel:      extraLabel,

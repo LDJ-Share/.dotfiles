@@ -106,20 +106,12 @@ type ConfigCounts struct {
 	Hooks    int
 }
 
-type MemoryInfo struct {
-	TotalBytes  uint64
-	UsedBytes   uint64
-	FreeBytes   uint64
-	UsedPercent int
-}
-
 type RenderContext struct {
 	Stdin           StdinData
 	Transcript      TranscriptData
 	Counts          ConfigCounts
 	GitStatus       *GitStatus
 	UsageData       *UsageData
-	Memory          *MemoryInfo
 	Config          *HudConfig
 	SessionDuration string
 	ExtraLabel      string

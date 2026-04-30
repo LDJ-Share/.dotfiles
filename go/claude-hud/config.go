@@ -41,7 +41,6 @@ type DisplayCfg struct {
 	ShowTodos             bool   `json:"showTodos"`
 	ShowSessionName       bool   `json:"showSessionName"`
 	ShowClaudeCodeVersion bool   `json:"showClaudeCodeVersion"`
-	ShowMemoryUsage       bool   `json:"showMemoryUsage"`
 	AutocompactBuffer     string `json:"autocompactBuffer"` // "enabled" | "disabled"
 	UsageThreshold        int    `json:"usageThreshold"`
 	SevenDayThreshold     int    `json:"sevenDayThreshold"`
@@ -50,7 +49,7 @@ type DisplayCfg struct {
 }
 
 var defaultElementOrder = []string{
-	"project", "context", "usage", "memory",
+	"project", "context", "usage",
 	"environment", "tools", "agents", "todos",
 }
 
@@ -83,7 +82,6 @@ func defaultConfig() *HudConfig {
 			ShowTodos:             true,
 			ShowSessionName:       false,
 			ShowClaudeCodeVersion: false,
-			ShowMemoryUsage:       false,
 			AutocompactBuffer:     "enabled",
 			UsageThreshold:        0,
 			SevenDayThreshold:     80,
