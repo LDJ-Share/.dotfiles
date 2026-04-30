@@ -114,9 +114,6 @@ func renderProjectLine(ctx *RenderContext) string {
 	if d.ShowSessionName && ctx.Transcript.SessionName != "" {
 		parts = append(parts, cLabel(cfg, ctx.Transcript.SessionName))
 	}
-	if d.ShowClaudeCodeVersion && ctx.ClaudeCodeVer != "" {
-		parts = append(parts, cLabel(cfg, "CC v"+ctx.ClaudeCodeVer))
-	}
 	if ctx.ExtraLabel != "" {
 		parts = append(parts, cLabel(cfg, ctx.ExtraLabel))
 	}
@@ -653,9 +650,6 @@ func renderCompact(ctx *RenderContext) []renderedLine {
 
 	if d.ShowSessionName && ctx.Transcript.SessionName != "" {
 		parts = append(parts, cLabel(cfg, ctx.Transcript.SessionName))
-	}
-	if d.ShowClaudeCodeVersion && ctx.ClaudeCodeVer != "" {
-		parts = append(parts, cLabel(cfg, "CC v"+ctx.ClaudeCodeVer))
 	}
 
 	// Counts

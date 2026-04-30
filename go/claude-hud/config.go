@@ -40,7 +40,6 @@ type DisplayCfg struct {
 	ShowAgents            bool   `json:"showAgents"`
 	ShowTodos             bool   `json:"showTodos"`
 	ShowSessionName       bool   `json:"showSessionName"`
-	ShowClaudeCodeVersion bool   `json:"showClaudeCodeVersion"`
 	AutocompactBuffer     string `json:"autocompactBuffer"` // "enabled" | "disabled"
 	UsageThreshold        int    `json:"usageThreshold"`
 	SevenDayThreshold     int    `json:"sevenDayThreshold"`
@@ -81,7 +80,6 @@ func defaultConfig() *HudConfig {
 			ShowAgents:            true,
 			ShowTodos:             true,
 			ShowSessionName:       false,
-			ShowClaudeCodeVersion: false,
 			AutocompactBuffer:     "enabled",
 			UsageThreshold:        0,
 			SevenDayThreshold:     80,

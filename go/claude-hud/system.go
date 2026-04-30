@@ -55,44 +55,6 @@ func getAdaptiveBarWidth() int {
 func itoa(n int) string { return strconv.Itoa(n) }
 
 // ---------------------------------------------------------------------------
-// Claude Code version (best-effort, cached)
-// ---------------------------------------------------------------------------
-
-func getClaudeCodeVersion() string {
-	cachePath := filepath.Join(userClaudeDir(), "plugins", "claude-hud-go", "cc-version.txt")
-	if raw, err := os.ReadFile(cachePath); err == nil {
-		parts := strings.SplitN(strings.TrimSpace(string(raw)), "|", 2)
-		if len(parts) == 2 {
-			ts, err := strconv.ParseInt(parts[0], 10, 64)
-			// Cache for 24h.
-			if err == nil && time.Now().Unix()-ts < 24*3600 {
-				return parts[1]
-			}
-		}
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, "claude", "--version")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = nil
-	if err := cmd.Run(); err != nil {
-		return ""
-	}
-	v := strings.TrimSpace(out.String())
-	// Output looks like "1.0.0 (Claude Code)" — first whitespace-delimited token.
-	if i := strings.IndexByte(v, ' '); i > 0 {
-		v = v[:i]
-	}
-	if v != "" {
-		_ = os.MkdirAll(filepath.Dir(cachePath), 0o755)
-		_ = os.WriteFile(cachePath, []byte(fmt.Sprintf("%d|%s", time.Now().Unix(), v)), 0o644)
-	}
-	return v
-}
-
-// ---------------------------------------------------------------------------
 // Speed tracker — persists between invocations to compute output tok/s
 // ---------------------------------------------------------------------------
 

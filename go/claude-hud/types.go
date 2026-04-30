@@ -115,7 +115,6 @@ type RenderContext struct {
 	Config          *HudConfig
 	SessionDuration string
 	ExtraLabel      string
-	ClaudeCodeVer   string
 }
 
 // TranscriptEntry — a single JSONL line.

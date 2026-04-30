@@ -44,11 +44,6 @@ func main() {
 		extraLabel = runExtraCmd(extraCmd)
 	}
 
-	ccVer := ""
-	if cfg.Display.ShowClaudeCodeVersion {
-		ccVer = getClaudeCodeVersion()
-	}
-
 	ctx := &RenderContext{
 		Stdin:           *stdin,
 		Transcript:      transcript,
@@ -58,7 +53,6 @@ func main() {
 		Config:          cfg,
 		SessionDuration: formatSessionDuration(transcript.SessionStart, time.Now().UTC()),
 		ExtraLabel:      extraLabel,
-		ClaudeCodeVer:   ccVer,
 	}
 
 	var out strings.Builder
