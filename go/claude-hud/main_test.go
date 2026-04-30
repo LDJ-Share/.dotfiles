@@ -106,3 +106,43 @@ func TestProjectLineNoGitOutsideRepo(t *testing.T) {
 		t.Errorf("expected no git segment outside repo, got:\n%s", out)
 	}
 }
+
+func TestContextLineShowsPercent(t *testing.T) {
+	out := runHud(t, minimalStdin(t))
+	if !strings.Contains(out, "Context") {
+		t.Errorf("expected Context label in output, got:\n%s", out)
+	}
+	if !strings.Contains(out, "%") {
+		t.Errorf("expected percent sign in output, got:\n%s", out)
+	}
+}
+
+func TestTokenBreakdownAppearsAt85Percent(t *testing.T) {
+	// 85% of 200_000 = 170_000 — pile usage above that and confirm the breakdown shows.
+	payload := map[string]any{
+		"cwd":   t.TempDir(),
+		"model": map[string]any{"id": "claude-sonnet-4-6", "display_name": "Sonnet"},
+		"context_window": map[string]any{
+			"context_window_size": 200000,
+			"used_percentage":     90.0,
+			"current_usage": map[string]any{
+				"input_tokens":                 100_000,
+				"output_tokens":                500,
+				"cache_creation_input_tokens":  20_000,
+				"cache_read_input_tokens":      60_000,
+			},
+		},
+	}
+	b, _ := json.Marshal(payload)
+	out := runHud(t, string(b))
+	if !strings.Contains(out, "in:") || !strings.Contains(out, "cache:") {
+		t.Errorf("expected token breakdown at 85%%+, got:\n%s", out)
+	}
+}
+
+func TestTokenBreakdownAbsentBelow85Percent(t *testing.T) {
+	out := runHud(t, minimalStdin(t)) // ~4% usage
+	if strings.Contains(out, "in:") && strings.Contains(out, "cache:") {
+		t.Errorf("token breakdown should not appear below 85%%, got:\n%s", out)
+	}
+}
