@@ -334,8 +334,11 @@ RUN mkdir -p "${HOME}/.opencode" \
 COPY --from=builder-claude-hud /out/claude-hud /usr/local/bin/claude-hud
 
 # ── Claude Code settings (container-only; not stowed to host)
-COPY dot-claude/settings.json /home/dev/.claude/settings.json
-RUN chown dev:dev /home/dev/.claude/settings.json
+# Pre-create ~/.claude/ owned by dev so Claude Code can later write
+# .credentials.json, projects/, todos/, cache/claude-hud/ etc. as the dev user.
+# Without this, Docker's auto-created COPY parent dir would be root-owned.
+RUN install -d -o dev -g dev /home/dev/.claude
+COPY --chown=dev:dev dot-claude/settings.json /home/dev/.claude/settings.json
 
 # Write ~/.zshrc wrapper (sources the stowed zshrc)
 RUN printf '%s\n' 'source ~/.config/zshrc/.zshrc' > "${HOME}/.zshrc"
