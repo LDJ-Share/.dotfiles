@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"math"
-	"strconv"
 )
 
 const (
@@ -27,19 +25,6 @@ func green(t string) string   { return wrapColor(t, ansiGreen) }
 func yellow(t string) string  { return wrapColor(t, ansiYellow) }
 func magenta(t string) string { return wrapColor(t, ansiMagenta) }
 func cyan(t string) string    { return wrapColor(t, ansiCyan) }
-
-func hexToANSI(hex string) string {
-	if len(hex) != 7 || hex[0] != '#' {
-		return ansiReset
-	}
-	r, err1 := strconv.ParseInt(hex[1:3], 16, 0)
-	g, err2 := strconv.ParseInt(hex[3:5], 16, 0)
-	b, err3 := strconv.ParseInt(hex[5:7], 16, 0)
-	if err1 != nil || err2 != nil || err3 != nil {
-		return ansiReset
-	}
-	return fmt.Sprintf("%s[38;2;%d;%d;%dm", ansiEsc, r, g, b)
-}
 
 // ---------------------------------------------------------------------------
 // Color helpers

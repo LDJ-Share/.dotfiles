@@ -24,19 +24,10 @@ func main() {
 		return
 	}
 
-	cfg := loadConfig()
 	transcript := parseTranscript(stdin.TranscriptPath)
 	counts := getConfigCounts(stdin.Cwd)
-
-	var gitStatus *GitStatus
-	if cfg.GitStatus.Enabled {
-		gitStatus = getGitStatus(stdin.Cwd)
-	}
-
-	var usage *UsageData
-	if cfg.Display.ShowUsage {
-		usage = extractUsage(*stdin)
-	}
+	gitStatus := getGitStatus(stdin.Cwd)
+	usage := extractUsage(*stdin)
 
 	ctx := &RenderContext{
 		Stdin:           *stdin,
@@ -44,7 +35,6 @@ func main() {
 		Counts:          counts,
 		GitStatus:       gitStatus,
 		UsageData:       usage,
-		Config:          cfg,
 		SessionDuration: formatSessionDuration(transcript.SessionStart, time.Now().UTC()),
 	}
 

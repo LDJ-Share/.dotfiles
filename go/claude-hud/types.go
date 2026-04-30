@@ -102,7 +102,6 @@ type RenderContext struct {
 	Counts          ConfigCounts
 	GitStatus       *GitStatus
 	UsageData       *UsageData
-	Config          *HudConfig
 	SessionDuration string
 }
 
