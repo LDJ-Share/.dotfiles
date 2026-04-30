@@ -1,4 +1,3 @@
-<!-- GSD:project-start source:PROJECT.md -->
 ## Project
 
 **Air-Gapped AI Dev Environment — Compose-First Deployment**
@@ -15,14 +14,15 @@ A hardened, all-in-one AI coding environment deployable as a docker-compose stac
 - **GPU**: Optional NVIDIA passthrough — must degrade gracefully to CPU
 - **Models**: gemma4:26b (~17GB) + gemma4:e4b (~5GB) → ~22GB minimum disk on air-gapped machine
 - **Registry**: Images published to GHCR alongside existing dev-env image
-<!-- GSD:project-end -->
 
-<!-- GSD:stack-start source:codebase/STACK.md -->
-<!-- Stack section intentionally omitted — descriptive content that doesn't constrain Claude behavior. See codebase/STACK.md for the full list. -->
-<!-- GSD:stack-end -->
-
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
+
+## Engineering Principles
+
+- **KISS — Keep It Simple, Stupid.** Prefer the simplest solution that solves the actual problem. No clever abstractions, no premature factoring, no architecture for hypothetical scale.
+- **YAGNI — You Aren't Gonna Need It.** Don't build features, options, or extensibility hooks until they're concretely needed. Strip everything that isn't load-bearing for the current use case.
+
+These apply doubly to in-house re-implementations of upstream tools (statusline, skills shim, doc lookups, code navigation): port only what we actually use, and reject "completeness for completeness's sake."
 
 ## Naming Conventions
 ### Directory Structure
@@ -148,27 +148,3 @@ A hardened, all-in-one AI coding environment deployable as a docker-compose stac
 - Scripts: Listed in `.stowrc` ignore
 - Lock files: `lazy-lock.json`, Mason registries
 - Build artifacts: `luac/`, `spell/`, `tmp/`, `plugins/`, `mason/`
-<!-- GSD:conventions-end -->
-
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
-<!-- GSD:architecture-end -->
-<!-- GSD:skills-start source:skills/ -->
-<!-- GSD:skills-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd-debug` for investigation and bug fixing
-- `/gsd-execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
-
-
-<!-- GSD:profile-start -->
-<!-- GSD:profile-end -->
