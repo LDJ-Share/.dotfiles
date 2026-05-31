@@ -39,6 +39,7 @@ try {
 # ============================================================================
 $Config = [ordered]@{
     PathLevels           = 1        # trailing cwd segments shown (1=basename)
+    ShowCwd              = $true    # absolute cwd as a dedicated second line
     ShowSeparators       = $false   # divider line before activity lines
     ShowAheadBehind      = $false
     ShowFileStats        = $false
@@ -1004,10 +1005,18 @@ $todosLine   = Render-TodosLine   $ctx
 $output = [System.Collections.Generic.List[object]]::new()
 
 if ($projectLine) { $output.Add(@{ Line = $projectLine; IsActivity = $false }) }
-if ($contextLine -and $usageLine) {
-    $output.Add(@{ Line = "$contextLine │ $usageLine"; IsActivity = $false })
-} elseif ($contextLine) {
-    $output.Add(@{ Line = $contextLine; IsActivity = $false })
+# Context must ALWAYS be visible in full. Merge usage onto the context line only
+# when the combined line fits the terminal; otherwise drop the (secondary) usage
+# readout so a narrow window never truncates context. The context entry is also
+# flagged Protected so the final width-truncation pass leaves it intact even at
+# extreme widths.
+if ($contextLine) {
+    $line = $contextLine
+    if ($usageLine) {
+        $merged = "$contextLine │ $usageLine"
+        if ((Visual-Length $merged) -le (Get-TerminalWidth)) { $line = $merged }
+    }
+    $output.Add(@{ Line = $line; IsActivity = $false; Protected = $true })
 } elseif ($usageLine) {
     $output.Add(@{ Line = $usageLine; IsActivity = $false })
 }
@@ -1015,6 +1024,16 @@ if ($envLine)    { $output.Add(@{ Line = $envLine;    IsActivity = $false }) }
 if ($toolsLine)  { $output.Add(@{ Line = $toolsLine;  IsActivity = $true  }) }
 if ($agentsLine) { $output.Add(@{ Line = $agentsLine; IsActivity = $true  }) }
 if ($todosLine)  { $output.Add(@{ Line = $todosLine;  IsActivity = $true  }) }
+
+# Insert the current working directory as the second line — everything else
+# shifts down. Absolute path (no ~ abbreviation: Windows doesn't honor ~, and an
+# absolute path can be copied straight into an editor whether in the primary
+# repo or a worktree). The trailing width-truncation loop handles overflow.
+if ($Config.ShowCwd -and $stdin.cwd) {
+    $cwdLine = Dim ([string]$stdin.cwd)
+    $insertAt = [Math]::Min(1, $output.Count)
+    $output.Insert($insertAt, @{ Line = $cwdLine; IsActivity = $false })
+}
 
 if ($Config.ShowSeparators) {
     $firstActivity = -1
@@ -1036,6 +1055,12 @@ if ($Config.ShowSeparators) {
 $termWidth = Get-TerminalWidth
 foreach ($entry in $output) {
     foreach ($physical in ($entry.Line -split "`n")) {
-        Write-Output ($ANSI_RESET + (Truncate-ToWidth $physical $termWidth))
+        # Protected lines (context) are emitted in full — never truncated — so the
+        # context readout is always visible regardless of window width.
+        if ($entry.Protected) {
+            Write-Output ($ANSI_RESET + $physical)
+        } else {
+            Write-Output ($ANSI_RESET + (Truncate-ToWidth $physical $termWidth))
+        }
     }
 }
