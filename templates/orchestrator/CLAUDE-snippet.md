@@ -31,3 +31,26 @@ Durable state lives in beads (`.beads/`) and git. Keep yourself high-altitude.
 Subagents do NOT touch beads. They REPORT discovered work in their return; YOU
 file it. This keeps the audit trail in one place and avoids simultaneous writers
 on the local `.beads` db.
+
+### Steering an autonomous run (interjection)
+The human can add information mid-run without breaking anything — all state lives
+in beads + git, so interrupting and resuming is lossless.
+- **Non-urgent:** the human appends to `.orchestrator/inbox.md`. At the TOP of
+  each loop iteration, read it; if non-empty, fold the guidance into your
+  decisions, then archive it (append to `.orchestrator/inbox.archive.md` and
+  truncate the inbox). Human only writes the inbox; you only read + clear it —
+  no contention.
+- **Urgent:** the human presses Esc to interrupt. Take their input, then resume
+  by re-reading `bd ready` — nothing is lost.
+- The human should NOT interject by running `bd` themselves (see Beads safety).
+
+### Beads safety (avoid hangs/deadlocks)
+- ONE writer at a time. Subagents never write beads; humans steer via the inbox,
+  not `bd`. Two `bd` processes writing the same `.beads` db can lock and hang.
+- For UNATTENDED runs, `bd` and your test/build commands MUST be in the Claude
+  Code permission allowlist — otherwise the loop silently blocks on an approval
+  prompt and looks like a deadlock.
+- Use non-interactive `bd` (e.g. `--json`, any `--yes`/no-prompt flag); a `bd`
+  command waiting on stdin will hang a non-interactive shell.
+- If a `bd` call hangs: abort it, check for a stale lock file in `.beads/`, retry
+  once. If it persists, STOP and report — do not loop on it.

@@ -89,3 +89,16 @@ underlying parallel-fan-out and autonomous-drain patterns):
 - **`/cover [path]`** — parallelize unit-test coverage: decompose into per-unit
   beads, fan out `test-writer`s on disjoint files, verify, drain. Routes through
   the `dotnet-test` skills automatically on .NET repos.
+
+## Running autonomously: steering & safety
+
+- **Interject info** any time by appending to `.orchestrator/inbox.md`; the
+  orchestrator reads + clears it at the top of each loop pass. For an urgent
+  course-correction, press **Esc** — state lives in beads + git, so interrupting
+  and resuming loses nothing. Don't interject by running `bd` yourself.
+- **Allowlist `bd` and your test/build commands** in `settings.json` before an
+  unattended run — otherwise the loop blocks on an approval prompt and looks
+  like a deadlock.
+- **gitignore** `.orchestrator/` (it's transient steering scratch, not state).
+- One beads writer at a time; if a `bd` call hangs, check for a stale lock in
+  `.beads/`. See "Beads safety" in `CLAUDE-snippet.md`.

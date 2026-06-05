@@ -55,7 +55,8 @@ Hard halts (stop the whole run, report):
    skipped assertion is a HARD HALT (charter); any other `fix-first` loops the
    bead back to `implementer`. On a red verifier, re-investigate or escalate.
 5. Re-run the baseline. Repeat from step 2 for any still-failing tests until the
-   suite is green or a stop-condition trips.
+   suite is green or a stop-condition trips. At the TOP of each pass, check
+   `.orchestrator/inbox.md` for human steering (see CLAUDE.md).
 6. Report: beads closed, beads still open, what (if anything) you stopped on.
 
 For runs longer than one session, re-enter this loop with `/loop` or the

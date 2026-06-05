@@ -26,6 +26,8 @@ for the actual per-unit writing.
    SINGLE message. Apply any reported "shared-file changes" yourself, serially.
 5. VERIFY: dispatch `verifier` on the new tests. On green, `bd close`.
 6. Repeat from step 3 until `bd ready` is empty or the coverage threshold is met.
+   At the TOP of each pass, check `.orchestrator/inbox.md` for human steering
+   (see CLAUDE.md).
 7. Report: coverage before/after, beads closed, anything blocked.
 
 Write-isolation note: if units can't be cleanly partitioned by file, run
