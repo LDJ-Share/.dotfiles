@@ -83,8 +83,9 @@ underlying parallel-fan-out and autonomous-drain patterns):
 
 - **`/triage [filter]`** — autonomously triage a failing/buggy integration suite:
   fan out read-only `investigator`s, file fix beads, then drain them through
-  `implementer` + `verifier` until green or a stop-condition trips. **Edit the
-  decision charter in `commands/triage.md` before the first autonomous run.**
+  `implementer` + `verifier` until green or a stop-condition trips. Ships a
+  conservative .NET decision charter in `commands/triage.md` — review and tune
+  its three knobs (flaky re-runs, consecutive-fail limit, bead checkpoint).
 - **`/cover [path]`** — parallelize unit-test coverage: decompose into per-unit
   beads, fan out `test-writer`s on disjoint files, verify, drain. Routes through
   the `dotnet-test` skills automatically on .NET repos.

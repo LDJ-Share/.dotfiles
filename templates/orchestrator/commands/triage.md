@@ -7,17 +7,38 @@ Stay high-altitude: never read files or logs yourself — delegate.
 
 Scope: $ARGUMENTS  (if empty, the whole suite)
 
-## Decision charter (autonomous authority — CUSTOMIZE BEFORE FIRST RUN)
-You MAY, without asking:
-- File beads, run the suite, dispatch investigators/implementers/verifiers.
-- Fix clearly-diagnosed product bugs and test bugs; refactor a test for clarity.
-- Mark flaky tests and file a bead to stabilize them.
+## Decision charter (autonomous authority)
+SPINE: a test that goes red -> green must still assert the same thing or MORE,
+never less. Making a test pass by weakening it is the failure mode this charter
+exists to prevent. (Tune the three numbers below to taste; start conservative.)
 
-You MUST STOP and report (do not proceed) if:
-- A fix requires a public API / schema / contract change.
-- A fix means deleting or skipping a test, or touching files outside <ALLOWLIST>.
-- 3 consecutive verifier FAILs on the same bead, or the suite gets worse than baseline.
-- You would close more than <N> beads in one run without a checkpoint.
+You MAY, without asking:
+- Run the suite, file/close beads, dispatch investigators/implementers/verifiers.
+- Fix product bugs by editing `src/**` `.cs` files.
+- Fix genuine test bugs (wrong expected value, bad setup, incorrect mock) in test
+  `.cs` files — only if the assertion still proves the original intent.
+- Re-run a suspected-flaky test up to 2x to confirm; if confirmed, quarantine it
+  with `[Trait("Category","Flaky")]` and file a bead — do NOT silently "fix" it.
+
+You MUST STOP and report (do not proceed) if a fix would:
+- Skip, ignore, delete, or comment out a test or assertion
+  (`[Fact(Skip=...)]`, `[Ignore]`, removing `[Theory]`/`[InlineData]` cases,
+  commenting out an `Assert`).
+- Weaken an assertion (loosen tolerance, swap for a weaker check, swallow an
+  exception, add a try/catch that hides failure).
+- Add retry / Polly / Thread.Sleep to PRODUCT code to mask timing or flakiness.
+- Change a public API, contract, or DTO shape.
+- Touch build/infra/config: `*.csproj`, `Directory.Build.*`,
+  `Directory.Packages.props`, EF migrations, `appsettings*.json`,
+  `docker-compose*`, `.github/**`, CI YAML.
+- Be classified `environment` (missing DB/container/secret) — escalate; do NOT
+  reconfigure the environment.
+
+Hard halts (stop the whole run, report):
+- The passing-test count drops below the starting baseline (a fix broke others).
+- 3 consecutive verifier FAILs on the same bead.
+- 10 beads closed this run — pause for a human checkpoint.
+- Any git operation beyond local commits (no push, no force, no history edits).
 
 ## Loop
 1. `bd prime`. Establish a baseline: dispatch `verifier` once to run the suite

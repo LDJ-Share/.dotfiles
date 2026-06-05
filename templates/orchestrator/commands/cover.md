@@ -7,15 +7,17 @@ Stay high-altitude: never read source yourself — delegate.
 
 Scope/target: $ARGUMENTS
 
-## Language routing
-If this is a .NET repo and the `dotnet-test` skills are available, use them for
-coverage analysis and test generation (they handle framework detection, coverage,
-and CRAP scoring) instead of a generic writer. Otherwise use `test-writer`.
+## Language routing (.NET)
+This is a .NET repo. Prefer the `dotnet-test` skills where available — they
+handle framework detection, coverage, and CRAP scoring. Use `test-writer` agents
+for the actual per-unit writing.
 
 ## Loop
-1. `bd prime`. Dispatch a `scout`/coverage pass to produce the gap list. Run the
-   coverage command — fill in for this repo, e.g.
-   `dotnet test --collect:"XPlat Code Coverage"` / `pytest --cov` / `jest --coverage`.
+1. `bd prime`. Dispatch a `scout`/coverage pass to produce the gap list:
+   `dotnet test --collect:"XPlat Code Coverage"` (Cobertura via coverlet), then
+   summarize per-class line/branch coverage with `reportgenerator` or the
+   `dotnet-test coverage-analysis` skill. Prioritize by lowest coverage + highest
+   churn (CRAP score if available).
 2. File one bead per unit to cover. Prioritize untested + high-churn first.
 3. PARTITION FOR PARALLEL WRITES: group beads so no two in a batch touch the same
    file. New test files are naturally disjoint; YOU own edits to shared files
