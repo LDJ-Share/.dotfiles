@@ -8,38 +8,10 @@ name: Build and Test Container Image
 # happen here on GitHub's network, not on the corporate machine.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Manual only — the container is not actively in use, so it is not built on
+# every push. Trigger from the Actions tab or: gh workflow run build-container.yml
 on:
-  push:
-    branches:
-      - master
-      - 'feature/**'
-    paths:
-      - Dockerfile
-      - .dockerignore
-      - setup.sh
-      - dot-pi/**
-      - dot-opencode/**
-      - nvim/**
-      - tmux/**
-      - zshrc/**
-      - vsc-extensions.txt
-      - tests/container/**
-      - templates/**
-      - .github/workflows/build-container.yml
-  pull_request:
-    paths:
-      - Dockerfile
-      - .dockerignore
-      - setup.sh
-      - dot-pi/**
-      - dot-opencode/**
-      - nvim/**
-      - tmux/**
-      - zshrc/**
-      - vsc-extensions.txt
-      - tests/container/**
-      - templates/**
-      - .github/workflows/build-container.yml
+  workflow_dispatch:
 
 jobs:
   # ───────────────────────────────────────────────────────────────────────────
@@ -111,7 +83,7 @@ jobs:
     name: Publish to GHCR
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write

@@ -15,17 +15,11 @@ name: Test Firewall Scripts
 # the job, while our firewall tests run in complete isolation.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Manual only — run from the Actions tab or: gh workflow run test-firewall.yml
+# (This is a test, not a build; flip back to `push`/`pull_request` on the
+# firewall-*.sh paths if you want automatic firewall regression coverage.)
 on:
-  push:
-    paths:
-      - firewall-enable.sh
-      - firewall-disable.sh
-      - .github/workflows/test-firewall.yml
-  pull_request:
-    paths:
-      - firewall-enable.sh
-      - firewall-disable.sh
-      - .github/workflows/test-firewall.yml
+  workflow_dispatch:
 
 jobs:
   # ───────────────────────────────────────────────────────────────────────────
