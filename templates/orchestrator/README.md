@@ -34,8 +34,9 @@ This repo is synced read-only, so **copy** from here into your work repo:
 
 ```bash
 # from your work repo root
-mkdir -p .claude/agents
+mkdir -p .claude/agents .claude/commands
 cp <path-to-this-template>/agents/*.md .claude/agents/
+cp <path-to-this-template>/commands/*.md .claude/commands/
 
 # append the orchestration protocol to your repo's CLAUDE.md
 cat <path-to-this-template>/CLAUDE-snippet.md >> CLAUDE.md
@@ -72,3 +73,18 @@ directly **and** dispatch them in parallel from one working directory.
 | implementer | Sonnet | Needs real reasoning, but in a disposable window |
 | verifier | Haiku | Running commands + excerpting failures is cheap |
 | reviewer (optional) | Sonnet | Diff review before closing a risky bead |
+| investigator | Sonnet | Root-causes one bug read-only; reasoning-heavy |
+| test-writer | Sonnet | Writes tests for one unit in isolation |
+
+## Workflows
+
+Two fan-out workflows ship as slash commands (see `PATTERNS.md` for the
+underlying parallel-fan-out and autonomous-drain patterns):
+
+- **`/triage [filter]`** — autonomously triage a failing/buggy integration suite:
+  fan out read-only `investigator`s, file fix beads, then drain them through
+  `implementer` + `verifier` until green or a stop-condition trips. **Edit the
+  decision charter in `commands/triage.md` before the first autonomous run.**
+- **`/cover [path]`** — parallelize unit-test coverage: decompose into per-unit
+  beads, fan out `test-writer`s on disjoint files, verify, drain. Routes through
+  the `dotnet-test` skills automatically on .NET repos.
