@@ -48,8 +48,12 @@ Hard halts (stop the whole run, report):
 3. For each returned diagnosis: file a fix bead and `bd dep add <fix> <test>`
    (discovered-from). `bd remember` any cross-cutting cause.
 4. DRAIN FIXES: while `bd ready` has fix beads and no stop-condition tripped —
-   claim one, dispatch `implementer`, then `verifier`. On green, `bd close`.
-   On red, re-investigate or escalate per the charter.
+   claim one, dispatch `implementer`, then `verifier`. On a green verifier,
+   dispatch `reviewer` on the diff BEFORE closing — its job here is to confirm
+   no assertion was weakened, skipped, or swallowed (the charter's spine). On a
+   `ship` verdict, `bd close`. A `fix-first` verdict that flags a weakened/
+   skipped assertion is a HARD HALT (charter); any other `fix-first` loops the
+   bead back to `implementer`. On a red verifier, re-investigate or escalate.
 5. Re-run the baseline. Repeat from step 2 for any still-failing tests until the
    suite is green or a stop-condition trips.
 6. Report: beads closed, beads still open, what (if anything) you stopped on.
