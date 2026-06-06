@@ -37,6 +37,7 @@ You MUST STOP and report (do not proceed) if a fix would:
 Hard halts (stop the whole run, report):
 - The passing-test count drops below the starting baseline (a fix broke others).
 - 3 consecutive verifier FAILs on the same bead.
+- Watchdog: K=3 consecutive no-progress passes, or MAX_PASSES=50 total (CLAUDE.md).
 - 10 beads closed this run — pause for a human checkpoint.
 - Any git operation beyond local commits (no push, no force, no history edits).
 
@@ -56,7 +57,9 @@ Hard halts (stop the whole run, report):
    bead back to `implementer`. On a red verifier, re-investigate or escalate.
 5. Re-run the baseline. Repeat from step 2 for any still-failing tests until the
    suite is green or a stop-condition trips. At the TOP of each pass, check
-   `.orchestrator/inbox.md` for human steering (see CLAUDE.md).
+   `.orchestrator/inbox.md` for human steering (see CLAUDE.md). Run the watchdog
+   (CLAUDE.md): a pass with zero beads closed AND zero new beads filed counts as
+   no-progress — halt at K=3 consecutive, or at MAX_PASSES=50.
 6. Report: beads closed, beads still open, what (if anything) you stopped on.
 
 For runs longer than one session, re-enter this loop with `/loop` or the

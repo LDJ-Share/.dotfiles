@@ -32,6 +32,16 @@ Subagents do NOT touch beads. They REPORT discovered work in their return; YOU
 file it. This keeps the audit trail in one place and avoids simultaneous writers
 on the local `.beads` db.
 
+### Watchdog (no-progress halt)
+Loop-global liveness guard for autonomous runs. Track progress per loop pass —
+progress = ≥1 bead closed OR ≥1 new bead filed that pass. HALT and report if `K`
+consecutive passes make ZERO progress, or if total passes hit `MAX_PASSES`
+(backstop). On halt, emit a Seance event (`kind=escalation`) reporting passes
+run, beads closed, and the halt reason. Two knobs: `K` (consecutive no-progress
+passes, default 3); `MAX_PASSES` (default 50). This is loop-global liveness —
+distinct from the charter's per-bead "3 consecutive verifier FAILs" and from any
+per-run beads-closed checkpoint cap. Full rule: PATTERNS.md.
+
 ### Steering an autonomous run (interjection)
 The human can add information mid-run without breaking anything — all state lives
 in beads + git, so interrupting and resuming is lossless.

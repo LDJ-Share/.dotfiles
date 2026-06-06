@@ -35,6 +35,36 @@ checking in each step. Three ingredients:
 For runs longer than one session, re-enter the loop with `/loop` or the
 ralph-loop plugin. State lives in beads + git, so re-entry loses nothing.
 
+### Watchdog (no-progress halt)
+
+A loop-global liveness guard. It catches a drain that spins, thrashes, or
+silently stalls without closing or filing anything. Keep it dumb: a counter and
+a threshold, so a deterministic harness can replay it later.
+
+Track PROGRESS per loop pass (one outer iteration of the drain):
+- **Progress** = ≥1 bead reached a terminal state (closed) OR ≥1 new bead was
+  filed (diagnosis/fix) during that pass.
+- Each pass: `passes += 1`; if the pass made progress, reset `no_progress = 0`,
+  else `no_progress += 1`.
+- **HALT** if `no_progress >= K` (K consecutive zero-progress passes), OR if
+  `passes >= MAX_PASSES` (hard backstop).
+
+Two knobs (defaults):
+- `K` = **3** — consecutive no-progress passes before halt.
+- `MAX_PASSES` = **50** — hard cap on total passes per run.
+
+On halt, emit a Seance event (`kind=escalation`, see CLAUDE.md) and report:
+passes run, beads closed, halt reason.
+
+Distinct from two nearby rules — do not conflate:
+- The charter's per-bead **"3 consecutive verifier FAILs"** concerns a SINGLE
+  bead; the watchdog is loop-global. Both happen to use 3.
+- The per-run **"beads closed → human checkpoint"** cap is a review gate;
+  `MAX_PASSES` is a liveness backstop. They are orthogonal.
+
+This is the manual form of the Workflow tool's loop-until-dry ("K rounds find
+nothing new"); see below.
+
 ## When you have the Workflow tool
 
 The Workflow tool replaces the manual versions of both patterns with
