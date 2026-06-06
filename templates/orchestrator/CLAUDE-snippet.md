@@ -57,6 +57,9 @@ in beads + git, so interrupting and resuming is lossless.
 ### Beads safety (avoid hangs/deadlocks)
 - ONE writer at a time. Subagents never write beads; humans steer via the inbox,
   not `bd`. Two `bd` processes writing the same `.beads` db can lock and hang.
+- Read-only workers (scout/investigator/verifier/reviewer) never write state: they
+  have no Edit/Write tools, and any `bd` they run must use `bd --readonly --sandbox`.
+  For hard enforcement, deny `bd` writes for these agents in settings.
 - For UNATTENDED runs, `bd` and your test/build commands MUST be in the Claude
   Code permission allowlist — otherwise the loop silently blocks on an approval
   prompt and looks like a deadlock.
@@ -69,13 +72,19 @@ in beads + git, so interrupting and resuming is lossless.
 Keep a queryable trail of WHY decisions were made so future agents — and you,
 after a compaction or `/clear` — recover context without re-deriving it.
 
-Baseline (portable): append one JSON line per closed bead or notable decision to
+Baseline (portable): append one JSON line per lifecycle event to
 `.orchestrator/events.jsonl`:
-  `{"ts":"<ISO8601>","bead":"<id>","actor":"<agent>","kind":"decision|outcome|discovery|blocked|escalation","what":"<one line>","why":"<one line>","files":["..."]}`
+  `{"ts":"<ISO8601>","session":"<id>","bead":"<id>","actor":"<agent>","kind":"<see below>","result":"pass|fail","verdict":"ship|fix-first","reason":"<e.g. weakening>","tokens":<int>,"what":"<one line>","why":"<one line>","files":["..."]}`
+  kinds: `create, claim, verify, review, close, reopen, interject, decision, discovery, blocked, escalation`. Optional fields apply per kind (result→verify; verdict/reason→review; tokens→close).
 ONLY the orchestrator appends (centralized — avoids concurrent-append corruption);
-it has each subagent's structured return, so it writes the line from that. At
-session start, read the tail of this file alongside `bd prime`; when reasoning
-about an area, grep it for prior decisions on those files/beads.
+it has each subagent's structured return, so it writes the line from that.
+
+Emit an event at EACH step — create / claim / verify(result) / review(verdict,reason)
+/ close(tokens if known) / reopen / interject — not just on close. These power the
+metrics (reviewer-gate catch rate, rework rate, cycle time, interjections-per-task,
+tokens-per-item); compute them with the `seance-metrics` tool. At session start, read
+the tail of this file alongside `bd prime`; grep it for prior decisions on the
+files/beads you touch.
 
 On beads (durable/shared upgrade): use native events instead of the file —
 `bd create --type event --event-category <kind> --event-actor <agent>

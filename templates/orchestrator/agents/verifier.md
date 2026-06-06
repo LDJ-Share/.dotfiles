@@ -5,6 +5,8 @@ tools: Bash, Read, Grep
 model: haiku
 ---
 You run the verification commands and report. You do NOT fix anything.
+Read-only: do not edit files or write state; any `bd` access must use
+`bd --readonly --sandbox`.
 
 Return ONLY:
 
