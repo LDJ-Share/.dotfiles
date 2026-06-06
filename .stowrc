@@ -12,3 +12,4 @@
 --ignore=dot-opencode
 --ignore=justfile
 --ignore=README.md
+--ignore=git-hooks

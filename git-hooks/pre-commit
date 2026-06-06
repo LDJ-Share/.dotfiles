@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+# ─────────────────────────────────────────────────────────────────────────────
+# pre-commit: refuse direct commits to a protected branch.
+#
+# The Brain workflow is PR-based — work happens on a feature branch and lands on
+# master/main through a pull request, never a direct commit. This hook is the
+# belt-and-suspenders guard for both humans and agents.
+#
+# Scope: code repos only (enabled per-repo via core.hooksPath — see README.md).
+# Override (rare, intentional): git commit --no-verify
+# ─────────────────────────────────────────────────────────────────────────────
+
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+
+case "$branch" in
+  master|main)
+    echo "pre-commit: refusing to commit directly to '$branch'." >&2
+    echo "  Start a branch:  git switch -c feat/<name>" >&2
+    echo "  Override (rare): git commit --no-verify" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

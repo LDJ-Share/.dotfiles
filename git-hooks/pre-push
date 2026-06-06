@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# ─────────────────────────────────────────────────────────────────────────────
+# pre-push: refuse pushing directly to a protected remote branch.
+#
+# Complements pre-commit: even if commits were made elsewhere, this blocks
+# `git push` from updating master/main directly. Land changes via a PR instead.
+#
+# Override (rare, intentional): git push --no-verify
+# ─────────────────────────────────────────────────────────────────────────────
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  case "$remote_ref" in
+    refs/heads/master|refs/heads/main)
+      echo "pre-push: refusing to push directly to '$remote_ref'. Open a PR." >&2
+      echo "  Override (rare): git push --no-verify" >&2
+      exit 1
+      ;;
+  esac
+done
+
+exit 0
