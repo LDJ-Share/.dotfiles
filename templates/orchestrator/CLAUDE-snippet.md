@@ -54,3 +54,21 @@ in beads + git, so interrupting and resuming is lossless.
   command waiting on stdin will hang a non-interactive shell.
 - If a `bd` call hangs: abort it, check for a stale lock file in `.beads/`, retry
   once. If it persists, STOP and report — do not loop on it.
+
+### Seance: decision log (durable agent memory)
+Keep a queryable trail of WHY decisions were made so future agents — and you,
+after a compaction or `/clear` — recover context without re-deriving it.
+
+Baseline (portable): append one JSON line per closed bead or notable decision to
+`.orchestrator/events.jsonl`:
+  `{"ts":"<ISO8601>","bead":"<id>","actor":"<agent>","kind":"decision|outcome|discovery|blocked|escalation","what":"<one line>","why":"<one line>","files":["..."]}`
+ONLY the orchestrator appends (centralized — avoids concurrent-append corruption);
+it has each subagent's structured return, so it writes the line from that. At
+session start, read the tail of this file alongside `bd prime`; when reasoning
+about an area, grep it for prior decisions on those files/beads.
+
+On beads (durable/shared upgrade): use native events instead of the file —
+`bd create --type event --event-category <kind> --event-actor <agent>
+--event-target <bead-id> --event-payload '{"what":...,"why":...}' --ephemeral`.
+Routine events TTL-compact; record lasting calls as `--type decision` (permanent).
+Native events are queryable via `bd` and shared across machines in server mode.

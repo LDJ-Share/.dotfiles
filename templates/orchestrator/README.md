@@ -102,3 +102,7 @@ underlying parallel-fan-out and autonomous-drain patterns):
 - **gitignore** `.orchestrator/` (it's transient steering scratch, not state).
 - One beads writer at a time; if a `bd` call hangs, check for a stale lock in
   `.beads/`. See "Beads safety" in `CLAUDE-snippet.md`.
+- **Decision log (Seance):** the orchestrator appends one JSON line per closed
+  bead to `.orchestrator/events.jsonl` (or native beads events on server mode) so
+  future sessions recover *why* without re-deriving. See "Seance" in
+  `CLAUDE-snippet.md`.
