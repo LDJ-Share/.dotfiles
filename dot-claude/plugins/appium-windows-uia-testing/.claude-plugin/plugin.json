@@ -1,0 +1,21 @@
+{
+  "name": "appium-windows-uia-testing",
+  "description": "Appium UI-automation testing for Windows desktop apps (WPF/WinUI/Win32) over UI Automation (UIA), with WinAppDriver or appium-novawindows-driver. Two skills: appium-windows-uia-setup (bootstrap the project + driver + CI into a repo) and appium-windows-uia-testing (write, run, debug, and speed up the tests).",
+  "version": "0.2.0",
+  "author": {
+    "name": "Matt Krauz",
+    "email": "matthew.krauz@gmail.com"
+  },
+  "keywords": [
+    "appium",
+    "windows",
+    "uia",
+    "ui-automation",
+    "wpf",
+    "winui",
+    "winappdriver",
+    "novawindows",
+    "testing",
+    "ui-smoke"
+  ]
+}
