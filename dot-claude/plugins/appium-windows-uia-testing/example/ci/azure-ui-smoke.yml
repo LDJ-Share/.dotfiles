@@ -1,0 +1,99 @@
+# Azure Pipelines: build + Appium Windows-UIA smoke tests for the Flight Finder demo.
+#
+# This is the appium-windows-uia-setup skill's Azure template with placeholders
+# resolved for this sample. Paths assume this sample's directory IS the repo root.
+#
+# Opt-in: runs post-merge on the default branch; PRs do NOT auto-fire. Attach
+# this pipeline as a MANUAL "Build Validation" policy on the target branch so
+# each PR shows a "Queue" button. (A manual queue bypasses the gate by design.)
+# Note the auto-trigger asymmetry: a PR won't queue this unless the YAML is on
+# the default branch OR a branch policy is attached — expect to manually queue
+# it (az pipelines run / the run-pipeline API targeting the branch ref) on the
+# first/migration PR.
+
+trigger:
+  branches:
+    include: [ main ]
+pr: none
+
+jobs:
+  - job: ui_smoke
+    displayName: 'Build + UI smoke (Windows)'
+    pool:
+      vmImage: 'windows-2022'
+    timeoutInMinutes: 25
+    steps:
+      - checkout: self
+        fetchDepth: 1
+
+      - task: UseDotNet@2
+        displayName: 'Setup .NET'
+        inputs: { version: '10.0.x' }
+
+      - task: UseNode@1
+        displayName: 'Setup Node'
+        inputs: { version: '24.x' }
+
+      - pwsh: dotnet build FlightFinder.sln --configuration Debug
+        displayName: 'Build solution'
+
+      - pwsh: >
+          dotnet test FlightFinder.sln --configuration Debug --no-build
+          --filter "Category!=UiSmoke&Category!=DocsCapture"
+          --logger "trx;LogFileName=non-ui.trx" --results-directory TestResults
+        displayName: 'Fast gate (non-UI tests, no Appium)'
+
+      - pwsh: npm install
+        workingDirectory: tests/FlightFinder.UiTests
+        displayName: 'Install Appium + Windows driver'   # auto-discovers local driver; no 'appium driver install'
+
+      # ONE step: each ADS step runs in its own shell, and Windows tears down
+      # child processes (the backgrounded Appium) when the shell exits.
+      - pwsh: |
+          Set-Location 'tests/FlightFinder.UiTests'
+          $appiumJs = Join-Path $PWD 'node_modules/appium/index.js'
+          if (-not (Test-Path $appiumJs)) { Write-Error "Missing $appiumJs — did npm install run here?"; exit 1 }
+          $log = Join-Path $PWD 'appium.log'
+          $proc = Start-Process node -ArgumentList $appiumJs,'--log-level','info' `
+            -WorkingDirectory $PWD -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru
+          $deadline = (Get-Date).AddSeconds(60); $ready = $false
+          while ((Get-Date) -lt $deadline) {
+            try { (New-Object Net.Sockets.TcpClient).Connect('127.0.0.1',4723); $ready = $true; break }
+            catch { Start-Sleep 2 }
+          }
+          if (-not $ready) { Write-Error "Appium did not start in 60s."; Get-Content $log,"$log.err" -EA SilentlyContinue | Write-Host; exit 1 }
+
+          Set-Location $env:BUILD_SOURCESDIRECTORY
+          try {
+            dotnet test tests/FlightFinder.UiTests/FlightFinder.UiTests.csproj --configuration Debug --no-build `
+              --filter "Category=UiSmoke" `
+              --logger "trx;LogFileName=ui-smoke.trx" --logger "console;verbosity=detailed" `
+              --results-directory TestResults
+            $code = $LASTEXITCODE
+          } finally {
+            Stop-Process -Id $proc.Id -Force -EA SilentlyContinue
+          }
+          exit $code
+        displayName: 'Start Appium + run UI smoke'
+
+      - task: PublishPipelineArtifact@1
+        condition: always()
+        continueOnError: true
+        displayName: 'Upload Appium log'
+        inputs: { targetPath: 'tests/FlightFinder.UiTests/appium.log', artifactName: appium-log }
+
+      - task: PublishPipelineArtifact@1
+        condition: failed()
+        continueOnError: true
+        displayName: 'Upload UI diagnostics (screenshots + page source)'
+        inputs: { targetPath: 'tests/FlightFinder.UiTests/bin/Debug/net10.0-windows/diagnostics', artifactName: ui-diagnostics }
+
+      # ADS has a first-class test viewer — surface per-test pass/fail in the run UI.
+      - task: PublishTestResults@2
+        condition: always()
+        displayName: 'Publish test results (TRX)'
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: '**/*.trx'
+          searchFolder: '$(Build.SourcesDirectory)/TestResults'
+          failTaskOnFailedTests: false

@@ -1,0 +1,91 @@
+# GitHub Actions: build + Appium Windows-UIA smoke tests.
+# Placeholders: <solution>, <ui test project>, .NET/Node versions, the app exe path.
+# Gated to manual dispatch (or a 'ui-smoke' PR label) so slow smokes don't run on every push.
+
+name: UI Smoke
+
+on:
+  workflow_dispatch:
+  # Optional label gate — uncomment to run when a PR carries the 'ui-smoke' label:
+  # pull_request:
+  #   types: [labeled, synchronize]
+
+jobs:
+  ui-smoke:
+    name: Build + UI smoke (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 25
+    # if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ui-smoke')
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Build solution
+        run: dotnet build <solution> --configuration Debug
+
+      - name: Fast gate (non-UI tests, no Appium)
+        run: >
+          dotnet test <solution> --configuration Debug --no-build
+          --filter "Category!=UiSmoke&Category!=DocsCapture"
+          --logger "trx;LogFileName=non-ui.trx" --results-directory TestResults
+
+      - name: Install Appium + Windows driver
+        working-directory: <ui test project dir>
+        run: npm install   # auto-discovers the local driver; do NOT 'appium driver install'
+
+      # ONE step: Windows kills a backgrounded Appium when a step's shell exits,
+      # so start Appium, wait for the port, run the UI tests, and stop it together.
+      - name: Start Appium + run UI smoke
+        run: |
+          Set-Location '<ui test project dir>'
+          $appiumJs = Join-Path $PWD 'node_modules/appium/index.js'
+          if (-not (Test-Path $appiumJs)) { Write-Error "Missing $appiumJs — did npm install run here?"; exit 1 }
+          $log = Join-Path $PWD 'appium.log'
+          $proc = Start-Process node -ArgumentList $appiumJs,'--log-level','info' `
+            -WorkingDirectory $PWD -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru
+          $deadline = (Get-Date).AddSeconds(60); $ready = $false
+          while ((Get-Date) -lt $deadline) {
+            try { (New-Object Net.Sockets.TcpClient).Connect('127.0.0.1',4723); $ready = $true; break }
+            catch { Start-Sleep 2 }
+          }
+          if (-not $ready) { Write-Error "Appium did not start in 60s."; Get-Content $log,"$log.err" -EA SilentlyContinue | Write-Host; exit 1 }
+
+          Set-Location $env:GITHUB_WORKSPACE
+          try {
+            dotnet test <ui test project> --configuration Debug --no-build `
+              --filter "Category=UiSmoke" `
+              --logger "trx;LogFileName=ui-smoke.trx" --logger "console;verbosity=detailed" `
+              --results-directory TestResults
+            $code = $LASTEXITCODE
+          } finally {
+            Stop-Process -Id $proc.Id -Force -EA SilentlyContinue
+          }
+          exit $code
+
+      - name: Upload Appium log
+        if: always()
+        uses: actions/upload-artifact@v6
+        with: { name: appium-log, path: '<ui test project dir>/appium.log*', if-no-files-found: ignore }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with: { name: test-results, path: TestResults, if-no-files-found: ignore }
+
+      - name: Upload UI diagnostics (screenshots + page source)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with: { name: ui-diagnostics, path: '<ui test project dir>/bin/Debug/net10.0-windows/diagnostics', if-no-files-found: ignore }

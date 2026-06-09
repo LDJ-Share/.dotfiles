@@ -1,0 +1,12 @@
+# Build output
+bin/
+obj/
+
+# Appium server + driver installed by `npm install`
+node_modules/
+
+# Test + diagnostic artifacts
+TestResults/
+diagnostics/
+appium.log
+appium.log.err
