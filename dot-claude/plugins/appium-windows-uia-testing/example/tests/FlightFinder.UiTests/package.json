@@ -1,0 +1,13 @@
+{
+  "name": "flightfinder-ui-tests",
+  "version": "1.0.0",
+  "description": "Appium server + NovaWindows driver for the Flight Finder demo UI smokes",
+  "private": true,
+  "scripts": {
+    "appium": "appium"
+  },
+  "devDependencies": {
+    "appium": "^3.0.0",
+    "appium-novawindows-driver": "^1.4.0"
+  }
+}

@@ -1,0 +1,7 @@
+<Project>
+  <!--
+    This sample is self-contained. An empty Directory.Build.props at the sample
+    root stops MSBuild from walking further up the directory tree and picking up
+    unrelated build settings from a host repo. Nothing else is needed here.
+  -->
+</Project>

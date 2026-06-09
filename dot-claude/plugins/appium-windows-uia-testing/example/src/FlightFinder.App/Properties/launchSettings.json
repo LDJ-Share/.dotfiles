@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "FlightFinder.App": {
+      "commandName": "Project"
+    },
+    "FlightFinder.App (preload)": {
+      "commandName": "Project",
+      "commandLineArgs": "--preload"
+    }
+  }
+}

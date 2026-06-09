@@ -83,3 +83,11 @@ fixture, and a CI pipeline. Once it runs, author tests with the companion skill
   See [references/ci-pipeline.md](references/ci-pipeline.md).
 - **Optional polish**: bump desktop resolution (hosted agents default to
   1024×768) and install `ffmpeg` only if you record fixture videos.
+
+## A complete worked example
+
+A full, buildable sample that instantiates everything above — a WPF app under
+test, the base fixture + smokes, both CI YAMLs, and a WinAppDriver→NovaWindows
+migration guide — lives at [`../../example/`](../../example/) (see its
+`README.md` and `MIGRATION.md`). It's the resolved, runnable form of these
+templates; diff your project against it.

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <!-- Appium + the NovaWindows driver install into node_modules here; keep the
+       driver's JS out of the .NET build globs. -->
+  <ItemGroup>
+    <Compile Remove="node_modules/**" />
+    <EmbeddedResource Remove="node_modules/**" />
+    <None Remove="node_modules/**" />
+    <Content Remove="node_modules/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="8.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageReference Include="NUnit" Version="4.5.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
+  </ItemGroup>
+
+  <!--
+    The reference lets the plain (non-UI) unit tests see the app's types. The UI
+    SMOKES do NOT use it to drive the app — they launch the BUILT .exe by path
+    (see AppiumSmokeBase.ResolveExePath), exactly as Appium does in CI. Build the
+    whole solution first (`dotnet build FlightFinder.sln`), then run the smokes.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FlightFinder.App\FlightFinder.App.csproj" />
+  </ItemGroup>
+
+</Project>
