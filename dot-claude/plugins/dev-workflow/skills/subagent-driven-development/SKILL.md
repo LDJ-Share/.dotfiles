@@ -17,7 +17,7 @@ A controller dispatches fresh subagents per task instead of executing inline. Th
    - If it reports BLOCKED, assess: more context, a more capable model, a smaller task, or escalate to the user.
    - If it reports DONE_WITH_CONCERNS, read the concerns; address correctness or scope concerns before any review step.
    - If it reports DONE, run verification per `verifying-subagent-output`.
-4. Per tier: mechanical work batches under one haiku dispatch with NO review loop. Algorithmic work uses a sonnet implementer plus ONE combined opus spec+quality review.
+4. Per tier: mechanical work batches under one haiku dispatch with NO review loop (where the haiku model lacks prompt caching, use a sonnet batch instead — see `tiered-subagent-dispatch`). Algorithmic work uses a sonnet implementer plus ONE combined opus spec+quality review.
 5. Never dispatch multiple implementer subagents in parallel on overlapping files — race conditions on the working tree are silent and ugly to debug.
 6. After all tasks complete, dispatch `final-branch-review` before declaring the branch done.
 

@@ -47,6 +47,26 @@ passes, default 3); `MAX_PASSES` (default 50). This is loop-global liveness —
 distinct from the charter's per-bead "3 consecutive verifier FAILs" and from any
 per-run beads-closed checkpoint cap. Full rule: [references/patterns.md](references/patterns.md).
 
+## Context checkpointing (proactive compaction)
+Durable state lives in beads + git, so compaction is cheap — losing your window loses
+almost nothing. When you pause to checkpoint (the per-run close cap, or when context
+usage runs high, ~70–80%), DON'T wait to be asked. Proactively hand the human two
+ready-to-use blocks:
+
+1. A custom **`/compact`** that preserves only the orchestration essentials, e.g.:
+   `/compact Keep: open bead IDs + their states, the in-flight bead and its exact
+   next step, the charter + stop-conditions, the Seance/events tail, and any result
+   not yet written to beads. Drop: closed-item detail, raw tool/build output, file
+   contents, resolved sub-threads.`
+   Tailor "Keep" to what's actually in flight this run.
+2. A **kickoff prompt** to paste in the fresh window once compaction finishes, so the
+   next session re-orients from durable state rather than memory, e.g.:
+   `Resume the orchestration run per orchestration-protocol. Run bd ready, confirm
+   bead <id> is at <state / next step>, and continue the loop. Stop-conditions
+   unchanged.`
+
+Present both unprompted; the human accepts and moves on.
+
 ## Steering an autonomous run (interjection)
 The human can add information mid-run without breaking anything — all state lives
 in beads + git, so interrupting and resuming is lossless.
