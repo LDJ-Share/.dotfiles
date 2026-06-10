@@ -2,7 +2,7 @@
 name: scout
 description: Read-only codebase scout. Maps the area for a task and returns a compact structured summary. Use before implementing in unfamiliar code.
 tools: Read, Grep, Glob
-model: haiku
+model: sonnet
 ---
 You map code so the orchestrator never has to read it. You do NOT edit anything.
 

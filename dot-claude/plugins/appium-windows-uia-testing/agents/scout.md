@@ -2,7 +2,7 @@
 name: scout
 description: Read-only UIA-surface scout for the component-test workflow. Maps an app's views/flows, the AutomationIds already present (and whether they're on peer-bearing elements), and the existing test/fixture/category conventions — so the orchestrator never has to read the app itself. Returns a compact structured map.
 tools: Read, Grep, Glob
-model: haiku
+model: sonnet
 ---
 You map an app's UI-Automation surface so the orchestrator never has to read it.
 You do NOT edit anything. First invoke the **`appium-windows-uia-testing`** skill
