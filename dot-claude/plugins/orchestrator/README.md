@@ -93,3 +93,114 @@ pass/fail land in the main session.
 This is the portable, **ADS-agnostic** counterpart of the `brain-orchestrator`
 plugin (in the `matt-plugins` marketplace), which drives Azure DevOps Boards
 instead of beads. Same loop, same worker roster; different state backend.
+
+## Recommended permissions
+
+An unattended loop **deadlocks on the first approval prompt** unless you
+pre-authorize `bd` + your build/test commands (see "Setup in a work repo" above and
+"Beads safety" in the skill). These tiers turn that advice into copy-pasteable
+config. Drop one into the repo's `.claude/settings.json` under `permissions`, and
+keep the **safety-net deny** no matter which tier you pick. Rules evaluate
+**deny → ask → allow** and *deny always wins*, so the net holds across tiers — and
+because worker subagents run under these same settings, it protects them too.
+
+Pick a tier by trust × autonomy:
+
+- **Low risk** — your own repo, fully unattended drain. Broad allow, almost no prompts.
+- **Medium risk** *(default)* — supervised; auto-runs the loop + build/test but **asks** before `git commit`/`push`.
+- **High risk** — untrusted/shared repo; read-only + build/test by default, **asks** on every `bd` write and git mutation.
+
+### Safety-net deny — include in EVERY tier
+
+Blocks secrets/credentials and the most destructive shell regardless of tier.
+`Edit` governs all file writes (there is no separate `Write` domain), so secrets
+get both a `Read` and an `Edit` deny; `curl`/`wget` are denied because `WebFetch`
+rules alone don't stop shell egress.
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)", "Edit(.env)",
+      "Read(.env*)", "Edit(.env*)",
+      "Read(**/secrets/**)", "Edit(**/secrets/**)",
+      "Read(**/*.pem)", "Edit(**/*.pem)",
+      "Read(**/*.key)", "Edit(**/*.key)",
+      "Read(**/*.pfx)", "Edit(**/*.pfx)",
+      "Read(**/id_rsa*)", "Edit(**/id_rsa*)",
+      "Read(~/.ssh/**)", "Edit(~/.ssh/**)",
+      "Read(~/.aws/**)", "Edit(~/.aws/**)",
+      "Read(~/.config/gh/**)", "Edit(~/.config/gh/**)",
+      "Edit(**/.git/**)",
+      "Bash(rm -rf:*)", "Bash(rm -fr:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:*)", "Bash(wget:*)",
+      "Bash(git push --force:*)", "Bash(git push -f:*)"
+    ]
+  }
+}
+```
+
+### Low risk — fully autonomous (trusted personal repo)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd:*)",
+      "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(npm run build:*)", "Bash(npm test:*)",
+      "Bash(pytest:*)", "Bash(cargo build:*)", "Bash(cargo test:*)",
+      "Bash(go build:*)", "Bash(go test:*)", "Bash(make:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git checkout:*)", "Bash(git switch:*)",
+      "Bash(git pull:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+### Medium risk — supervised (default)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd:*)",
+      "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(npm run build:*)", "Bash(npm test:*)",
+      "Bash(pytest:*)", "Bash(cargo build:*)", "Bash(cargo test:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git checkout:*)", "Bash(git switch:*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+### High risk — locked down (untrusted/shared)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd ready:*)", "Bash(bd show:*)", "Bash(bd list:*)", "Bash(bd prime)",
+      "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(npm test:*)", "Bash(pytest:*)", "Bash(cargo test:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"
+    ],
+    "ask": [
+      "Bash(bd update:*)", "Bash(bd create:*)", "Bash(bd close:*)", "Bash(bd dep:*)",
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+> Each tier = the safety-net `deny` **plus** the `allow`/`ask` shown; merge the two
+> JSON blocks. Anything matched by no rule prompts by default, so even a partial
+> `ask` list stays safe. The high tier keeps `bd` *reads* flowing (so the loop can
+> still plan) while gating every `bd` *write* behind a prompt.

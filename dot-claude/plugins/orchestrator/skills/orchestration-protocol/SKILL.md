@@ -37,6 +37,17 @@ Subagents do NOT touch beads. They REPORT discovered work in their return; YOU
 file it. This keeps the audit trail in one place and avoids simultaneous writers
 on the local `.beads` db.
 
+## Atomic beads (prefer small over coarse)
+Bias toward MANY small, atomic beads over a few broad ones. One bead = one
+verifiable outcome — a single test turned green, one function extracted, one call
+site migrated, one edge case handled. Atomic beads keep the graph honest: per-pass
+progress is visible, the watchdog can actually detect a stall, `bd dep` edges are
+precise, and a failed bead has a small blast radius. When a bead turns out to hold
+two or more independent outcomes, SPLIT it — close or relabel the original and
+`bd create` the pieces, wiring `bd dep add` to preserve parentage. File discovered
+work the same way: one bead per item, never a grab-bag. Beads are cheap and
+disposable — that's the whole point; spend them freely to keep each one atomic.
+
 ## Watchdog (no-progress halt)
 Loop-global liveness guard for autonomous runs. Track progress per loop pass —
 progress = ≥1 bead closed OR ≥1 new bead filed that pass. HALT and report if `K`

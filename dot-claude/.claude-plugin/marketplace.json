@@ -13,7 +13,7 @@
       "name": "orchestrator",
       "source": "./plugins/orchestrator",
       "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude session loops over ready beads and dispatches disposable worker subagents (scout/implementer/verifier/reviewer/investigator/test-writer), keeping its window near-empty. Ships the orchestration-protocol skill (loop, watchdog, inbox steering, beads safety, Seance log) and three fan-out commands: /implement, /triage, /cover. The ADS-agnostic counterpart of brain-orchestrator.",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "category": "workflow",
       "keywords": [
         "orchestrator",
@@ -29,7 +29,7 @@
       "name": "appium-windows-uia-testing",
       "source": "./plugins/appium-windows-uia-testing",
       "description": "Appium UI-automation testing for Windows desktop apps (WPF/WinUI/Win32) over UI Automation. Two skills (appium-windows-uia-setup to bootstrap the test project + Appium/driver + CI; appium-windows-uia-testing for AccessibilityId-over-XPath, no-UIA-peer placement traps, per-fixture wall-clock-kill runner, debug-log triage, screenshot helper), a runnable example/ app, and a self-contained beads-backed orchestration layer — the /build-component-tests command + scout/reviewer/component-test-builder (parallel authoring) and appium-interactive-runner (single serialized live-app executor + debugger) agents — sized for a Sonnet-4.5 / 200k orchestrator.",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "category": "testing",
       "keywords": [
         "appium",
@@ -45,7 +45,7 @@
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
       "description": "A trimmed, language-agnostic software-development lifecycle for constrained (Sonnet-4.5 / 200k) workflows — the portable counterpart of the full superpowers plugin. The chain brainstorming -> writing-plans -> executing-plans | subagent-driven-development (tiered-subagent-dispatch + verifying-subagent-output) -> review gates -> finishing-a-development-branch, plus using-git-worktrees. A SessionStart hook injects a thin bootstrap; commands /brainstorm /plan /execute /finish. Pairs with the orchestrator plugin for the worker subagents.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "category": "workflow",
       "keywords": [
         "workflow",
@@ -60,7 +60,7 @@
       "name": "dotnet-style",
       "source": "./plugins/dotnet-style",
       "description": "Default stack and workflow opinions for modern .NET (C# 12+, dotnet 8+): preferred libraries (NUnit 4, CommunityToolkit.Mvvm, Serilog two-stage bootstrap), code conventions (sealed records + required init, Nullable + ImplicitUsings), the deterministic ReSharper -> dotnet format -> XAML Styler toolchain, and the csharp-ls LSP reality. Ships copy-able assets (jb + xstyler tool manifest, just style recipes, changed-files script). The .NET-specific companion to dev-workflow.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "workflow",
       "keywords": [
         "dotnet",

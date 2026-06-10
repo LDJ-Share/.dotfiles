@@ -59,7 +59,11 @@ Hard halts (stop the run, report):
 1. `bd prime`. **Decompose:** dispatch `scout`(s) in parallel to map the target
    surface — which views/flows lack a component test, what `AutomationId`s already
    exist, the fixture/category conventions. File one bead per component-test
-   target; prioritize untested user-facing flows. `bd dep add` discovered subtasks.
+   target, kept **atomic** — one bead = one test = one verifiable outcome; split a
+   target that needs several distinct flows/assertions into separate beads.
+   Prioritize untested user-facing flows. `bd dep add` discovered subtasks, and
+   file discovered app-bugs / follow-ups as their own beads rather than folding
+   them in.
 2. **AUTHOR IN PARALLEL.** Dispatch a batch of `component-test-builder`s — one per
    bead, disjoint files — in a SINGLE message. Each writes its fixture, adds the
    AutomationIds it needs, compiles, and returns a **run-request**. Apply any

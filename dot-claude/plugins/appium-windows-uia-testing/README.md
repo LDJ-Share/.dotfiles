@@ -50,6 +50,116 @@ with the sibling `orchestrator` plugin (same `matt-dotfiles` marketplace), whose
 `orchestration-protocol` skill documents beads safety + the Seance log in depth.
 The ADS-aware counterpart is the same plugin in the `matt-plugins` marketplace.
 
+## Recommended permissions
+
+The build workflow runs largely unattended, and its `appium-interactive-runner`
+does something most plugins don't: it **launches the live app**, drives a real UIA
+session, and may `taskkill` zombie Appium/driver processes during cleanup. Those
+process-control calls are the ones to think hardest about. An unattended loop also
+**deadlocks on the first approval prompt** unless `bd` + your build/test commands
+are pre-authorized (see Install below). Drop one tier into the repo's
+`.claude/settings.json` under `permissions`, and keep the **safety-net deny** no
+matter which tier you pick. Rules evaluate **deny → ask → allow**; *deny always
+wins*. Worker subagents (including the runner) inherit these settings.
+
+Pick a tier by trust × autonomy:
+
+- **Low risk** — your own repo, fully unattended suite build. Broad allow incl. app launch + `taskkill`.
+- **Medium risk** *(default)* — supervised; auto-authors/builds/runs tests but **asks** before `git commit`/`push`.
+- **High risk** — untrusted/shared repo; **asks** before launching the app, running `UiSmoke`, or `taskkill`, and before any mutation.
+
+### Safety-net deny — include in EVERY tier
+
+Blocks secrets/credentials and the most destructive shell regardless of tier.
+`Edit` governs all file writes (no separate `Write` domain), so secrets get both a
+`Read` and an `Edit` deny; `curl`/`wget` are denied because `WebFetch` rules alone
+don't stop shell egress.
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)", "Edit(.env)",
+      "Read(.env*)", "Edit(.env*)",
+      "Read(**/secrets/**)", "Edit(**/secrets/**)",
+      "Read(**/*.pem)", "Edit(**/*.pem)",
+      "Read(**/*.key)", "Edit(**/*.key)",
+      "Read(**/*.pfx)", "Edit(**/*.pfx)",
+      "Read(**/id_rsa*)", "Edit(**/id_rsa*)",
+      "Read(~/.ssh/**)", "Edit(~/.ssh/**)",
+      "Read(~/.aws/**)", "Edit(~/.aws/**)",
+      "Read(~/.config/gh/**)", "Edit(~/.config/gh/**)",
+      "Edit(**/.git/**)",
+      "Bash(rm -rf:*)", "Bash(rm -fr:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:*)", "Bash(wget:*)",
+      "Bash(git push --force:*)", "Bash(git push -f:*)"
+    ]
+  }
+}
+```
+
+### Low risk — fully autonomous (trusted personal repo)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd:*)",
+      "Bash(appium:*)", "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(taskkill:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+### Medium risk — supervised (default)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd:*)",
+      "Bash(appium:*)", "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(taskkill:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git checkout:*)", "Bash(git switch:*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+### High risk — locked down (untrusted/shared)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd ready:*)", "Bash(bd show:*)", "Bash(bd list:*)",
+      "Bash(dotnet build:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"
+    ],
+    "ask": [
+      "Bash(appium:*)", "Bash(dotnet test:*)", "Bash(taskkill:*)",
+      "Bash(bd update:*)", "Bash(bd create:*)", "Bash(bd close:*)",
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+> Each tier = the safety-net `deny` **plus** the `allow`/`ask` shown; merge the two
+> JSON blocks. Anything matched by no rule prompts by default. The high tier keeps
+> app launch (`appium`), live test runs (`dotnet test`, which triggers the
+> `UiSmoke` category), and `taskkill` in `ask` — process control is the surface you
+> least want unattended on an untrusted repo.
+
 ## Install
 
 Installed via the dotfiles `matt-dotfiles` marketplace

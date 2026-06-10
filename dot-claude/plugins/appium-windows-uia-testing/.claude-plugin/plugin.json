@@ -1,7 +1,7 @@
 {
   "name": "appium-windows-uia-testing",
   "description": "Appium UI-automation testing for Windows desktop apps (WPF/WinUI/Win32) over UI Automation (UIA), with WinAppDriver or appium-novawindows-driver. Two skills (appium-windows-uia-setup to bootstrap the project + driver + CI; appium-windows-uia-testing to write/run/debug/speed-up tests), a runnable example/ app, and a beads-backed orchestration layer: the /build-component-tests command and two agents (component-test-builder authors tests in parallel; appium-interactive-runner is the single serialized live-app executor + interactive debugger) that build a component-test suite under the one-interactive-session-at-a-time invariant, sized for a Sonnet-4.5 / 200k orchestrator.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "Matt Krauz",
     "email": "matthew.krauz@gmail.com"
