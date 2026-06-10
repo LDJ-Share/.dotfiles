@@ -19,6 +19,8 @@ Uniform subagent dispatch wastes tokens. Match the model tier to the task: a hai
 8. Drop per-task commentary. Batch status updates to every 3–5 tasks or at phase boundaries.
 9. Target ~10k tokens per task across implementer + reviewer combined. If a single task is consuming far more, the task is too large — split it.
 
+**Caching prerequisite for the haiku tier.** The haiku tier only pays off where the haiku model supports prompt caching. Where it doesn't (some hosted / air-gapped deployments), collapse it to **sonnet**: keep the inline tier for trivial work and treat everything else as sonnet. Claude Code has no per-agent fallback model, so this is a deliberate dispatch choice, not automatic.
+
 ### See also
 
 - `subagent-driven-development` — the dispatcher itself; this skill defines its model-selection policy.
