@@ -2,8 +2,10 @@
 description: Parallelize unit-test coverage across a low-coverage codebase — decompose into per-unit beads, fan out test-writers on disjoint files, verify, drain.
 argument-hint: [target path and/or coverage threshold, optional]
 ---
-Run the coverage workflow as the ORCHESTRATOR defined in CLAUDE.md.
-Stay high-altitude: never read source yourself — delegate.
+Run the coverage workflow. First invoke the `orchestration-protocol` skill — it
+defines the orchestrator contract (high-altitude loop, centralized beads writes,
+watchdog, inbox steering, beads safety, Seance log). Stay high-altitude: never read
+source yourself — delegate.
 
 Scope/target: $ARGUMENTS
 
@@ -27,10 +29,10 @@ for the actual per-unit writing.
 5. VERIFY: dispatch `verifier` on the new tests. On green, `bd close`.
 6. Repeat from step 3 until `bd ready` is empty or the coverage threshold is met.
    At the TOP of each pass, check `.orchestrator/inbox.md` for human steering
-   (see CLAUDE.md). Run the watchdog (CLAUDE.md): a pass with zero beads closed
+   (orchestration-protocol skill). Run the watchdog: a pass with zero beads closed
    AND zero new beads filed is no-progress — halt at K=3 consecutive, or at
    MAX_PASSES=50, emitting a Seance escalation with passes run + beads closed.
 7. Report: coverage before/after, beads closed, anything blocked.
 
 Write-isolation note: if units can't be cleanly partitioned by file, run
-test-writers in separate git worktrees and merge after (see PATTERNS.md).
+test-writers in separate git worktrees and merge after (see the orchestration-protocol skill's patterns reference).
