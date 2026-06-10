@@ -28,7 +28,8 @@ checking in each step. Three ingredients:
 - **The loop** — claim ready bead → dispatch → verify → close/escalate → repeat.
   Because the orchestrator window stays tiny, one session runs many iterations.
 - **A decision charter** — written, explicit: what the run may decide alone vs.
-  what forces a STOP-and-report. No charter = runaway. (See `commands/triage.md`.)
+  what forces a STOP-and-report. No charter = runaway. (Each command — `/implement`,
+  `/triage`, `/cover` — carries its own charter.)
 - **An audit trail** — beads history (`bd show`) + `bd remember` capture what the
   run did and learned, so you can review after the fact.
 
@@ -53,8 +54,8 @@ Two knobs (defaults):
 - `K` = **3** — consecutive no-progress passes before halt.
 - `MAX_PASSES` = **50** — hard cap on total passes per run.
 
-On halt, emit a Seance event (`kind=escalation`, see CLAUDE.md) and report:
-passes run, beads closed, halt reason.
+On halt, emit a Seance event (`kind=escalation`, see the orchestration-protocol
+skill) and report: passes run, beads closed, halt reason.
 
 Distinct from two nearby rules — do not conflate:
 - The charter's per-bead **"3 consecutive verifier FAILs"** concerns a SINGLE
