@@ -22,7 +22,7 @@ its window stays clean and compacts (or `/clear`s) for free.
 Orchestrator (main, Sonnet)  ── bd prime → bd ready → claim → dispatch → record
    │            │              │
  scout      implementer     verifier        (+ optional reviewer)
- (Haiku)     (Sonnet)       (Haiku)
+ (Sonnet)    (Sonnet)       (Sonnet)
  read-only   one bead's     run tests/
  map         diff           build
    └─── each returns a ~1k structured summary ───┘
@@ -51,12 +51,17 @@ pass/fail land in the main session.
 | Agent | Model | Why |
 |---|---|---|
 | Orchestrator (main) | Sonnet | Fixed constraint; stays near-empty so 200k is plenty |
-| scout | Haiku | Search/mapping is mechanical |
+| scout | Sonnet | Mapping is mechanical (a natural haiku-tier task) |
 | implementer | Sonnet | Needs real reasoning, but in a disposable window |
-| verifier | Haiku | Running commands + excerpting failures is cheap |
+| verifier | Sonnet | Running commands + excerpting is cheap (a natural haiku-tier task) |
 | reviewer | Sonnet | Diff review before closing a risky bead |
 | investigator | Sonnet | Root-causes one bug read-only; reasoning-heavy |
 | test-writer | Sonnet | Writes tests for one unit in isolation |
+
+> **All workers ship on Sonnet.** The model column shows the *natural* tier, but
+> the agents are hard-set to `sonnet`: Claude Code has no per-agent fallback model,
+> and the target environments' haiku model may lack prompt caching. Where haiku
+> caching is available, `scout` and `verifier` can safely drop back to `haiku`.
 
 ## Setup in a work repo
 
