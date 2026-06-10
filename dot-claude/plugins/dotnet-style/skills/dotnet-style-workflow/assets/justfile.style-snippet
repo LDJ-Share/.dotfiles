@@ -1,0 +1,51 @@
+# --- .NET style recipes -------------------------------------------------------
+# Requires a .NET local-tool manifest with `jb` + `xstyler` (see dotnet-tools.json,
+# place it at .config/dotnet-tools.json) and the changed-files script at
+# scripts/style-changed.ps1. Adapt `sln` to your solution.
+#
+# Order is load-bearing: ReSharper cleanupcode -> dotnet format -> XAML Styler.
+
+sln := "YourSolution.sln"   # <-- adapt
+
+# Restore repo-pinned .NET local tools.
+tools:
+    dotnet tool restore
+
+# Style ONLY changed files (vs HEAD): cleanupcode -> dotnet format -> xstyler.
+style:
+    pwsh -NoProfile -File scripts/style-changed.ps1
+
+# Non-mutating style check for changed files (ReSharper is skipped — it has no
+# passive mode; see the skill's gotchas).
+style-verify:
+    pwsh -NoProfile -File scripts/style-changed.ps1 -Verify
+
+# Full-solution cleanup in the same deterministic order.
+style-all:
+    dotnet tool restore
+    dotnet tool run jb -- cleanupcode {{ sln }} --profile="Built-in: Full Cleanup" --no-build
+    dotnet format {{ sln }}
+    dotnet tool run xstyler -- --recursive --directory . --config Settings.XamlStyler
+
+# Non-mutating full-solution check (dotnet format + XAML Styler; ReSharper skipped).
+style-all-verify:
+    dotnet tool restore
+    dotnet format {{ sln }} --verify-no-changes
+    dotnet tool run xstyler -- --passive --recursive --directory . --config Settings.XamlStyler
+
+# Single-tool passes.
+format-all:
+    dotnet format {{ sln }}
+
+format-all-verify:
+    dotnet format {{ sln }} --verify-no-changes
+
+xaml-format-all:
+    dotnet tool run xstyler -- --recursive --directory . --config Settings.XamlStyler
+
+xaml-format-all-verify:
+    dotnet tool run xstyler -- --passive --recursive --directory . --config Settings.XamlStyler
+
+# Full-solution ReSharper CleanupCode only (no -verify variant — ReSharper mutates).
+cleanup:
+    dotnet tool run jb -- cleanupcode {{ sln }} --profile="Built-in: Full Cleanup" --no-build

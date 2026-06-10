@@ -1,5 +1,12 @@
 # Conventions
 
+## Engineering Principles
+
+- **KISS — Keep It Simple, Stupid.** Prefer the simplest solution that solves the actual problem. No clever abstractions, no premature factoring, no architecture for hypothetical scale.
+- **YAGNI — You Aren't Gonna Need It.** Don't build features, options, or extensibility hooks until they're concretely needed. Strip everything that isn't load-bearing for the current use case.
+
+These apply doubly to in-house re-implementations of upstream tools (statusline, skills shim, doc lookups, code navigation): port only what we actually use, and reject "completeness for completeness's sake."
+
 ## Naming Conventions
 
 ### Directory Structure
