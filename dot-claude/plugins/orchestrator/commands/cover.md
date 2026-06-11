@@ -4,7 +4,7 @@ argument-hint: [target path and/or coverage threshold, optional]
 ---
 Run the coverage workflow. First invoke the `orchestration-protocol` skill — it
 defines the orchestrator contract (high-altitude loop, centralized beads writes,
-watchdog, inbox steering, beads safety, Seance log). Stay high-altitude: never read
+watchdog, interjection steering, beads safety, Seance log). Stay high-altitude: never read
 source yourself — delegate.
 
 Scope/target: $ARGUMENTS
@@ -27,9 +27,9 @@ for the actual per-unit writing.
 4. FAN OUT: dispatch a batch of `test-writer` agents (one per disjoint bead) in a
    SINGLE message. Apply any reported "shared-file changes" yourself, serially.
 5. VERIFY: dispatch `verifier` on the new tests. On green, `bd close`.
-6. Repeat from step 3 until `bd ready` is empty or the coverage threshold is met.
-   At the TOP of each pass, check `.orchestrator/inbox.md` for human steering
-   (orchestration-protocol skill). Run the watchdog: a pass with zero beads closed
+6. Repeat from step 3 until `bd ready --exclude-label interjection` is empty or the coverage threshold is met.
+   At the TOP of each pass, fold in any open interjection beads
+   (`bd list --label interjection`, then close each) per orchestration-protocol. Run the watchdog: a pass with zero beads closed
    AND zero new beads filed is no-progress — halt at K=3 consecutive, or at
    MAX_PASSES=50, emitting a Seance escalation with passes run + beads closed.
 7. Report: coverage before/after, beads closed, anything blocked.

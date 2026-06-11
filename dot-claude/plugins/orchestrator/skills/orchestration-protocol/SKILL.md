@@ -1,6 +1,6 @@
 ---
 name: orchestration-protocol
-description: Use when running a context-frugal autonomous orchestration session backed by beads (bd) + git — establishes the high-altitude loop, centralized beads writes, the watchdog, inbox steering, beads safety, and the Seance decision log. Invoke before /implement, /triage, or /cover. Sized for a Sonnet-4.5 / 200k orchestrator.
+description: Use when running a context-frugal autonomous orchestration session backed by beads (bd) + git — establishes the high-altitude loop, centralized beads writes, the watchdog, interjection steering, beads safety, and the Seance decision log. Invoke before /implement, /triage, or /cover. Sized for a Sonnet-4.5 / 200k orchestrator.
 ---
 
 # Orchestration protocol (context-frugal)
@@ -17,9 +17,13 @@ this is what lets a single Sonnet-4.5 / 200k window run a long autonomous loop.
 - One bead in flight at a time unless they're truly independent.
 
 ## Loop
-1. Session start: run `bd prime` (workflow context + memories), then
-   `bd ready --json` to see actionable work.
-2. Pick the highest-priority ready bead. Claim it: `bd update <id> --claim`.
+1. Session start: run `bd prime` (workflow context + memories). Then **sweep
+   interjections**: `bd list --label interjection --json` — fold each into your
+   plan and `bd close` it (these are human steers via `/notify`, not work). Now see
+   actionable work: `bd ready --json --exclude-label interjection`.
+2. Pick the highest-priority ready bead. Claim it: `bd update <id> --claim`. (Never
+   claim an `interjection`-labeled bead — they're swept in step 1 and excluded from
+   the ready query.)
 3. If the area is unfamiliar, dispatch `scout` with the bead. It returns a map
    (files, symbols, entry points) — you do NOT read those files yourself.
 4. Dispatch `implementer` with: the bead ID, acceptance criteria, and scout's map.
@@ -34,8 +38,20 @@ this is what lets a single Sonnet-4.5 / 200k window run a long autonomous loop.
 
 ## Centralized beads writes
 Subagents do NOT touch beads. They REPORT discovered work in their return; YOU
-file it. This keeps the audit trail in one place and avoids simultaneous writers
-on the local `.beads` db.
+file it. This keeps the audit trail in one voice; with beads in server mode the
+simultaneous-writer hazard is gone, so centralization is now a clarity convention,
+not a hard safety requirement.
+
+## Atomic beads (prefer small over coarse)
+Bias toward MANY small, atomic beads over a few broad ones. One bead = one
+verifiable outcome — a single test turned green, one function extracted, one call
+site migrated, one edge case handled. Atomic beads keep the graph honest: per-pass
+progress is visible, the watchdog can actually detect a stall, `bd dep` edges are
+precise, and a failed bead has a small blast radius. When a bead turns out to hold
+two or more independent outcomes, SPLIT it — close or relabel the original and
+`bd create` the pieces, wiring `bd dep add` to preserve parentage. File discovered
+work the same way: one bead per item, never a grab-bag. Beads are cheap and
+disposable — that's the whole point; spend them freely to keep each one atomic.
 
 ## Watchdog (no-progress halt)
 Loop-global liveness guard for autonomous runs. Track progress per loop pass —
@@ -70,18 +86,21 @@ Present both unprompted; the human accepts and moves on.
 ## Steering an autonomous run (interjection)
 The human can add information mid-run without breaking anything — all state lives
 in beads + git, so interrupting and resuming is lossless.
-- **Non-urgent:** the human appends to `.orchestrator/inbox.md`. At the TOP of
-  each loop iteration, read it; if non-empty, fold the guidance into your
-  decisions, then archive it (append to `.orchestrator/inbox.archive.md` and
-  truncate the inbox). Human only writes the inbox; you only read + clear it —
-  no contention.
+- **Non-urgent:** the human files an **interjection bead** via **`/notify
+  <message>`** (a bead labeled `interjection`). At the TOP of each loop iteration,
+  query open interjection beads (`bd list --label interjection --json`), fold the
+  guidance into your decisions, then `bd close` each. Beads run
+  in server mode, so the human's `bd create` is safe alongside your writes — no
+  contention, and the steer is durable + queryable rather than a transient file.
 - **Urgent:** the human presses Esc to interrupt. Take their input, then resume
   by re-reading `bd ready` — nothing is lost.
-- The human should NOT interject by running `bd` themselves (see Beads safety).
 
-## Beads safety (avoid hangs/deadlocks)
-- ONE writer at a time. Subagents never write beads; humans steer via the inbox,
-  not `bd`. Two `bd` processes writing the same `.beads` db can lock and hang.
+## Beads safety
+- Beads run in **server mode**, so concurrent writers are safe — the human can
+  `/notify` (file an interjection bead) without the file-lock hangs that
+  single-writer local-file mode risks. You still keep writes **centralized** by
+  convention (you file discovered work + close items) for a clean, one-voice audit
+  trail; subagents REPORT, they don't write.
 - Read-only workers (scout/investigator/verifier/reviewer) never write state: they
   have no Edit/Write tools, and any `bd` they run must use `bd --readonly --sandbox`.
   For hard enforcement, deny `bd` writes for these agents in settings.
@@ -107,7 +126,8 @@ it has each subagent's structured return, so it writes the line from that.
 Emit an event at EACH step — create / claim / verify(result) / review(verdict,reason)
 / close(tokens if known) / reopen / interject — not just on close. These power the
 metrics (reviewer-gate catch rate, rework rate, cycle time, interjections-per-task,
-tokens-per-item); compute them with the `seance-metrics` tool. At session start, read
+tokens-per-item); compute them with the **`/gather-metrics`** command (canonical
+sources + metric set + output schema live in the `metrics-reporting` skill). At session start, read
 the tail of this file alongside `bd prime`; grep it for prior decisions on the
 files/beads you touch.
 

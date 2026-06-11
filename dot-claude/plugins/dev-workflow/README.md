@@ -52,6 +52,115 @@ skill names match superpowers' on purpose. Claude Code namespaces skills by plug
 coexist — but you normally install **one or the other**, not both, to avoid two
 bootstraps and ambiguous bare names.
 
+## Recommended permissions
+
+This plugin is language-agnostic, so its permissions are the generic
+development-lifecycle set: git, your build/test runner, and worktrees. The lifecycle
+ends in `finishing-a-development-branch` (merge / PR / push), so the outward step to
+gate is the same one every workflow has — the push. Drop one tier into the repo's
+`.claude/settings.json` under `permissions`, and keep the **safety-net deny** no
+matter which tier you pick. Rules evaluate **deny → ask → allow** and *deny always
+wins*. When you dispatch via `subagent-driven-development`, workers inherit these
+settings.
+
+Pick a tier by trust × autonomy:
+
+- **Low risk** — your own repo. Broad allow, almost no prompts.
+- **Medium risk** *(default)* — auto-runs build/test + read-side git but **asks** before `git commit`/`push`.
+- **High risk** — untrusted/shared repo; read + test only by default, **asks** on every mutation.
+
+Trim the language runners you don't use; the examples cover the common ones.
+
+### Safety-net deny — include in EVERY tier
+
+Blocks secrets/credentials and the most destructive shell regardless of tier.
+`Edit` governs all file writes (there is no separate `Write` domain), so secrets
+get both a `Read` and an `Edit` deny; `curl`/`wget` are denied because `WebFetch`
+rules alone don't stop shell egress.
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)", "Edit(.env)",
+      "Read(.env*)", "Edit(.env*)",
+      "Read(**/secrets/**)", "Edit(**/secrets/**)",
+      "Read(**/*.pem)", "Edit(**/*.pem)",
+      "Read(**/*.key)", "Edit(**/*.key)",
+      "Read(**/*.pfx)", "Edit(**/*.pfx)",
+      "Read(**/id_rsa*)", "Edit(**/id_rsa*)",
+      "Read(~/.ssh/**)", "Edit(~/.ssh/**)",
+      "Read(~/.aws/**)", "Edit(~/.aws/**)",
+      "Read(~/.config/gh/**)", "Edit(~/.config/gh/**)",
+      "Edit(**/.git/**)",
+      "Bash(rm -rf:*)", "Bash(rm -fr:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:*)", "Bash(wget:*)",
+      "Bash(git push --force:*)", "Bash(git push -f:*)"
+    ]
+  }
+}
+```
+
+### Low risk — trusted personal repo
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(git worktree:*)",
+      "Bash(git pull:*)", "Bash(git push:*)",
+      "Bash(npm:*)", "Bash(pnpm:*)", "Bash(dotnet:*)",
+      "Bash(cargo:*)", "Bash(go:*)", "Bash(pytest:*)", "Bash(make:*)"
+    ]
+  }
+}
+```
+
+### Medium risk — supervised (default)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git checkout:*)", "Bash(git switch:*)",
+      "Bash(git worktree:*)",
+      "Bash(npm test:*)", "Bash(npm run build:*)",
+      "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(pytest:*)", "Bash(cargo build:*)", "Bash(cargo test:*)",
+      "Bash(go build:*)", "Bash(go test:*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)", "Bash(git push:*)"
+    ]
+  }
+}
+```
+
+### High risk — locked down (untrusted/shared)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(dotnet build:*)", "Bash(dotnet test:*)",
+      "Bash(npm test:*)", "Bash(pytest:*)", "Bash(cargo test:*)", "Bash(go test:*)"
+    ],
+    "ask": [
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push:*)",
+      "Bash(git worktree:*)"
+    ]
+  }
+}
+```
+
+> Each tier = the safety-net `deny` **plus** the `allow`/`ask` shown; merge the two
+> JSON blocks. Anything matched by no rule prompts by default.
+
 ## Install
 
 Ships in the dotfiles `matt-dotfiles` marketplace
