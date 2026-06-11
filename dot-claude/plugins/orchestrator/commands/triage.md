@@ -50,7 +50,7 @@ Hard halts (stop the whole run, report):
    failing-test bead — in a SINGLE message (read-only, so no write races).
 3. For each returned diagnosis: file a fix bead and `bd dep add <fix> <test>`
    (discovered-from). `bd remember` any cross-cutting cause.
-4. DRAIN FIXES: while `bd ready` has fix beads and no stop-condition tripped —
+4. DRAIN FIXES: while `bd ready --exclude-label interjection` has fix beads and no stop-condition tripped —
    claim one, dispatch `implementer`, then `verifier`. On a green verifier,
    dispatch `reviewer` on the diff BEFORE closing — its job here is to confirm
    no assertion was weakened, skipped, or swallowed (the charter's spine). On a
@@ -59,7 +59,7 @@ Hard halts (stop the whole run, report):
    bead back to `implementer`. On a red verifier, re-investigate or escalate.
 5. Re-run the baseline. Repeat from step 2 for any still-failing tests until the
    suite is green or a stop-condition trips. At the TOP of each pass, fold in
-   any open interjection beads (`bd list --label interjection --status open`, close each) per orchestration-protocol. Run
+   any open interjection beads (`bd list --label interjection`, close each) per orchestration-protocol. Run
    the watchdog: a pass with zero beads closed AND zero new beads filed counts as
    no-progress — halt at K=3 consecutive, or at MAX_PASSES=50.
 6. Report: beads closed, beads still open, what (if anything) you stopped on.

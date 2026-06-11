@@ -27,9 +27,9 @@ for the actual per-unit writing.
 4. FAN OUT: dispatch a batch of `test-writer` agents (one per disjoint bead) in a
    SINGLE message. Apply any reported "shared-file changes" yourself, serially.
 5. VERIFY: dispatch `verifier` on the new tests. On green, `bd close`.
-6. Repeat from step 3 until `bd ready` is empty or the coverage threshold is met.
+6. Repeat from step 3 until `bd ready --exclude-label interjection` is empty or the coverage threshold is met.
    At the TOP of each pass, fold in any open interjection beads
-   (`bd list --label interjection --status open`, then close each) per orchestration-protocol. Run the watchdog: a pass with zero beads closed
+   (`bd list --label interjection`, then close each) per orchestration-protocol. Run the watchdog: a pass with zero beads closed
    AND zero new beads filed is no-progress — halt at K=3 consecutive, or at
    MAX_PASSES=50, emitting a Seance escalation with passes run + beads closed.
 7. Report: coverage before/after, beads closed, anything blocked.

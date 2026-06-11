@@ -53,7 +53,7 @@ Hard halts (stop the whole run, report):
    a batch touch the same file. Independent beads may run concurrently; YOU own
    edits to shared files. Two implementers on one file = lost writes — partition by
    file, or give each its own git worktree and merge after.
-3. **DRAIN.** While `bd ready` has actionable beads and no stop-condition tripped:
+3. **DRAIN.** While `bd ready --exclude-label interjection` has actionable beads and no stop-condition tripped:
    claim one (`bd update <id> --claim`); if the area is unfamiliar dispatch `scout`
    first; dispatch `implementer` (bead id + acceptance criteria + scout map); then
    `verifier`. On a red verifier, re-scope or escalate.
@@ -62,8 +62,8 @@ Hard halts (stop the whole run, report):
    assertion. On a `ship` verdict, `bd close <id> "<one-line outcome>"`. A
    `fix-first` flagging a weakened/skipped/out-of-scope change is a HARD HALT; any
    other `fix-first` loops the bead back to `implementer`.
-5. At the TOP of each pass, fold in any open interjection beads (`bd list --label
-   interjection --status open`, close each). Run
+5. At the TOP of each pass (before selecting work in step 3), fold in any open
+   interjection beads (`bd list --label interjection`, close each). Run
    the watchdog: a pass with zero beads closed AND zero new beads filed
    is no-progress — halt at K=3 consecutive, or MAX_PASSES=50. File discovered work
    as new beads rather than absorbing it. Emit a Seance event per lifecycle step.

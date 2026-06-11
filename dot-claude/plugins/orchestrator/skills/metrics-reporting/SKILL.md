@@ -20,8 +20,8 @@ below, every time. Same headings and columns even when a value is `n/a`.
   (`bd show`, `bd list`).
 - **git log** — commit + merge counts in the window
   (`git log --since=<start> --until=<end> --oneline`).
-- **interjection beads** — `bd list --label interjection` (open + closed in window)
-  for the human-steering count; beads run in server mode.
+- **interjection beads** — `bd list --label interjection --all` (open + closed in
+  window) for the human-steering count; beads run in server mode.
 
 Read these inside this reasoning step and summarize as you go — never dump raw logs
 into context.

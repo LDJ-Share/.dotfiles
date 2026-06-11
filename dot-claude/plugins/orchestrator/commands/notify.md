@@ -17,9 +17,10 @@ orchestrator's — no file-lock contention, no side-channel file needed.
 1. Take the full argument text as the message. If empty, ask the human what to tell
    the orchestrator.
 2. File an interjection bead:
-   `bd create "<message>" -t chore -p 0 --label interjection`
-   (use your bd's label/tag flag; high priority so it surfaces first. If the steer
-   is scoped to one item, name that bead id in the message body.)
+   `bd create "<message>" -l interjection`
+   (`-l` labels it; the orchestrator sweeps + closes interjection beads at the top
+   of each pass and excludes the label from work selection, so one is never claimed
+   as work. If the steer is scoped to one item, name that bead id in the body.)
 3. Confirm to the human: filed bead `<id>`; the orchestrator picks up interjection
    beads at the start of each pass and closes them once folded in. Urgent? press
    **Esc** to interrupt the run now instead of waiting.

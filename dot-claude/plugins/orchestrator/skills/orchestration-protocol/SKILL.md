@@ -17,9 +17,13 @@ this is what lets a single Sonnet-4.5 / 200k window run a long autonomous loop.
 - One bead in flight at a time unless they're truly independent.
 
 ## Loop
-1. Session start: run `bd prime` (workflow context + memories), then
-   `bd ready --json` to see actionable work.
-2. Pick the highest-priority ready bead. Claim it: `bd update <id> --claim`.
+1. Session start: run `bd prime` (workflow context + memories). Then **sweep
+   interjections**: `bd list --label interjection --json` — fold each into your
+   plan and `bd close` it (these are human steers via `/notify`, not work). Now see
+   actionable work: `bd ready --json --exclude-label interjection`.
+2. Pick the highest-priority ready bead. Claim it: `bd update <id> --claim`. (Never
+   claim an `interjection`-labeled bead — they're swept in step 1 and excluded from
+   the ready query.)
 3. If the area is unfamiliar, dispatch `scout` with the bead. It returns a map
    (files, symbols, entry points) — you do NOT read those files yourself.
 4. Dispatch `implementer` with: the bead ID, acceptance criteria, and scout's map.
@@ -84,8 +88,8 @@ The human can add information mid-run without breaking anything — all state li
 in beads + git, so interrupting and resuming is lossless.
 - **Non-urgent:** the human files an **interjection bead** via **`/notify
   <message>`** (a bead labeled `interjection`). At the TOP of each loop iteration,
-  query open interjection beads (`bd list --label interjection --status open
-  --json`), fold the guidance into your decisions, then `bd close` each. Beads run
+  query open interjection beads (`bd list --label interjection --json`), fold the
+  guidance into your decisions, then `bd close` each. Beads run
   in server mode, so the human's `bd create` is safe alongside your writes — no
   contention, and the steer is durable + queryable rather than a transient file.
 - **Urgent:** the human presses Esc to interrupt. Take their input, then resume

@@ -83,7 +83,7 @@ Hard halts (stop the run, report):
    flagging a hollow/weakened test is a HARD HALT; any other `fix-first` loops back
    to the builder.
 5. At the TOP of each pass, fold in any open interjection beads (`bd list --label
-   interjection --status open`, close each). Run
+   interjection`, close each). Run
    the watchdog: a pass with zero beads closed AND zero new beads filed is
    no-progress — halt at K=3 consecutive, or MAX_PASSES=50. Emit a Seance event
    per lifecycle step.

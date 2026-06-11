@@ -25,7 +25,7 @@ drift in format every run).
 2. **Gather** per the `metrics-reporting` skill (beads backend): read
    `.orchestrator/events.jsonl` (the Seance log), `bd` state for the items in range,
    `git log` for commit/merge counts in the window, and interjection beads
-   (`bd list --label interjection`) for the steering count. Summarize as you read —
+   (`bd list --label interjection --all`) for the steering count. Summarize as you read —
    never dump raw logs into context.
 3. **Compute** the canonical metric set (the skill lists each metric + its formula).
 4. **Write** the report to `./metrics/<YYYY-MM-DD>-<scope>.md` (create `metrics/`
