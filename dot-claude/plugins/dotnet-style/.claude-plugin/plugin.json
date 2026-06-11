@@ -1,7 +1,7 @@
 {
   "name": "dotnet-style",
   "description": "Default stack and workflow opinions for modern .NET (C# 12+, dotnet 8+): preferred libraries (NUnit 4, CommunityToolkit.Mvvm, Serilog two-stage bootstrap), code conventions (sealed records with required init, Nullable + ImplicitUsings), the deterministic ReSharper -> dotnet format -> XAML Styler formatting toolchain with format-at-checkpoints discipline, and the csharp-ls LSP reality (don't chase phantoms; the build is authoritative). Ships copy-able assets (pinned jb + xstyler tool manifest, just style recipes, changed-files script). The .NET-specific companion to the language-agnostic dev-workflow plugin.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "Matt Krauz",
     "email": "matthew.krauz@gmail.com"

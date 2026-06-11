@@ -16,6 +16,19 @@ this is what lets a single Sonnet-4.5 / 200k window run a long autonomous loop.
   subagent should run it and summarize instead.
 - One bead in flight at a time unless they're truly independent.
 
+## Lean on the dotnet skills for .NET specifics
+When a subtask is .NET-specific — a red build, running or **filtering** tests,
+coverage, a test-framework/platform question, a package or framework migration, a
+perf investigation — prefer the installed **dotnet-agent-skills**
+([dotnet/skills](https://github.com/dotnet/skills)) over reasoning from memory.
+Dispatch the matching **agent** so the heavy work stays in an isolated context
+(`dotnet-msbuild:msbuild` for build failures, `dotnet-test:code-testing-tester` for
+running tests, `dotnet-diag:optimizing-dotnet-performance` for perf), or — for a quick
+lookup — invoke the **skill** (`dotnet-test:run-tests`, `dotnet-test:filter-syntax`,
+`dotnet:csharp-scripts`). If the marketplace isn't installed, proceed normally; this
+is an accelerator, not a hard dependency (see the README's "Recommended additional
+skills" for the install line + which plugins to add).
+
 ## Loop
 1. Session start: run `bd prime` (workflow context + memories). Then **sweep
    interjections**: `bd list --label interjection --json` — fold each into your

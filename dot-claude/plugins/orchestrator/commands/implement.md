@@ -8,6 +8,9 @@ invoke the `orchestration-protocol` skill — it defines the orchestrator contra
 (high-altitude loop, centralized beads writes, watchdog, interjection steering, beads
 safety, Seance log). Stay high-altitude: never read source or run builds yourself —
 delegate; only bead IDs, one-paragraph summaries, and pass/fail land in your window.
+For .NET-specific subtasks (build errors, test run/filter, coverage, migrations),
+lean on the installed dotnet skills per `orchestration-protocol` ("Lean on the
+dotnet skills for .NET specifics").
 
 Scope: $ARGUMENTS  (a task in words, or a bead id, or an area path)
 

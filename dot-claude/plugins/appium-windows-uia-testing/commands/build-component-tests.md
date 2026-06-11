@@ -11,7 +11,12 @@ dependency. (If the `orchestrator` plugin is installed, its `orchestration-proto
 skill covers beads safety + the Seance decision-log format in more depth.) Stay
 high-altitude: never read source, run builds, or drive the app yourself — every
 substantive action happens inside a disposable subagent; only bead IDs,
-one-paragraph summaries, and pass/fail land in your window.
+one-paragraph summaries, and pass/fail land in your window. When a
+`component-test-builder`'s `dotnet build` fails for a .NET reason (not a
+test-authoring bug) or you need a precise `dotnet test` filter, dispatch the
+matching dotnet skill/agent (`dotnet-msbuild:msbuild`, `dotnet-test:filter-syntax`)
+from the installed **dotnet-agent-skills** rather than reasoning from memory — see
+the README's "Recommended additional skills". If not installed, proceed normally.
 
 Scope: $ARGUMENTS  (if empty, the app's main user-facing surface)
 

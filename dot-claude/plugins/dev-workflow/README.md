@@ -166,3 +166,29 @@ rules alone don't stop shell egress.
 Ships in the dotfiles `matt-dotfiles` marketplace
 (`dot-claude/.claude-plugin/marketplace.json`). For .NET repos, also install the
 sibling `dotnet-style` plugin.
+
+## Recommended additional skills
+
+This plugin is language-neutral, but on a **.NET** repo the `/execute` chain (and
+the subagents it dispatches) does real C# coding, building, and testing. There it
+performs markedly better leaning on Microsoft's official
+**[dotnet-agent-skills](https://github.com/dotnet/skills)** (the *.NET Team at
+Microsoft* marketplace — skills *and* dispatchable agents) than reasoning from
+memory. Install the marketplace once:
+
+```
+/plugin marketplace add dotnet/skills
+/plugin            # install the plugins below
+```
+
+Recommended for .NET work:
+
+| Plugin | Reach for it when |
+|---|---|
+| `dotnet` | core C# mechanics during `/execute` — scripts, P/Invoke, common patterns. |
+| `dotnet-test` | running/**filtering** tests, framework + platform detection, coverage and test-quality analysis. |
+| `dotnet-msbuild` | a build goes red: failure diagnosis, MSBuild perf, project-file review. |
+
+Situational: `dotnet-nuget` (packages), `dotnet-upgrade` (framework/TFM
+migrations). Pair these with the `dotnet-style` plugin (formatting toolchain + stack
+defaults) for full .NET coverage. On non-.NET repos, skip them.

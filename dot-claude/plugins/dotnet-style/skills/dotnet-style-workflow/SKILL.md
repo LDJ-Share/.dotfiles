@@ -94,3 +94,9 @@ NUnit diagnostics on test files — ignore them unless `dotnet build` agrees.
 
 - `verification-before-completion` — the general evidence-over-assertion discipline
   this instances for .NET: run `dotnet build` + `dotnet test` and show the output.
+- **dotnet-agent-skills** ([dotnet/skills](https://github.com/dotnet/skills)) — this
+  skill owns *formatting + stack defaults*; for the .NET work around it lean on the
+  installed dotnet skills: `dotnet-msbuild` (analyzers, code-quality, modernization,
+  build-failure diagnosis — beyond pure formatting), `dotnet-test` (run/filter/
+  coverage), `dotnet` (core C# mechanics). See the README's "Recommended additional
+  skills" for the install line.

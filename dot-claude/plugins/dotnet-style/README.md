@@ -140,3 +140,28 @@ rules alone don't stop shell egress.
 
 Ships in the dotfiles `matt-dotfiles` marketplace
 (`dot-claude/.claude-plugin/marketplace.json`).
+
+## Recommended additional skills
+
+This plugin owns the **style/formatting** layer (ReSharper → `dotnet format` → XAML
+Styler) and stack defaults. For the .NET work *around* that — writing code, fixing
+builds, modernizing — pair it with Microsoft's official
+**[dotnet-agent-skills](https://github.com/dotnet/skills)** (the *.NET Team at
+Microsoft* marketplace — skills *and* dispatchable agents), which handle those far
+better than reasoning from memory. Install the marketplace once:
+
+```
+/plugin marketplace add dotnet/skills
+/plugin            # install the plugins below
+```
+
+Recommended companions:
+
+| Plugin | Reach for it when |
+|---|---|
+| `dotnet` | core C# mechanics that the conventions here assume (scripts, P/Invoke, common patterns). |
+| `dotnet-msbuild` | code-quality / analyzer / modernization work and build-failure diagnosis — the layer beyond pure formatting. |
+
+(Formatting itself stays this plugin's `dotnet-style-workflow` skill —
+`dotnet-msbuild` complements it on analyzers and project-file quality, it doesn't
+replace the toolchain.)
