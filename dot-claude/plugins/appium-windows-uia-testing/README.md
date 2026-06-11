@@ -166,3 +166,27 @@ Installed via the dotfiles `matt-dotfiles` marketplace
 (`dot-claude/.claude-plugin/marketplace.json`). To use the build workflow in a repo,
 `bd init --stealth` and allowlist `bd` + your build/test commands. No vendoring
 needed — the four agents ship with this plugin.
+
+## Recommended additional skills
+
+The `component-test-builder` compiles tests with `dotnet build` and the
+`appium-interactive-runner` executes them via `dotnet test` (the `UiSmoke`
+category). On those .NET build/test specifics they do better leaning on Microsoft's
+official **[dotnet-agent-skills](https://github.com/dotnet/skills)** (the *.NET Team
+at Microsoft* marketplace — skills *and* dispatchable agents) than reasoning from
+memory. Install the marketplace once:
+
+```
+/plugin marketplace add dotnet/skills
+/plugin            # install the plugins below
+```
+
+Recommended for this workflow:
+
+| Plugin | Reach for it when |
+|---|---|
+| `dotnet-test` | building a `dotnet test` **filter** for one fixture/category, or detecting the test framework/platform in an unfamiliar repo. |
+| `dotnet-msbuild` | a builder's `dotnet build` goes red: build-failure diagnosis and project-file review. |
+
+(UI-automation mechanics — UIA locators, the live-run loop — stay this plugin's own
+domain; the dotnet skills only cover the .NET build/test substrate underneath.)

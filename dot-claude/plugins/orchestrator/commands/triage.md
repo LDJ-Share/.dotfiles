@@ -5,7 +5,9 @@ argument-hint: [test filter or path, optional]
 Run the integration-test triage workflow. First invoke the `orchestration-protocol`
 skill — it defines the orchestrator contract (high-altitude loop, centralized beads
 writes, watchdog, interjection steering, beads safety, Seance log). Stay high-altitude:
-never read files or logs yourself — delegate.
+never read files or logs yourself — delegate. For .NET-specific subtasks (build
+errors, test run/filter, perf), lean on the installed dotnet skills per
+`orchestration-protocol` ("Lean on the dotnet skills for .NET specifics").
 
 Scope: $ARGUMENTS  (if empty, the whole suite)
 

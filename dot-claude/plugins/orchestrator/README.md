@@ -205,3 +205,33 @@ rules alone don't stop shell egress.
 > JSON blocks. Anything matched by no rule prompts by default, so even a partial
 > `ask` list stays safe. The high tier keeps `bd` *reads* flowing (so the loop can
 > still plan) while gating every `bd` *write* behind a prompt.
+
+## Recommended additional skills
+
+The worker agents do real .NET work — `implementer` writes C#, `verifier` builds
+and runs tests, `investigator` and `test-writer` reason about failures and
+coverage. On .NET specifics they do markedly better leaning on Microsoft's official
+**[dotnet-agent-skills](https://github.com/dotnet/skills)** (the *.NET Team at
+Microsoft* marketplace — skills *and* dispatchable agents) than reasoning from
+memory. Install the marketplace once:
+
+```
+/plugin marketplace add dotnet/skills
+/plugin            # install the plugins below
+```
+
+When a subtask is .NET-specific, the orchestrator dispatches the matching dotnet
+**agent** (keeping the heavy work in an isolated context — exactly the frugal
+pattern this loop is built on) or invokes its **skill**. Recommended set:
+
+| Plugin | Reach for it when |
+|---|---|
+| `dotnet` | the `implementer` needs core C# mechanics (scripts, P/Invoke, common patterns). |
+| `dotnet-test` | running or **filtering** tests, framework/platform detection, coverage + test-quality analysis — the `verifier` and `test-writer`'s domain. |
+| `dotnet-msbuild` | the `verifier` reports a red build: failure diagnosis, MSBuild perf, project-file review. |
+
+Situational, install per repo: `dotnet-nuget` (package/dependency work),
+`dotnet-upgrade` (framework/TFM migrations). The `orchestration-protocol` skill and
+the command charters reference these inline, so the loop reaches for them
+automatically once installed. (On a non-.NET repo, skip these — the loop is
+language-agnostic.)
