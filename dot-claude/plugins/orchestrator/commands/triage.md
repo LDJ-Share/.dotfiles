@@ -4,7 +4,7 @@ argument-hint: [test filter or path, optional]
 ---
 Run the integration-test triage workflow. First invoke the `orchestration-protocol`
 skill — it defines the orchestrator contract (high-altitude loop, centralized beads
-writes, watchdog, inbox steering, beads safety, Seance log). Stay high-altitude:
+writes, watchdog, interjection steering, beads safety, Seance log). Stay high-altitude:
 never read files or logs yourself — delegate.
 
 Scope: $ARGUMENTS  (if empty, the whole suite)
@@ -58,8 +58,8 @@ Hard halts (stop the whole run, report):
    skipped assertion is a HARD HALT (charter); any other `fix-first` loops the
    bead back to `implementer`. On a red verifier, re-investigate or escalate.
 5. Re-run the baseline. Repeat from step 2 for any still-failing tests until the
-   suite is green or a stop-condition trips. At the TOP of each pass, check
-   `.orchestrator/inbox.md` for human steering (orchestration-protocol skill). Run
+   suite is green or a stop-condition trips. At the TOP of each pass, fold in
+   any open interjection beads (`bd list --label interjection --status open`, close each) per orchestration-protocol. Run
    the watchdog: a pass with zero beads closed AND zero new beads filed counts as
    no-progress — halt at K=3 consecutive, or at MAX_PASSES=50.
 6. Report: beads closed, beads still open, what (if anything) you stopped on.

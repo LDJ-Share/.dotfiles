@@ -32,8 +32,8 @@ Orchestrator (main, Sonnet)  ── bd prime → bd ready → claim → dispatch
 
 | Kind | Names |
 |---|---|
-| **skill** | `orchestration-protocol` — the loop, centralized beads writes, watchdog, inbox steering, beads safety, the Seance decision log (+ a `patterns` reference for fan-out / autonomous-drain) |
-| **commands** | `/implement` (decompose + build a task/feature), `/triage` (recover a failing suite), `/cover` (.NET coverage) |
+| **skills** | `orchestration-protocol` — the loop, centralized beads writes, watchdog, interjection steering, beads safety, the Seance decision log (+ a `patterns` reference for fan-out / autonomous-drain) · `metrics-reporting` — the canonical schema `/gather-metrics` writes to |
+| **commands** | `/implement` (decompose + build a task/feature), `/triage` (recover a failing suite), `/cover` (.NET coverage), `/notify` (file an interjection bead the loop folds in next pass), `/gather-metrics` (structured run metrics → `./metrics/`) |
 | **agents** | `scout` · `implementer` · `verifier` · `reviewer` · `investigator` · `test-writer` |
 
 Each command invokes the `orchestration-protocol` skill for the shared contract,
@@ -78,12 +78,13 @@ pass/fail land in the main session.
 
 ## Running autonomously: steering & safety
 
-- **Interject info** any time by appending to `.orchestrator/inbox.md`; the
-  orchestrator reads + clears it at the top of each loop pass. For an urgent
-  course-correction, press **Esc** — state lives in beads + git, so interrupting
-  and resuming loses nothing. Don't interject by running `bd` yourself.
-- One beads writer at a time; if a `bd` call hangs, check for a stale lock in
-  `.beads/`. See "Beads safety" in the `orchestration-protocol` skill.
+- **Interject info** any time with **`/notify <message>`** — it files an
+  interjection bead the orchestrator folds in at the top of each loop pass (beads
+  run in server mode, so the write is safe alongside the orchestrator's). For an
+  urgent course-correction, press **Esc** — state lives in beads + git, so
+  interrupting and resuming loses nothing.
+- Server-mode beads make concurrent writers safe; if a `bd` call still hangs, retry
+  once, then stop + report. See "Beads safety" in the `orchestration-protocol` skill.
 - **Decision log (Seance):** the orchestrator appends one JSON line per closed bead
   to `.orchestrator/events.jsonl` (or native beads events on server mode) so future
   sessions recover *why* without re-deriving. See "Seance" in the skill.

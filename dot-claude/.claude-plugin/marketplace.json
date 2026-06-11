@@ -12,8 +12,8 @@
     {
       "name": "orchestrator",
       "source": "./plugins/orchestrator",
-      "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude session loops over ready beads and dispatches disposable worker subagents (scout/implementer/verifier/reviewer/investigator/test-writer), keeping its window near-empty. Ships the orchestration-protocol skill (loop, watchdog, inbox steering, beads safety, Seance log) and three fan-out commands: /implement, /triage, /cover. The ADS-agnostic counterpart of brain-orchestrator.",
-      "version": "0.1.3",
+      "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude session loops over ready beads and dispatches disposable worker subagents (scout/implementer/verifier/reviewer/investigator/test-writer), keeping its window near-empty. Ships the orchestration-protocol + metrics-reporting skills and the commands /implement, /triage, /cover, /notify (file an interjection bead), and /gather-metrics (structured run metrics). The ADS-agnostic counterpart of brain-orchestrator.",
+      "version": "0.1.4",
       "category": "workflow",
       "keywords": [
         "orchestrator",
