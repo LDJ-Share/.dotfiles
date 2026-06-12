@@ -13,6 +13,12 @@ reviewing, and finishing work, wired together as one chain.
 | **commands** | `/brainstorm` · `/plan` · `/execute` · `/finish` |
 | **skills** | `using-superpowers` · `brainstorming` · `writing-plans` · `executing-plans` · `subagent-driven-development` · `tiered-subagent-dispatch` · `verifying-subagent-output` · `verification-before-completion` · `requesting-code-review` · `final-branch-review` · `iterative-review-before-commit` · `finishing-a-development-branch` · `using-git-worktrees` |
 
+> **Always have a plan.** `/plan` writes a plan with a human in the loop; `/execute`
+> won't dive into unplanned work. For *autonomous, model-approved* planning (no human
+> approval pause), `/plan` and `/execute` defer to the orchestrator plugin's
+> `plan-first-dispatch` skill when it's installed — the orchestrator dispatches a
+> read-only `planner`, approves the plan bounded by its charter, then implements.
+
 ## The lifecycle
 
 ```

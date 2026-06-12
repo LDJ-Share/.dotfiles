@@ -1,0 +1,17 @@
+{
+  "name": "plugin-self-improvement",
+  "description": "Continuous self-improvement for the Claude Code plugin collection (matt-dotfiles). Turns 'aha' moments into durable, tracked work: the capture-plugin-insight skill triggers on a realization, epiphany, or contradiction about a plugin/skill/command/agent and the /improve-plugin command captures it explicitly. Both file a bead labeled `plugin-improvement` under a long-lived self-improvement epic bead (discovered by the `plugin-self-improvement` label), so insights aren't lost in the moment they occur. A thin SessionStart hook reminds the model the capability exists. The portable, beads-backed counterpart of the ADS plugin-self-improvement plugin in the matt-plugins marketplace.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Matt Krauz",
+    "email": "matthew.krauz@gmail.com"
+  },
+  "keywords": [
+    "self-improvement",
+    "meta",
+    "plugins",
+    "beads",
+    "bd",
+    "continuous-improvement"
+  ]
+}

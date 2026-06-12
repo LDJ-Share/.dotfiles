@@ -58,8 +58,11 @@ Hard halts (stop the whole run, report):
    file, or give each its own git worktree and merge after.
 3. **DRAIN.** While `bd ready --exclude-label interjection` has actionable beads and no stop-condition tripped:
    claim one (`bd update <id> --claim`); if the area is unfamiliar dispatch `scout`
-   first; dispatch `implementer` (bead id + acceptance criteria + scout map); then
-   `verifier`. On a red verifier, re-scope or escalate.
+   first; **plan first** (`plan-first-dispatch`) for non-trivial beads — dispatch
+   `planner`, persist its plan, and auto-approve it *bounded by this charter* (a plan
+   that would trip any "MUST STOP" / hard-halt above → STOP and report, not approved);
+   dispatch `implementer` (bead id + acceptance criteria + scout map + approved plan);
+   then `verifier`. On a red verifier, re-scope or escalate.
 4. **GATE & CLOSE.** On green, dispatch `reviewer` on the diff BEFORE closing —
    confirm the change meets the criteria, stays in scope, and weakened no
    assertion. On a `ship` verdict, `bd close <id> "<one-line outcome>"`. A

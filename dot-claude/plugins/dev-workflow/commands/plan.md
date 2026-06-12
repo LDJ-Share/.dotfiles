@@ -10,3 +10,7 @@ content (no "TBD"/"implement later"). New behavior follows TDD; deletions follow
 regression-test-first. Save to `docs/superpowers/plans/YYYY-MM-DD-<topic>.md` and
 end the plan with an explicit hand-off line (`/execute` for inline, or the
 `subagent-driven-development` skill for dispatch).
+
+For **autonomous, model-approved** planning inside an orchestration loop (no human
+approval pause — the orchestrator approves the plan itself, bounded by its charter),
+use `plan-first-dispatch` from the orchestrator plugin instead of this command.

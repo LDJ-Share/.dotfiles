@@ -1,7 +1,7 @@
 {
   "name": "orchestrator",
-  "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude main session loops over ready beads, dispatches disposable worker subagents (scout/implementer/verifier/reviewer/investigator/test-writer) to do the actual reading/editing/verifying, and records outcomes back into beads + git — keeping the orchestrator window near-empty. Ships the orchestration-protocol skill (loop, watchdog, interjection steering, beads safety, Seance decision log), the worker agents, the metrics-reporting skill, and the commands /implement, /triage, /cover, /notify (file an interjection bead), and /gather-metrics (structured run metrics to ./metrics/). The portable, ADS-agnostic counterpart of the brain-orchestrator plugin.",
-  "version": "0.1.5",
+  "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude main session loops over ready beads, dispatches disposable worker subagents (scout/planner/implementer/verifier/reviewer/investigator/test-writer) to do the actual reading/editing/verifying, and records outcomes back into beads + git — keeping the orchestrator window near-empty. Ships the orchestration-protocol + plan-first-dispatch skills, the worker agents, the metrics-reporting skill, and the commands /implement, /triage, /cover, /notify (file an interjection bead), and /gather-metrics (structured run metrics to ./metrics/). The portable, ADS-agnostic counterpart of the brain-orchestrator plugin.",
+  "version": "0.2.0",
   "author": {
     "name": "Matt Krauz",
     "email": "matthew.krauz@gmail.com"
