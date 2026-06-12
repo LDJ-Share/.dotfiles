@@ -39,8 +39,13 @@ skills" for the install line + which plugins to add).
    the ready query.)
 3. If the area is unfamiliar, dispatch `scout` with the bead. It returns a map
    (files, symbols, entry points) — you do NOT read those files yourself.
-4. Dispatch `implementer` with: the bead ID, acceptance criteria, and scout's map.
-   It makes the change in its own context and returns a summary + discovered work.
+3a. **Plan first** for non-trivial beads (see `plan-first-dispatch`): dispatch
+   `planner` (read-only), persist the returned plan, and auto-approve it *bounded by
+   the charter* — a plan that would trip a hard-halt → STOP and report, not approve.
+   Trivial one-file changes may skip straight to step 4.
+4. Dispatch `implementer` with: the bead ID, acceptance criteria, scout's map, and the
+   approved plan. It makes the change in its own context and returns a summary +
+   discovered work.
 5. Dispatch `verifier` to run tests/build. It returns pass/fail + failure excerpts.
 6. On green:
    - `bd close <id> "<one-line outcome>"`

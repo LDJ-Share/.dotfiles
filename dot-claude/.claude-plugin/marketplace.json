@@ -12,8 +12,8 @@
     {
       "name": "orchestrator",
       "source": "./plugins/orchestrator",
-      "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude session loops over ready beads and dispatches disposable worker subagents (scout/implementer/verifier/reviewer/investigator/test-writer), keeping its window near-empty. Ships the orchestration-protocol + metrics-reporting skills and the commands /implement, /triage, /cover, /notify (file an interjection bead), and /gather-metrics (structured run metrics). The ADS-agnostic counterpart of brain-orchestrator.",
-      "version": "0.1.5",
+      "description": "Context-frugal, beads-backed multi-agent orchestrator for a constrained (Sonnet-4.5 / 200k) context window. A high-altitude session loops over ready beads and dispatches disposable worker subagents (scout/planner/implementer/verifier/reviewer/investigator/test-writer), keeping its window near-empty. Ships the orchestration-protocol + plan-first-dispatch + metrics-reporting skills and the commands /implement, /triage, /cover, /notify (file an interjection bead), and /gather-metrics (structured run metrics). Plan-first-dispatch makes the orchestrator plan before implementing and auto-approve the plan bounded by its charter. The ADS-agnostic counterpart of brain-orchestrator.",
+      "version": "0.2.0",
       "category": "workflow",
       "keywords": [
         "orchestrator",
@@ -45,7 +45,7 @@
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
       "description": "A trimmed, language-agnostic software-development lifecycle for constrained (Sonnet-4.5 / 200k) workflows — the portable counterpart of the full superpowers plugin. The chain brainstorming -> writing-plans -> executing-plans | subagent-driven-development (tiered-subagent-dispatch + verifying-subagent-output) -> review gates -> finishing-a-development-branch, plus using-git-worktrees. A SessionStart hook injects a thin bootstrap; commands /brainstorm /plan /execute /finish. Pairs with the orchestrator plugin for the worker subagents.",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "category": "workflow",
       "keywords": [
         "workflow",
@@ -68,6 +68,21 @@
         "code-style",
         "nunit",
         "wpf"
+      ]
+    },
+    {
+      "name": "plugin-self-improvement",
+      "source": "./plugins/plugin-self-improvement",
+      "description": "Continuous self-improvement for the Claude Code plugin collection. Turns 'aha' moments — realizations, contradictions-with-reality, 'this skill should have told me X' — into tracked work before they evaporate: the capture-plugin-insight skill triggers on a meta-insight about a plugin/skill/command/agent and the /improve-plugin command captures it explicitly, both filing a bead labeled `plugin-improvement` under a long-lived self-improvement epic bead (discovered by the `plugin-self-improvement` label). A thin SessionStart hook reminds the model the capability exists. The portable, beads-backed counterpart of the ADS plugin-self-improvement plugin in the matt-plugins marketplace.",
+      "version": "0.1.0",
+      "category": "workflow",
+      "keywords": [
+        "self-improvement",
+        "meta",
+        "plugins",
+        "beads",
+        "bd",
+        "continuous-improvement"
       ]
     }
   ]

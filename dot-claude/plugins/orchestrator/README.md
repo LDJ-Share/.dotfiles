@@ -32,9 +32,9 @@ Orchestrator (main, Sonnet)  ── bd prime → bd ready → claim → dispatch
 
 | Kind | Names |
 |---|---|
-| **skills** | `orchestration-protocol` — the loop, centralized beads writes, watchdog, interjection steering, beads safety, the Seance decision log (+ a `patterns` reference for fan-out / autonomous-drain) · `metrics-reporting` — the canonical schema `/gather-metrics` writes to |
+| **skills** | `orchestration-protocol` — the loop, centralized beads writes, watchdog, interjection steering, beads safety, the Seance decision log (+ a `patterns` reference for fan-out / autonomous-drain) · `plan-first-dispatch` — always plan first; the orchestrator auto-approves the plan (bounded by the charter) and hands it to the implementer · `metrics-reporting` — the canonical schema `/gather-metrics` writes to |
 | **commands** | `/implement` (decompose + build a task/feature), `/triage` (recover a failing suite), `/cover` (.NET coverage), `/notify` (file an interjection bead the loop folds in next pass), `/gather-metrics` (structured run metrics → `./metrics/`) |
-| **agents** | `scout` · `implementer` · `verifier` · `reviewer` · `investigator` · `test-writer` |
+| **agents** | `scout` · `planner` (read-only, `permissionMode: plan`) · `implementer` · `verifier` · `reviewer` · `investigator` · `test-writer` |
 
 Each command invokes the `orchestration-protocol` skill for the shared contract,
 then layers its own decision charter on top. See `skills/orchestration-protocol/`.
@@ -52,6 +52,7 @@ pass/fail land in the main session.
 |---|---|---|
 | Orchestrator (main) | Sonnet | Fixed constraint; stays near-empty so 200k is plenty |
 | scout | Sonnet | Mapping is mechanical (a natural haiku-tier task) |
+| planner | Sonnet | Read-only plan for one bead (`permissionMode: plan`); reasoning-heavy |
 | implementer | Sonnet | Needs real reasoning, but in a disposable window |
 | verifier | Sonnet | Running commands + excerpting is cheap (a natural haiku-tier task) |
 | reviewer | Sonnet | Diff review before closing a risky bead |
