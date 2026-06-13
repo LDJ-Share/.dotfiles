@@ -1,15 +1,20 @@
-# Shared git hooks — stay off master
+# Shared git hooks — stay off master + no secrets
 
-Belt-and-suspenders guards that keep direct work off `master`/`main`. The Brain
-workflow is PR-based: branch → commit → push branch → PR → merge. These hooks
-enforce that for both humans and agents.
+Belt-and-suspenders guards. The Brain workflow is PR-based: branch → commit →
+push branch → PR → merge. These hooks enforce that for both humans and agents.
+This repo is also **PUBLIC-mirrored** (github.com/LDJ-Share/.dotfiles), so
+`pre-commit` additionally runs a secret scan — see [`../PUBLIC.md`](../PUBLIC.md).
 
 | Hook | Blocks |
 |------|--------|
-| `pre-commit` | committing while `HEAD` is on `master`/`main` |
+| `pre-commit` | committing while `HEAD` is on `master`/`main`; **and** staged changes that gitleaks flags as secrets |
 | `pre-push`   | pushing a ref to `refs/heads/master` or `refs/heads/main` |
 
 Override either, rarely and intentionally, with `--no-verify`.
+
+The secret scan needs [gitleaks](https://github.com/gitleaks/gitleaks) on `PATH`.
+If it isn't installed the hook warns loudly and skips (it won't block every commit
+on a missing tool) — install it so the guard is real.
 
 ## Scope (which repos)
 
