@@ -1,3 +1,0 @@
---target=~/.claude
---ignore=^CLAUDE\.md$
---ignore=^settings\.json$
