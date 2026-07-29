@@ -1,9 +1,21 @@
 # PowerShell Profile — cross-platform (Linux/macOS/Windows)
 
-Write-Host "Loading PowerShell Profile from $PSScriptRoot..." -ForegroundColor Cyan
-
 # ── Home (cross-platform) ────────────────────────────────────────────────────
 $UserHome = if ($env:HOME) { $env:HOME } else { $env:USERPROFILE }
+
+function Test-ProfileFlag {
+    param([Parameter(Mandatory)][string]$Name)
+
+    $value = [Environment]::GetEnvironmentVariable($Name)
+    return $value -match '^(1|true|yes|on)$'
+}
+
+# Banner is opt-in. It printed on every single shell (and every subshell a tool spawns),
+# which is noise, not information. Set MATTH_PROFILE_VERBOSE=1 when debugging which profile
+# actually loaded.
+if (Test-ProfileFlag "MATTH_PROFILE_VERBOSE") {
+    Write-Host "Loading PowerShell Profile from $PSScriptRoot..." -ForegroundColor Cyan
+}
 
 # ── Prompt (oh-my-posh) ──────────────────────────────────────────────────────
 $poshConfig = Join-Path $PSScriptRoot "oh-my-posh-tokyo-night-storm.toml"
