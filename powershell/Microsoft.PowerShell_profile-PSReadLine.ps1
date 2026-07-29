@@ -7,9 +7,13 @@ Set-PSReadLineOption -HistorySearchCursorMovesToEnd
 if ($disablePredictions) {
     Set-PSReadLineOption -PredictionSource None
 } else {
-    Set-PSReadLineOption -PredictionSource History
-    Set-PSReadLineOption -PredictionViewStyle InlineView
-    Set-PSReadLineOption -ShowTooltips
+    try {
+        Set-PSReadLineOption -PredictionSource History
+        Set-PSReadLineOption -PredictionViewStyle InlineView
+        Set-PSReadLineOption -ShowTooltips
+    } catch [System.ArgumentException] {
+        Set-PSReadLineOption -PredictionSource None
+    }
 }
 
 # Key Handlers
