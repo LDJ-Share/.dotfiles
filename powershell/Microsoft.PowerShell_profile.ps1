@@ -89,6 +89,12 @@ if (Test-Path $ModulePath) {
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
     Invoke-Expression (& { (zoxide init powershell | Out-String )})
 }
+# direnv on Windows shells out to bash; the WSL bash.exe on PATH can't run the Windows direnv.exe
+# (exit 127), so pin direnv at git-bash. Windows-only and existence-guarded: a no-op on Linux/macOS
+# (DIRENV_BASH is only consulted on Windows, where git-bash provides the bash). See ADS #510.
+if ($IsWindows -and (Test-Path 'C:\Program Files\Git\usr\bin\bash.exe')) {
+    $env:DIRENV_BASH = 'C:\Program Files\Git\usr\bin\bash.exe'
+}
 if (Get-Command direnv -ErrorAction SilentlyContinue) {
     Invoke-Expression (& { (direnv hook pwsh | Out-String )})
 }
