@@ -1,9 +1,20 @@
 # PSReadLine Configuration
+$disablePredictions = [Environment]::GetEnvironmentVariable("MATTH_PROFILE_DISABLE_PREDICTIONS") -match '^(1|true|yes|on)$'
+
 Set-PSReadLineOption -EditMode Vi
 Set-PSReadLineOption -HistorySearchCursorMovesToEnd
-Set-PSReadLineOption -PredictionSource History
-Set-PSReadLineOption -PredictionViewStyle InlineView
-Set-PSReadLineOption -ShowTooltips
+
+if ($disablePredictions) {
+    Set-PSReadLineOption -PredictionSource None
+} else {
+    try {
+        Set-PSReadLineOption -PredictionSource History
+        Set-PSReadLineOption -PredictionViewStyle InlineView
+        Set-PSReadLineOption -ShowTooltips
+    } catch [System.ArgumentException] {
+        Set-PSReadLineOption -PredictionSource None
+    }
+}
 
 # Key Handlers
 Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward

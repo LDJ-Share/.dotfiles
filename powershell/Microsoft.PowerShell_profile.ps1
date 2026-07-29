@@ -1,14 +1,34 @@
 # PowerShell Profile — cross-platform (Linux/macOS/Windows)
 
-Write-Host "Loading PowerShell Profile from $PSScriptRoot..." -ForegroundColor Cyan
-
 # ── Home (cross-platform) ────────────────────────────────────────────────────
 $UserHome = if ($env:HOME) { $env:HOME } else { $env:USERPROFILE }
 
+function Test-ProfileFlag {
+    param([Parameter(Mandatory)][string]$Name)
+
+    $value = [Environment]::GetEnvironmentVariable($Name)
+    return $value -match '^(1|true|yes|on)$'
+}
+
+# Banner is opt-in. It printed on every single shell (and every subshell a tool spawns),
+# which is noise, not information. Set MATTH_PROFILE_VERBOSE=1 when debugging which profile
+# actually loaded.
+if (Test-ProfileFlag "MATTH_PROFILE_VERBOSE") {
+    Write-Host "Loading PowerShell Profile from $PSScriptRoot..." -ForegroundColor Cyan
+}
+
 # ── Prompt (oh-my-posh) ──────────────────────────────────────────────────────
 $poshConfig = Join-Path $PSScriptRoot "oh-my-posh-tokyo-night-storm.toml"
-if ((Get-Command oh-my-posh -ErrorAction SilentlyContinue) -and (Test-Path $poshConfig)) {
+$poshDisabled = Test-ProfileFlag "MATTH_PROFILE_DISABLE_OH_MY_POSH"
+$poshTransientDisabled = Test-ProfileFlag "MATTH_PROFILE_DISABLE_POSH_TRANSIENT"
+
+if (-not $poshDisabled -and (Get-Command oh-my-posh -ErrorAction SilentlyContinue) -and (Test-Path $poshConfig)) {
     oh-my-posh init pwsh --config $poshConfig | Invoke-Expression
+
+    if ($poshTransientDisabled -and (Get-Command Set-PSReadLineKeyHandler -ErrorAction SilentlyContinue)) {
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        Set-PSReadLineKeyHandler -Key Ctrl+c -Function CopyOrCancelLine
+    }
 }
 
 # ── Modules ──────────────────────────────────────────────────────────────────
@@ -55,7 +75,7 @@ if ($IsWindows) {
 
 # ── Load PSReadLine config ───────────────────────────────────────────────────
 $psReadLinePath = Join-Path $PSScriptRoot "Microsoft.PowerShell_profile-PSReadLine.ps1"
-if (Test-Path $psReadLinePath) {
+if (-not (Test-ProfileFlag "MATTH_PROFILE_DISABLE_PSREADLINE_CONFIG") -and (Test-Path $psReadLinePath)) {
     . $psReadLinePath
 }
 
@@ -68,6 +88,12 @@ if (Test-Path $ModulePath) {
 # ── Tool Initialisations ─────────────────────────────────────────────────────
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
     Invoke-Expression (& { (zoxide init powershell | Out-String )})
+}
+# direnv on Windows shells out to bash; the WSL bash.exe on PATH can't run the Windows direnv.exe
+# (exit 127), so pin direnv at git-bash. Windows-only and existence-guarded: a no-op on Linux/macOS
+# (DIRENV_BASH is only consulted on Windows, where git-bash provides the bash). See ADS #510.
+if ($IsWindows -and (Test-Path 'C:\Program Files\Git\usr\bin\bash.exe')) {
+    $env:DIRENV_BASH = 'C:\Program Files\Git\usr\bin\bash.exe'
 }
 if (Get-Command direnv -ErrorAction SilentlyContinue) {
     Invoke-Expression (& { (direnv hook pwsh | Out-String )})

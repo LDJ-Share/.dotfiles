@@ -110,14 +110,22 @@ terminal_background = "p:t-background"
     foreground = "p:light-sky-blue"
     template   = "\uFCD1 {{ .Full}}"
 
+  # Clock. This REPLACED a `command` segment that ran
+  #   git log --pretty=format:%cr -1 || date +%H:%M:%S
+  # with shell = "bash". That spawned bash.exe on EVERY prompt render - measured on the
+  # Windows rig at 3,196 ms cold and 90-98 ms warm, i.e. ~60% of a 155 ms render, and a
+  # multi-second stall whenever bash.exe had fallen out of the file cache (which is what
+  # "the terminal hangs when I come back to it" actually was). The native `time` segment
+  # is computed in-process: no subprocess, no git, no bash.
+  # Do NOT reintroduce a `command` segment here without measuring it first.
   [[blocks.segments]]
-    type       = "command"
+    type       = "time"
     style      = "plain"
     foreground = "p:white-blue"
+    template   = "{{ .CurrentDate | date .Format }}"
 
     [blocks.segments.properties]
-      command = "git log --pretty=format:%cr -1 || date +%H:%M:%S"
-      shell   = "bash"
+      time_format = "15:04:05"
 
 # ── Block 3: second line ──────────────────────────────────────────────────────
 
