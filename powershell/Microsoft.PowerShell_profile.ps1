@@ -19,8 +19,16 @@ if (Test-ProfileFlag "MATTH_PROFILE_VERBOSE") {
 
 # ── Prompt (oh-my-posh) ──────────────────────────────────────────────────────
 $poshConfig = Join-Path $PSScriptRoot "oh-my-posh-tokyo-night-storm.toml"
-if ((Get-Command oh-my-posh -ErrorAction SilentlyContinue) -and (Test-Path $poshConfig)) {
+$poshDisabled = Test-ProfileFlag "MATTH_PROFILE_DISABLE_OH_MY_POSH"
+$poshTransientDisabled = Test-ProfileFlag "MATTH_PROFILE_DISABLE_POSH_TRANSIENT"
+
+if (-not $poshDisabled -and (Get-Command oh-my-posh -ErrorAction SilentlyContinue) -and (Test-Path $poshConfig)) {
     oh-my-posh init pwsh --config $poshConfig | Invoke-Expression
+
+    if ($poshTransientDisabled -and (Get-Command Set-PSReadLineKeyHandler -ErrorAction SilentlyContinue)) {
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        Set-PSReadLineKeyHandler -Key Ctrl+c -Function CopyOrCancelLine
+    }
 }
 
 # ── Modules ──────────────────────────────────────────────────────────────────
@@ -67,7 +75,7 @@ if ($IsWindows) {
 
 # ── Load PSReadLine config ───────────────────────────────────────────────────
 $psReadLinePath = Join-Path $PSScriptRoot "Microsoft.PowerShell_profile-PSReadLine.ps1"
-if (Test-Path $psReadLinePath) {
+if (-not (Test-ProfileFlag "MATTH_PROFILE_DISABLE_PSREADLINE_CONFIG") -and (Test-Path $psReadLinePath)) {
     . $psReadLinePath
 }
 
