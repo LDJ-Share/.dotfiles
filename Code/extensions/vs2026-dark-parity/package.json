@@ -1,0 +1,22 @@
+{
+  "name": "vs2026-dark-parity",
+  "displayName": "VS2026 Dark (VS Parity)",
+  "description": "Visual Studio 2026 syntax colors for VS Code — derived from ZTex275.dark-theme-vs2026, pixel-matched against real VS 2026 for TypeScript and C#, with the VS2022 theme workbench backgrounds.",
+  "version": "1.0.0",
+  "publisher": "mkrauz",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "label": "VS2026 Dark (VS Parity)",
+        "uiTheme": "vs-dark",
+        "path": "./themes/vs2026-parity-color-theme.json"
+      }
+    ]
+  }
+}
